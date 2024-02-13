@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Events</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css')}}" />
+</head>
+<body>
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Date</th>
+                <th>Location</th>
+                <th>Capacity</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in events %}
+                <tr>
+                    <td>{{ event.name }}</td>
+                    <td>{{ event.description }}</td>
+                    <td>{{ event.date }}</td>
+                    <td>{{ event.location }}</td>
+                    <td>{{ event.capacity }}</td>
+                    <td>{{ event.price }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

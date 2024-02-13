@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css')}}" />
 </head>
 <body>
     <h2>Welcome to the Home Page</h2>
@@ -12,5 +13,6 @@
     {% else %}
         <p>You are not logged in. <a href="/login">Login</a></p>
     {% endif %}
+    <p><a href="/events">Events</a></p>
 </body>
 </html>

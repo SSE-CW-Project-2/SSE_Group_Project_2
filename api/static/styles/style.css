@@ -1,0 +1,64 @@
+/* Add a base style for the body to increase font readability */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+}
+
+/* Style the table with a border, and full width */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+    margin-top: 20px;
+}
+
+/* Add border and padding to table cells */
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+/* Style the table header with a different background */
+thead th {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Add a hover effect for table rows */
+tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+/* Style for the capacity and price columns to align text to the right */
+td:nth-child(5), /* Capacity column */
+td:nth-child(6) { /* Price column */
+    text-align: right;
+}
+
+/* Add some spacing between the table and other elements */
+table + * {
+    margin-top: 20px;
+}
+
+h2 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+p {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
