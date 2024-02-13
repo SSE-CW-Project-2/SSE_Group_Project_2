@@ -60,6 +60,22 @@ def test_can_manage_as_venue(client):
 def test_cannot_manage_as_customer(client):
     # Log in as a customer
     sample_data['username'] = 'customer'
-    login_response = client.post("/login", data=sample_data, follow_redirects=True)
+    client.post("/login", data=sample_data, follow_redirects=True)
     response = client.post("/manage/1", follow_redirects=True)
     assert b"Manage" not in response.data, "Was able to manage as customer"
+
+
+def test_can_delete_as_venue(client):
+    # Log in as a venue
+    sample_data['username'] = 'venue'
+    login_response = client.post("/login", data=sample_data, follow_redirects=True)
+    response = client.post("/delete/1", follow_redirects=True)
+    assert b"Date" in response.data, "Was not able to delete as venue"
+
+
+def test_cannot_delete_as_customer(client):
+    # Log in as a customer
+    sample_data['username'] = 'customer'
+    client.post("/login", data=sample_data, follow_redirects=True)
+    response = client.post("/delete/1", follow_redirects=True)
+    assert b"Date" not in response.data, "Was able to delete as customer"
