@@ -21,7 +21,8 @@ def test_home_page_exists(client):
     assert b"Home" in response.data, "Home page didn't load"
 
 
-def test_must_be_logged_in(client):
+
+def test_must_be_logged_in_to_see_events(client):
     # Navigate to the events page which should redirect to login if not authenticated
     response = client.get("/events", follow_redirects=True)
     assert b"Login" in response.data, "Did not redirect to login"
@@ -31,6 +32,7 @@ def test_login_works(client):
     sample_data['next'] = '/events'
     response = client.post("/login", data=sample_data, follow_redirects=True)
     assert b"Events" in response.data, "Did not redirect from login page"
+
 
 def test_can_buy_as_customer(client):
     # Log in as a customer

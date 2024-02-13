@@ -1,9 +1,10 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from functools import wraps
+import requests
 
 app = Flask(__name__)
 
-app.secret_key = '3w45768j6565t6879m0'
+app.secret_key = '3w45768j6565t6879m0' #  I mashed the keyboard here
 
 example_events = [{
             'name': 'Event 1',
@@ -39,7 +40,7 @@ def venue_required(f):
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in', False):
             return redirect(url_for('login', next=request.url))
-        if session.get('user type', False) != 'venue':
+        if session.get('user_type', False) != 'venue':
             # If the user is not a customer, redirect to the home page
             return redirect(url_for('home'))
         return f(*args, **kwargs)
@@ -51,7 +52,7 @@ def customer_required(f):
     def decorated_function(*args, **kwargs):
         if not session.get('logged_in', False):
             return redirect(url_for('login', next=request.url))
-        if session.get('user type', False) != 'customer':
+        if session.get('user_type', False) != 'customer':
             # If the user is not a customer, redirect to the home page
             return redirect(url_for('home'))
         return f(*args, **kwargs)
@@ -69,7 +70,31 @@ def login_required(f):
 
 @app.route('/')
 def home():
-    return render_template('index.html', logged_in=session.get('logged_in', False))
+    return render_template('index.html')
+
+@app.route('/register')
+def register():
+    return render_template('register.html')
+
+
+@app.route('/add-user', methods=['POST'])
+def add_user():
+    user = request.form.get('username')
+    password = request.form.get('password')
+    user_type = request.form.get('user_type')
+    ### TODO: Check that username is not already taken and add user to database
+
+    if True: #### For now, all users are successfully added
+        session['logged_in'] = True
+        session['username'] = user
+        # Assuming 'customer' as a default user type, modify as necessary
+        session['user_type'] = user_type
+        return redirect(url_for('home'))
+    if False:
+        ### Use a more specific error message 
+        flash('Error adding user', 'error')
+        return render_template('register.html', error=True)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -80,29 +105,24 @@ def login():
         ### TODO: CALL TO DATABASE TO CHECK IF USER EXISTS AND PASSWORD IS CORRECT
 
         ### IF SO, GET THE USER TYPE #############################################
-        if username == 'customer' and password == 'password':
-            # Log the user in by setting a session variable
+        if password == 'password' and (username in ['customer', 'venue', 'performer']):
             session['logged_in'] = True
-            session['user type'] = 'customer'
-            next_page = request.form.get('next') or url_for('home')
-            return redirect(next_page)
-        elif username == 'venue' and password == 'password':
-            # Log the user in by setting a session variable
-            session['logged_in'] = True
-            session['user type'] = 'venue'
+            session['user_type'] = username #### THIS INFO SHOULD BE OBTAINED FROM THE DATABASE
+            session['username'] = username
             next_page = request.form.get('next') or url_for('home')
             return redirect(next_page)
         else:
-            # If login fails, return to login page with an error
             return render_template('login.html', error=True, next=request.form.get('next'))
 
-    # Handle the GET request
-    next_page = request.args.get('next', url_for('home'))
-    return render_template('login.html', next=next_page)
+    if request.method == 'GET':
+        next_page = request.args.get('next', url_for('home'))
+        return render_template('login.html', next=next_page)
 
 @app.route('/logout')
 def logout():
     session['logged_in'] = False
+    session['user_type'] = None
+    session['username'] = None
     return redirect(url_for('home'))
 
 @app.route('/events')
@@ -112,7 +132,7 @@ def events():
 
     ### PLACEHOLDER FOR NOW #############################################
     events = example_events
-    return render_template('events.html', user_type=session['user type'], events=events)
+    return render_template('events.html', user_type=session['user_type'], events=events)
 
 
 @app.route('/buy/<id>', methods=['GET', 'POST'])

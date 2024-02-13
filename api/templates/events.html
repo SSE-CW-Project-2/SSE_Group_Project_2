@@ -35,9 +35,9 @@
                     <td>{{ event.location }}</td>
                     <td>{{ event.capacity }}</td>
                     <td>{{ event.price }}</td>
-                    {% if session['user type'] == 'customer' %}
+                    {% if session['user_type'] == 'customer' %}
                         <td><a href="/buy/{{ event.id }}">Buy Now</a></td>
-                    {% elif session['user type'] == 'venue' %}
+                    {% elif session['user_type'] == 'venue' %}
                         <td><a href="/manage/{{ event.id }}">Manage event</a></td>
                     {% endif %}
                 </tr>
