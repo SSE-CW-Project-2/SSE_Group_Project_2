@@ -11,7 +11,8 @@ example_events = [{
             'location': 'Location 1',
             'description': 'Example description for Event 1',
             'capacity': 100,
-            'price': 10.99
+            'price': 10.99,
+            'id': 1
 },
 {
     'name': 'Event 2',
@@ -19,7 +20,8 @@ example_events = [{
     'location': 'Location 2',
     'description': 'Example description for Event 2',
     'capacity': 50,
-    'price': 15.99
+    'price': 15.99,
+    'id': 2
 },
 {
     'name': 'Event 3',
@@ -27,8 +29,22 @@ example_events = [{
     'location': 'Location 3',
     'description': 'Example description for Event 3',
     'capacity': 200,
-    'price': 20.99
+    'price': 20.99,
+    'id': 3
 }]
+
+
+def customer_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in', False):
+            return redirect(url_for('login', next=request.url))
+        if session.get('user type', False) != 'customer':
+            # If the user is not a customer, redirect to the home page
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 def login_required(f):
     @wraps(f)
@@ -52,10 +68,16 @@ def login():
         ### TODO: CALL TO DATABASE TO CHECK IF USER EXISTS AND PASSWORD IS CORRECT
 
         ### IF SO, GET THE USER TYPE #############################################
-        if username == 'admin' and password == 'password':
+        if username == 'customer' and password == 'password':
             # Log the user in by setting a session variable
             session['logged_in'] = True
             session['user type'] = 'customer'
+            next_page = request.form.get('next') or url_for('home')
+            return redirect(next_page)
+        elif username == 'venue' and password == 'password':
+            # Log the user in by setting a session variable
+            session['logged_in'] = True
+            session['user type'] = 'venue'
             next_page = request.form.get('next') or url_for('home')
             return redirect(next_page)
         else:
@@ -79,6 +101,26 @@ def events():
     ### PLACEHOLDER FOR NOW #############################################
     events = example_events
     return render_template('events.html', user_type=session['user type'], events=events)
+
+
+@app.route('/buy/<id>', methods=['GET', 'POST'])
+@customer_required
+def buy_event(id):
+    ### TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
+    event = None
+    for e in example_events:
+        if e['id'] == int(id):
+            event = e
+            break
+    if event is None:
+        return "Event not found"
+    return render_template('buy.html', event=event)
+
+
+@app.route('/checkout/<id>', methods=['GET', 'POST'])
+@customer_required
+def checkout(id):
+    return render_template('checkout.html', event_id=id)
 
 if __name__ == '__main__':
     app.run(debug=True)

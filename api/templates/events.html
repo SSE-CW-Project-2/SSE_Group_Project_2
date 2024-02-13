@@ -14,6 +14,7 @@
                 <th>Location</th>
                 <th>Capacity</th>
                 <th>Price</th>
+                <th>Action</th> <!-- Add a new column for the action -->
             </tr>
         </thead>
         <tbody>
@@ -25,6 +26,7 @@
                     <td>{{ event.location }}</td>
                     <td>{{ event.capacity }}</td>
                     <td>{{ event.price }}</td>
+                    <td><a href="/buy/{{ event.id }}">Buy Now</a></td> <!-- Link to buy event page -->
                 </tr>
             {% endfor %}
         </tbody>
