@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from functools import wraps
 
 app = Flask(__name__)
@@ -33,6 +33,7 @@ example_events = [{
     'id': 3
 }]
 
+### TODO: Make sure the venue is the correct one ######################
 def venue_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -146,6 +147,15 @@ def manage_event(id):
     if event is None:
         return "Event not found"
     return render_template('manage.html', event=event)
+
+
+@app.route('/delete/<id>', methods=['GET', 'POST'])
+@venue_required
+def delete_event(id):
+    ### TODO: Functionality to delete an event
+    ### This does nothing ############################################
+    flash('Event deleted', 'success')
+    return redirect(url_for('events'))
 
 
 if __name__ == '__main__':

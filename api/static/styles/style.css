@@ -42,6 +42,19 @@ table + * {
     margin-top: 20px;
 }
 
+.flashes {
+    list-style: none;
+    padding: 0;
+}
+
+.flash-message {
+    background-color: #f8d7da; /* Red color for error messages, you can change it */
+    color: #721c24; /* Dark red text color, you can change it */
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
 h2 {
     color: #333;
     font-size: 24px;

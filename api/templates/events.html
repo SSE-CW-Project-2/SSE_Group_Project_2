@@ -5,6 +5,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css')}}" />
 </head>
 <body>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="flashes">
+                {% for message in messages %}
+                    <li class="flash-message">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
     <table>
         <thead>
             <tr>
