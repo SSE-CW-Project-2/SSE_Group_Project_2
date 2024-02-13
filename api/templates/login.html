@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Login</h2>
+    <form action="/login" method="POST">
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="use 'admin'"required>
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" placeholder="use 'password'"required>
+        </div>
+        <button type="submit">Login</button>
+        {% if error %}
+            <p>Invalid username or password. Please try again.</p>
+        {% endif %}
+    </form>
+</body>
+</html>
