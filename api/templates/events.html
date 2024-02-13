@@ -26,7 +26,11 @@
                     <td>{{ event.location }}</td>
                     <td>{{ event.capacity }}</td>
                     <td>{{ event.price }}</td>
-                    <td><a href="/buy/{{ event.id }}">Buy Now</a></td> <!-- Link to buy event page -->
+                    {% if session['user type'] == 'customer' %}
+                        <td><a href="/buy/{{ event.id }}">Buy Now</a></td>
+                    {% elif session['user type'] == 'venue' %}
+                        <td><a href="/manage/{{ event.id }}">Manage event</a></td>
+                    {% endif %}
                 </tr>
             {% endfor %}
         </tbody>

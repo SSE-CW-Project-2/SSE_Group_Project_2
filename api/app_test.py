@@ -43,8 +43,23 @@ def test_can_buy_as_customer(client):
 def test_cannot_buy_as_venue(client):
     venue_data = sample_data.copy()
     venue_data['username'] = 'venue'
-    login_response = client.post("/login", data=sample_data, follow_redirects=True)
+    login_response = client.post("/login", data=venue_data, follow_redirects=True)
     response = client.post("/buy/1", follow_redirects=True)
     # Now attempt to make a purchase
-    assert b"Buy" in response.data, "Was able to buy as venue"
+    assert b"Buy" not in response.data, "Was able to buy as venue"
 
+
+def test_can_manage_as_venue(client):
+    # Log in as a venue
+    sample_data['username'] = 'venue'
+    login_response = client.post("/login", data=sample_data, follow_redirects=True)
+    response = client.post("/manage/1", follow_redirects=True)
+    assert b"Manage" in response.data, "Was not able to manage as venue"
+
+
+def test_cannot_manage_as_customer(client):
+    # Log in as a customer
+    sample_data['username'] = 'customer'
+    login_response = client.post("/login", data=sample_data, follow_redirects=True)
+    response = client.post("/manage/1", follow_redirects=True)
+    assert b"Manage" not in response.data, "Was able to manage as customer"

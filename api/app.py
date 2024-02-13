@@ -33,6 +33,17 @@ example_events = [{
     'id': 3
 }]
 
+def venue_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in', False):
+            return redirect(url_for('login', next=request.url))
+        if session.get('user type', False) != 'venue':
+            # If the user is not a customer, redirect to the home page
+            return redirect(url_for('home'))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 def customer_required(f):
     @wraps(f)
@@ -121,6 +132,21 @@ def buy_event(id):
 @customer_required
 def checkout(id):
     return render_template('checkout.html', event_id=id)
+
+
+@app.route('/manage/<id>', methods=['GET', 'POST'])
+@venue_required
+def manage_event(id):
+    ### TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
+    event = None
+    for e in example_events:
+        if e['id'] == int(id):
+            event = e
+            break
+    if event is None:
+        return "Event not found"
+    return render_template('manage.html', event=event)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
