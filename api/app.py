@@ -4,6 +4,15 @@ from flask import (
 )
 from functools import wraps
 
+# List of TODOs:
+# 1. Make sure the venue is the correct one
+# 2. Check username is not already taken and add user to database
+# 3. Call to database to check if login info is correct
+# 4. Call to database to get event details
+# 5. Functionality to delete an event
+# 6. Replace test login info with more secure user info (with env. variables)
+# 7. Call to database to check that event is being managed by correct venue
+
 app = Flask(__name__)
 
 app.secret_key = '3w45768j6565t6879m0'  # I mashed the keyboard here
@@ -15,7 +24,8 @@ example_events = [{
             'description': 'Example description for Event 1',
             'capacity': 100,
             'price': 10.99,
-            'id': 1
+            'event_id': 1,
+            'venue_id': 1
     },
     {
         'name': 'Event 2',
@@ -24,7 +34,8 @@ example_events = [{
         'description': 'Example description for Event 2',
         'capacity': 50,
         'price': 15.99,
-        'id': 2
+        'event_id': 2,
+        'venue_id': 2
     },
     {
         'name': 'Event 3',
@@ -33,34 +44,41 @@ example_events = [{
         'description': 'Example description for Event 3',
         'capacity': 200,
         'price': 20.99,
-        'id': 3
+        'event_id': 3,
+        'venue_id': 1
     }
 ]
 
 
 # TODO: Make sure the venue is the correct one ######################
-def venue_required(f):
+
+
+def requires_correct_venue_id(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not session.get('logged_in', False):
-            return redirect(url_for('login', next=request.url))
-        if session.get('user_type', False) != 'venue':
-            # If the user is not a customer, redirect to the home page
+        # TODO: REPLACE THIS WITH A CALL TO THE DATABASE TO GET THE USER ID
+        event = example_events[int(kwargs['event_id']) - 1]
+        event_venue_id = event['venue_id']
+        current_user_id = session.get('user_id')
+        if current_user_id is None or \
+                str(current_user_id) != str(event_venue_id):
+            flash('Unauthorized access.', 'danger')
             return redirect(url_for('home'))
         return f(*args, **kwargs)
     return decorated_function
 
 
-def customer_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not session.get('logged_in', False):
-            return redirect(url_for('login', next=request.url))
-        if session.get('user_type', False) != 'customer':
-            # If the user is not a customer, redirect to the home page
-            return redirect(url_for('home'))
-        return f(*args, **kwargs)
-    return decorated_function
+def one_user_type_allowed(user_type):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not session.get('logged_in', False):
+                return redirect(url_for('login', next=request.url))
+            if session.get('user_type', '') != user_type:
+                return redirect(url_for('home'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 def login_required(f):
@@ -90,6 +108,7 @@ def add_user():
     password  # Added so flake8 doesn't complain
     user_type = request.form.get('user_type')
     # TODO: Check username is not already taken and add user to database
+    # Also assign a user ID to the user and store it in the session
 
     if True:  # For now, all users are successfully added
         session['logged_in'] = True
@@ -117,6 +136,7 @@ def login():
             session['logged_in'] = True
             session['user_type'] = username  # GET FROM DATABASE
             session['username'] = username
+            session['user_id'] = 1  # GET FROM DATABASE
             next_page = request.form.get('next') or url_for('home')
             return redirect(next_page)
         else:
@@ -142,18 +162,20 @@ def events():
     # TODO: CALL TO DATABASE TO GET EVENTS FOR USER ###
     # PLACEHOLDER FOR NOW #############################################
     events = example_events
+    if session['user_type'] == 'venue':
+        events = [e for e in events if e['venue_id'] == session.get('user_id')]
     return render_template('events.html',
                            user_type=session['user_type'],
                            events=events)
 
 
 @app.route('/buy/<id>', methods=['GET', 'POST'])
-@customer_required
+@one_user_type_allowed(user_type='customer')
 def buy_event(id):
     # TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
     event = None
     for e in example_events:
-        if e['id'] == int(id):
+        if e['event_id'] == int(id):
             event = e
             break
     if event is None:
@@ -161,19 +183,19 @@ def buy_event(id):
     return render_template('buy.html', event=event)
 
 
-@app.route('/checkout/<id>', methods=['GET', 'POST'])
-@customer_required
-def checkout(id):
-    return render_template('checkout.html', event_id=id)
+@app.route('/checkout/<event_id>', methods=['GET', 'POST'])
+@one_user_type_allowed(user_type='customer')
+def checkout(event_id):
+    return render_template('checkout.html', event_id=event_id)
 
 
-@app.route('/manage/<id>', methods=['GET', 'POST'])
-@venue_required
-def manage_event(id):
+@app.route('/manage/<event_id>', methods=['GET', 'POST'])
+@requires_correct_venue_id
+def manage_event(event_id):
     # TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
     event = None
     for e in example_events:
-        if e['id'] == int(id):
+        if e['event_id'] == int(event_id):
             event = e
             break
     if event is None:
@@ -181,9 +203,10 @@ def manage_event(id):
     return render_template('manage.html', event=event)
 
 
-@app.route('/delete/<id>', methods=['GET', 'POST'])
-@venue_required
-def delete_event(id):
+@app.route('/delete/<event_id>', methods=['GET', 'POST'])
+@requires_correct_venue_id
+def delete_event(event_id):
+
     # TODO: Functionality to delete an event
     # This does nothing ############################################
     flash('Event deleted', 'success')
