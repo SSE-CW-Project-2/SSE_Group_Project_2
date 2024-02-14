@@ -1,5 +1,9 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Profile</title>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<h2>Welcome to the Profile Page, {{ session['username'] }}!</h2>
+<p>You are logged in as a(n) {{ session['user_type'] }}.</p>
+<p><a href="/logout">Logout</a></p>
+{% endblock %}

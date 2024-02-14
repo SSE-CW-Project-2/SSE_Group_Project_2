@@ -1,35 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Manage</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css')}}" />
-</head>
-<body>
-    <h2>Manage {{ event.name }}</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Date</th>
-                <th>Location</th>
-                <th>Capacity</th>
-                <th>Price</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>{{ event.name }}</td>
-                <td>{{ event.description }}</td>
-                <td>{{ event.date }}</td>
-                <td>{{ event.location }}</td>
-                <td>{{ event.capacity }}</td>
-                <td>{{ event.price }}</td>
-            </tr>
-        </tbody>
-    </table>
-   
-    <form action="/delete/{{ event.id }}" method="POST">
-        <button type="submit">Delete event</button>
-    </form>
-</html>
+{% extends "base.html" %}
+{% block title %}Manage{{ event.name }}{% endblock %}
+
+{% block content %}
+<h2>Manage {{ event.name }}</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Capacity</th>
+            <th>Price</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ event.name }}</td>
+            <td>{{ event.description }}</td>
+            <td>{{ event.date }}</td>
+            <td>{{ event.location }}</td>
+            <td>{{ event.capacity }}</td>
+            <td>{{ event.price }}</td>
+        </tr>
+    </tbody>
+</table>
+
+<form action="/delete/{{ event.id }}" method="POST">
+    <button type="submit">Delete event</button>
+</form>
+{% endblock %}

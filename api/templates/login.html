@@ -1,25 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css')}}" />
-</head>
-<body>
-    <h2>Login</h2>
-    <form action="/login" method="POST">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" placeholder="use 'customer'"required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" placeholder="use 'password'"required>
-        </div>
-        <button type="submit">Login</button>
-        {% if error %}
-            <p>Invalid username or password. Please try again.</p>
-        {% endif %}
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+{% block content %}
+<h2>Login</h2>
+<form action="/login" method="POST">
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="'venue' or 'customer'"required>
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" placeholder="'password'"required>
+    </div>
+    <button type="submit">Login</button>
+    {% if error %}
+        <p>Invalid username or password. Please try again.</p>
+    {% endif %}
+</form>
+{% endblock %}

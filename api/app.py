@@ -148,6 +148,12 @@ def login():
         return render_template('login.html', next=next_page)
 
 
+@app.route('/profile')
+@login_required
+def profile():
+    return render_template('profile.html')
+
+
 @app.route('/logout')
 def logout():
     session['logged_in'] = False
