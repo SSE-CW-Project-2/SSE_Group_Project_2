@@ -1,5 +1,5 @@
 ####################################################################################################
-# Project Name: Motion Event Management System
+# Project Name: Motive Event Management System
 # File: user_model.py
 # Description: This file contains the database models for users within the Motion Event Management
 #              System.
@@ -13,8 +13,9 @@
 #              Establishments host events, Entertainers apply for gigs at these events, and
 #              Individual Users purchase tickets to attend.
 #
-# Author:
+# Authors:
 # Date: 2024-02-14
+# Version: 1.0
 #
 # Notes: This model uses Flask-SQLAlchemy for ORM functionality. It's designed to be flexible,
 #        allowing for future enhancements such as adding more user types or attributes.
