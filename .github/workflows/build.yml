@@ -49,6 +49,7 @@ jobs:
       - name: Echo GITHUB_SHA
         run: |
           echo "GITHUB-SHA: $GITHUB_SHA"
+          echo "gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA"
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2.1.0
