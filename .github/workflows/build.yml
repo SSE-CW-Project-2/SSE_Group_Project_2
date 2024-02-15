@@ -50,6 +50,9 @@ jobs:
         run: |
           echo "GITHUB-SHA: $GITHUB_SHA"
 
+      - name: Wait for Image Availability
+        run: sleep 60
+
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2.1.0
         with:
