@@ -54,8 +54,8 @@ jobs:
       - name: Confirm Google Cloud Authentication
         run: gcloud auth list
 
-      - name: List Available Images in GCR
-        run: gcloud container images list-tags --repository=gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
+      - name: List Image Tags and Details in GCR
+        run: gcloud container images list-tags gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-app
 
 
       - name: Deploy to Google Cloud Run
