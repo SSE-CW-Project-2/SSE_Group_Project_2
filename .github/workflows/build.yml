@@ -21,7 +21,7 @@ jobs:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
       
       - name: Echo GITHUB_SHA
-        run:: echo "GITHUB-SHA: $GITHUB_SHA"
+        run: echo "GITHUB-SHA: $GITHUB_SHA"
       
       - name: Build and push Docker image to GCR
         run: |
