@@ -55,7 +55,7 @@ jobs:
         run: gcloud auth list
 
       - name: List Image Tags and Details in GCR
-        run: gcloud container images list-tags gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-app
+        run: gcloud container images list-tags gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
 
 
       - name: Deploy to Google Cloud Run
