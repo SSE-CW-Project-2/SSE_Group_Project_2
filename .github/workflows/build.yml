@@ -35,4 +35,4 @@ jobs:
         with:
           service: my-app
           image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-app:$GITHUB_SHA
-          credentials: ${{ secrets.GCP_SA_KEY }}
+          credentials: ${{ secrets.GCP_SA_KEY }} --project=${{ secrets.GCP_PROJECT_ID }} --region=europe-west2
