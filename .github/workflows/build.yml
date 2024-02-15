@@ -27,8 +27,8 @@ jobs:
       - name: Build and push Docker image to GCR
         run: |
           gcloud auth configure-docker --project=${{ secrets.GCP_PROJECT_ID }}
-          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-app:$GITHUB_SHA .
-          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-app:$GITHUB_SHA
+          docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA .
+          docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA
 
   deploy-to-cloud-run:
     runs-on: ubuntu-latest
@@ -53,6 +53,6 @@ jobs:
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2.1.0
         with:
-          service: my-app
-          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/my-app:$GITHUB_SHA
+          service: sse-main-app
+          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA
           project_id: ${{ secrets.GCP_PROJECT_ID }}
