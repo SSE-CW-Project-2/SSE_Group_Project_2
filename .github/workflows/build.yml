@@ -20,6 +20,9 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
       
+      - name: Echo GITHUB_SHA
+        run:: echo "GITHUB-SHA: $GITHUB_SHA"
+      
       - name: Build and push Docker image to GCR
         run: |
           gcloud auth configure-docker --project=${{ secrets.GCP_PROJECT_ID }}
@@ -41,6 +44,9 @@ jobs:
         uses: google-github-actions/auth@v2.1.0
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Echo GITHUB_SHA
+        run:: echo "GITHUB-SHA: $GITHUB_SHA"
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2.1.0
