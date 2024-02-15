@@ -51,6 +51,13 @@ jobs:
           echo "GITHUB-SHA: $GITHUB_SHA"
           echo "gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA"
 
+      - name: Confirm Google Cloud Authentication
+        run: gcloud auth list
+
+      - name: List Available Images in GCR
+        run: gcloud container images list --repository=gcr.io/${{ secrets.GCP_PROJECT_ID }}
+
+
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2.1.0
         with:
