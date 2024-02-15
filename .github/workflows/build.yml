@@ -55,12 +55,12 @@ jobs:
         run: gcloud auth list
 
       - name: List Available Images in GCR
-        run: gcloud container images list --repository=gcr.io/${{ secrets.GCP_PROJECT_ID }}
+        run: gcloud container images list-tags --repository=gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
 
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2.1.0
         with:
           service: sse-main-app
-          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA
+          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
           project_id: ${{ secrets.GCP_PROJECT_ID }}
