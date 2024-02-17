@@ -57,6 +57,8 @@ jobs:
       - name: List Image Tags and Details in GCR
         run: gcloud container images list-tags gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
 
+      - name: Set port for Google Cloud Run service
+        run: gcloud run services update sse-main-app --port=5000 --platform=managed --region=europe-west2
 
       - name: Deploy to Google Cloud Run
         uses: google-github-actions/deploy-cloudrun@v2.1.0
@@ -64,4 +66,3 @@ jobs:
           service: sse-main-app
           image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          port: 5000
