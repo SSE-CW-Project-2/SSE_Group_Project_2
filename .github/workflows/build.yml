@@ -64,3 +64,4 @@ jobs:
           service: sse-main-app
           image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
           project_id: ${{ secrets.GCP_PROJECT_ID }}
+          port: 5000
