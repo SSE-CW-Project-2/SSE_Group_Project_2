@@ -14,7 +14,6 @@
 
 
 from flask import Flask, request, jsonify
-from postgrest import APIError
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os, re
@@ -93,18 +92,9 @@ def check_email_in_use(email):
     if not is_valid_email(email):
         return {'error': "Invalid email format."}
 
-    # Constructing the SQL query
-    sql_query = f"""
-    SELECT 'venue' as account_type, user_id FROM venues WHERE email = '{email}'
-    UNION
-    SELECT 'artist', user_id FROM artists WHERE email = '{email}'
-    UNION
-    SELECT 'attendee', user_id FROM attendees WHERE email = '{email}';
-    """
-
     try:
         # Executing the raw SQL query
-        data = supabase.rpc("sql", {"query": sql_query}).execute()
+        data = supabase.rpc("check_email_in_use", {"input_email": email}).execute()
 
         # Check if any data was returned
         if data.data:

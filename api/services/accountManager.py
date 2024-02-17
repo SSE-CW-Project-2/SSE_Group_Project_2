@@ -1,6 +1,6 @@
 ####################################################################################################
 # Project Name: Motive Event Management System
-# File: account_manager.py
+# File: accountManager.py
 # Description: This file defines functions used to create, update and delete user accounts.
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
@@ -9,12 +9,13 @@
 #
 # Notes: Currently only checks if an email is in use for accounts of the same type, but should check
 #        all account types. Expect the emails to be encrypted when stored on the database.
-#           The check_email_registered function is implemented in a separate file as it is likely to
+#           The fetch_account_info function is implemented in a separate file as it is likely to
 #        be used more frequently than these functions and need a different scaling solution.
 ####################################################################################################
 
 
-from accountInfoRetrieval import check_email_registered
+from postgrest import APIError
+from api.services.accountInfoRetrieval import fetch_account_info
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
@@ -45,27 +46,28 @@ def create_account(email: str, account_type: str, name: str):
     """
     # Error checking - should only be called if email not already registered
     # Remove this code later as it is an additional, unnecessary query to the database
-    user_id = check_email_registered(email, account_type)
+    user_id = fetch_account_info(email, account_type)
 
     if user_id is not None:
         print(f"Account already associated with this email address")
         return None
 
     # Attempt to create the account
-    response = supabase.table(account_type + "s").insert({"email": email, "name": name}).execute()
-
-    # Check if the insert was successful by checking if data is returned
-    if response.data:
-        # Return the venue_id of the newly created account
-        return response.data[0]['venue_id']
-    else:
-        # If response.data is empty, check for an error message
-        if response.error:
-            print(f"An error occurred: {response.error['message']}")
+    try:
+        response = supabase.table(account_type + "s").insert({"email": email, "name": name}).execute()
+        # Check if the insert was successful by checking if data is returned
+        if response.data:
+            # Return the user_id of the newly created account
+            return response.data[0]['user_id']
+        else:
+            print("An error occurred during account creation.")
+            return None
+    except APIError as e:
+        print(f"An API error occurred: {e.message}")
         return None
 
 
-def update_venue_details(current_email: str, account_type: str, new_email: str = None, new_name: str = None):
+def update_account_details(current_email: str, account_type: str, new_email: str = None, new_name: str = None):
     """
     Updates one or more attributes in a row, corresponding to an existing user account.
 
@@ -82,7 +84,7 @@ def update_venue_details(current_email: str, account_type: str, new_email: str =
     """
     # Error checking - should only be called if email not already registered
     # Remove this code later as it is an additional, unnecessary query to the database
-    user_id = check_email_registered(current_email, account_type)
+    user_id = fetch_account_info(current_email, account_type)
 
     if user_id is None:
         print(f"Cannot find account associated with this id")
@@ -101,19 +103,18 @@ def update_venue_details(current_email: str, account_type: str, new_email: str =
         return False
 
     # Attempt to update the venue
-    response = supabase.table("venues").update(update_fields).eq("email", current_email).execute()
+    try:
+        response = supabase.table(account_type + "s").update(update_fields).eq("email", current_email).execute()
 
-    # Check if the update was successful
-    if response.data:
-        # If response.data is not empty, the update operation was successful
-        print(f"Venue with ID {venue_id} has been updated.")
-        return True
-    else:
-        # If response.data is empty, check for an error message
-        if response.error:
-            print(f"An error occurred: {response.error['message']}")
+        # Check if the update was successful
+        if response.data:
+            # If response.data is not empty, the update operation was successful
+            print(f"Venue with ID {user_id} has been updated.")
+            return True
         else:
-            print(f"No venue found with ID {venue_id}, or no changes were made.")
+            return False
+    except APIError as e:
+        print(f"An API error occurred: {e.message}")
         return False
 
 
@@ -129,78 +130,83 @@ def delete_account(email: str, account_type: str):
     Returns: True if the account row is successfully deleted from the database, or false if it is
         not found or not deleted.
     """
-    # Attempt to delete the account
-    response = supabase.table(account_type + "s").delete().eq("email", email).execute()
 
-    # Check if the delete operation was successful by inspecting response.data
-    if response.data:
-        # response.data not empty means rows were deleted
-        print(f"Account with email {email} has been deleted.")
-        return True
-    else:
-        # response.data empty could mean no rows found to delete or already deleted
-        print(f"No account found with email {email}, or it has already been deleted.")
+    # Attempt to delete the account
+    try:
+        response = supabase.table(account_type + "s").delete().eq("email", email).execute()
+
+        # Check if the delete operation was successful by inspecting response.data
+        if response.data:
+            # response.data not empty means rows were deleted
+            print(f"Account with email {email} has been deleted.")
+            return True
+        else:
+            # response.data empty could mean no rows found to delete or already deleted
+            print(f"No account found with email {email}, or it has already been deleted.")
+            return False
+    except APIError as e:
+        print(f"An API error occurred: {e.message}")
         return False
 
 
-# Example usage of create_venue_account
-new_email = 'newvenue@example.com'
-new_name = 'New Venue Name'
-account_type = 'venue'
-new_venue_id = create_account(new_email, account_type, new_name)
-if new_venue_id is None:
-    print("Account already associated with this email address")
-else:
-    print(f"New venue account created with ID: {new_venue_id}")
-
-# Example usage of create_venue_account
-new_email = 'newvenue@example.com'
-new_name = 'New Venue Name'
-account_type = 'venue'
-new_venue_id = create_account(new_email, account_type, new_name)
-if new_venue_id is None:
-    print("Account already associated with this email address")
-else:
-    print(f"New venue account created with ID: {new_venue_id}")
-
-# Example usage of check_email_registered
-account_type = 'venue'
-email = 'newvenue@example.com'
-venue_id = check_email_registered(email, account_type)
-print(venue_id)
-venue_id_to_update = venue_id
-
-# Example usage of check_email_registered
-account_type = 'venue'
-email = 'oldvenue@example.com'
-venue_id = check_email_registered(email, account_type)
-print(venue_id)
-
-# Example usage of update_account_info:
-account_type = 'venue'
-new_email = 'updatedemail@example.com'
-new_name = 'Updated Venue Name'
-update_venue_details(current_email='newvenue@example.com', account_type=account_type,
-                     new_email=new_email, new_name=new_name)
-
-# Example usage of check_email_registered
-account_type = 'venue'
-email = 'updatedemail@example.com'
-venue_id = check_email_registered(email, account_type)
-print(venue_id)
-
-# Example usage of delete_account:
-account_type = 'venue'
-email_to_delete = 'updatedemail@example.com'
-delete_account(email_to_delete, account_type)
-
-# Example usage of delete_account:
-account_type = 'venue'
-email_to_delete = 'updatedemail@example.com'
-delete_account(email_to_delete, account_type)
-
-# Example usage of check_email_registered
-account_type = 'venue'
-email = 'newvenue@example.com'
-venue_id = check_email_registered(email, account_type)
-print(venue_id)
+# # Example usage of create_account
+# new_email = 'newvenue@example.com'
+# new_name = 'New Venue Name'
+# account_type = 'venue'
+# new_user_id = create_account(new_email, account_type, new_name)
+# if new_user_id is None:
+#     print("Account already associated with this email address")
+# else:
+#     print(f"New venue account created with ID: {new_user_id}")
+#
+# # Example usage of create_venue_account
+# new_email = 'newvenue@example.com'
+# new_name = 'New Venue Name'
+# account_type = 'venue'
+# new_user_id = create_account(new_email, account_type, new_name)
+# if new_user_id is None:
+#     print("Account already associated with this email address")
+# else:
+#     print(f"New venue account created with ID: {new_user_id}")
+#
+# # Example usage of fetch_account_info
+# account_type = 'venue'
+# email = 'newvenue@example.com'
+# user_id = fetch_account_info(email, account_type)
+# print(user_id)
+# user_id_to_update = user_id
+#
+# # Example usage of fetch_account_info
+# account_type = 'venue'
+# email = 'oldvenue@example.com'
+# user_id = fetch_account_info(email, account_type)
+# print(user_id)
+#
+# # Example usage of update_account_info:
+# account_type = 'venue'
+# new_email = 'updatedemail@example.com'
+# new_name = 'Updated Venue Name'
+# update_account_details(current_email='newvenue@example.com', account_type=account_type,
+#                      new_email=new_email, new_name=new_name)
+#
+# # Example usage of fetch_account_info
+# account_type = 'venue'
+# email = 'updatedemail@example.com'
+# user_id = fetch_account_info(email, account_type)
+# print(user_id)
+#
+# # Example usage of delete_account:
+# account_type = 'venue'
+# email_to_delete = 'updatedemail@example.com'
+# delete_account(email_to_delete, account_type)
+#
+# # Example usage of delete_account:
+# account_type = 'venue'
+# email_to_delete = 'updatedemail@example.com'
+# delete_account(email_to_delete, account_type)
+#
+# # Example usage of fetch_account_info
+# account_type = 'venue'
+# email = 'newvenue@example.com'
+# user_id = fetch_account_info(email, account_type)
+# print(user_id)
