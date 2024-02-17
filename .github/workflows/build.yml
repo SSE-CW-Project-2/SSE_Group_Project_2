@@ -61,8 +61,11 @@ jobs:
         run: gcloud run services update sse-main-app --port=5000 --platform=managed --region=europe-west2
 
       - name: Deploy to Google Cloud Run
-        uses: google-github-actions/deploy-cloudrun@v2.1.0
-        with:
-          service: sse-main-app
-          image: gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+        run: |
+          gcloud run deploy sse-main-app \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app \
+            --platform managed \
+            --region europe-west2 \
+            --port 5000
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
