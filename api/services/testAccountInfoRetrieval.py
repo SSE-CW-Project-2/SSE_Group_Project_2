@@ -17,48 +17,76 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from accountInfoRetrieval import (validate_request, is_valid_email,
-                                  check_email_in_use, fetch_account_info)
+                                  check_email_in_use, fetch_account_info, account_type_schema)
 
 class TestValidateRequest(unittest.TestCase):
-    def test_valid_venue_request(self):
-        request = {'account type': 'venue', 'email': 'venue@example.com', 'user_id': '1',
-                   'username': 'Venue Name', 'location': 'Venue Location'}
-        self.assertEqual(validate_request(request), (True, "Request is valid."))
 
-    def test_valid_artist_request(self):
-        request = {'account type': 'artist', 'email': 'artist@example.com', 'user_id': '2',
-                   'username': 'Artist Name', 'genre': 'Artist Genre'}
-        self.assertEqual(validate_request(request), (True, "Request is valid."))
+    def test_email_validation(self):
+        self.assertTrue(is_valid_email('test@example.com'))
+        self.assertFalse(is_valid_email('invalid-email'))
 
-    def test_valid_attendee_request(self):
-        request = {'account type': 'attendee', 'email': 'attendee@example.com',
-                   'user_id': '3', 'username': 'Attendee Name', 'city': 'Attendee City'}
-        self.assertEqual(validate_request(request), (True, "Request is valid."))
+    def test_valid_requests_with_attributes(self):
+        request = {
+            'account type': 'venue',
+            'email': 'venue@example.com',
+            'attributes': {'username': True, 'location': True}
+        }
+        account_type = 'venue'
+        self.assertEqual(validate_request(request,account_type_schema, account_type), (True, "Request is valid."))
+
+    def test_request_with_nonexistant_attributes(self):
+        request = {
+            'account type': 'artist',
+            'email': 'artist@example.com',
+            'attributes': {'username': True, 'genre': True, 'extra_field': False}
+        }
+        account_type = 'artist'
+        valid, message = validate_request(request, account_type_schema, account_type)
+        self.assertFalse(valid)
+        self.assertIn('extra_field', message)
+
+    def test_invalid_email_in_request(self):
+        request = {
+            'account type': 'attendee',
+            'email': 'invalid-email',
+            'attributes': {'username': True}
+        }
+        account_type = 'attendee'
+        self.assertEqual(validate_request(request, account_type_schema, account_type), (False, "Invalid or missing email."))
+
+    def test_missing_email(self):
+        request = {
+            'account type': 'venue',
+            'attributes': {'location': True}
+        }
+        account_type = 'venue'
+        self.assertEqual(validate_request(request, account_type_schema, account_type), (False, "Invalid or missing email."))
 
     def test_invalid_account_type(self):
-        request = {'account type': 'unknown', 'email': 'user@example.com',
-                   'user_id': '4', 'username': 'User Name'}
-        self.assertEqual(validate_request(request), (False, "Invalid account type specified."))
-
-    def test_missing_key_venue(self):
-        request = {'account type': 'venue', 'email': 'venue@example.com',
-                   'username': 'Venue Name', 'location': 'Venue Location'}
-        self.assertEqual(validate_request(request),
-                         (False, "Request is missing required keys: user_id."))
-
-    def test_extra_keys(self):
-        request = {'account type': 'venue', 'email': 'venue@example.com', 'user_id': '1', 'username':
-            'Venue Name', 'location': 'Venue Location', 'extra': 'Extra Info'}
-        self.assertEqual(validate_request(request), (True, "Request is valid. Note: "
-                                                           "The following fields "
-                      f"are not required and will not be used: extra."))
-    def test_empty_request(self):
-        request = {}
-        self.assertEqual(validate_request(request), (False, "Invalid account type specified."))
+        request = {
+            'account type': 'nonexistent',
+            'email': 'user@example.com',
+            'attributes': {'username': True}
+        }
+        account_type = 'performer'
+        self.assertEqual(validate_request(request, account_type_schema, account_type), (False, "Invalid account type specified."))
 
     def test_missing_account_type(self):
-        request = {'email': 'user@example.com', 'user_id': '5', 'username': 'User Name'}
-        self.assertEqual(validate_request(request), (False, "Invalid account type specified."))
+        request = {
+            'email': 'user@example.com',
+            'attributes': {'username': True}
+        }
+        account_type = ''
+        self.assertEqual(validate_request(request, account_type_schema, account_type), (False, "Invalid account type specified."))
+
+    def test_request_with_all_false_attributes(self):
+        request = {
+            'account type': 'venue',
+            'email': 'venue@example.com',
+            'attributes': {'username': False, 'location': False}
+        }
+        account_type = 'venue'
+        self.assertEqual(validate_request(request,account_type_schema, account_type), (True, "Request is valid."))
 
 
 class TestEmailValidation(unittest.TestCase):
@@ -139,7 +167,7 @@ class TestFetchAccountInfo(unittest.TestCase):
         request = {'account type': 'venue', 'email': 'new@example.com', 'username': 'New Venue'}
         result = fetch_account_info(request)
         self.assertFalse(result['in_use'])
-        self.assertEqual(result['message'], "Email is not in use and account creation can proceed.")
+        self.assertEqual(result['message'], "Email is not in use.")
 
     @patch('accountInfoRetrieval.validate_request')
     def test_invalid_request(self, mock_validate):

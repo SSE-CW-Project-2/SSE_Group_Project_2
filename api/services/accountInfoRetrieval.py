@@ -27,37 +27,36 @@ SUPABASE_KEY = os.getenv("SUPABASE_PRIVATE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-def validate_request(request):
+# Schema for request validation
+account_types = ['venue', 'artist', 'attendee']
+account_type_schema = {'venue': ['email', 'username', 'user_id', 'location'],
+                       'artist': ['email', 'username', 'user_id', 'genre'],
+                       'attendee': ['email', 'username', 'user_id', 'city']}
+
+
+def validate_request(request, account_type_schema, account_type):
     """
-    Checks that a JSON information request is in a valid format, allowing for additional fields that are not required.
+    Validate the request against the account type schema.
 
     Args:
-        request: a dictionary following one of the venue, artist, or attendee templates.
+        request: A dictionary with 'email' and 'attributes'.
+        account_type_schema: A dictionary representing valid fields for an account type.
+        account_type: A string corresponding to one of the rows in the account_type_schema
 
     Returns:
-        Tuple[bool, str]: A tuple containing a boolean indicating if the template forms a valid
-        request and a string message. If extra fields are included, the message specifies
-        which fields will not be used.
+        A tuple (bool, str) indicating if the request is valid and a message.
     """
-    templates = {
-        'venue': {'account type', 'email', 'user_id', 'username', 'location'},
-        'artist': {'account type', 'email', 'user_id', 'username', 'genre'},
-        'attendee': {'account type', 'email', 'user_id', 'username', 'city'}
-    }
+    email = request.get('email')
+    if not email or not is_valid_email(email):
+        return False, "Invalid or missing email."
 
-    account_type = request.get('account type')
-    if account_type not in templates:
+    if account_type not in account_types:
         return False, "Invalid account type specified."
 
-    required_keys = templates[account_type]
-    missing_keys = required_keys - set(request.keys())
-    if missing_keys:
-        return False, f"Request is missing required keys: {', '.join(missing_keys)}."
-
-    extra_keys = set(request.keys()) - required_keys
-    if extra_keys:
-        return True, (f"Request is valid. Note: The following fields "
-                      f"are not required and will not be used: {', '.join(extra_keys)}.")
+    requested_attributes = request.get('attributes', {})
+    invalid_attrs = [attr for attr in requested_attributes if attr not in account_type_schema[account_type]]
+    if invalid_attrs:
+        return False, f"Invalid attributes requested: {', '.join(invalid_attrs)}."
 
     return True, "Request is valid."
 
@@ -110,40 +109,33 @@ def check_email_in_use(email):
 
 def fetch_account_info(request):
     """
-    Retrieves account information based on a validated request.
+    Fetches specified account information based on a validated request.
 
     Args:
-        request: A dictionary containing the validated request with 'account type', 'email', and
-            other keys.
+        request: A dictionary containing 'email' and 'attributes' where each attribute is a boolean.
 
     Returns:
-        A dictionary containing the requested account information if the email address is
-            registered, else a string with an error message.
+        A dictionary with requested data or an error message.
     """
-    valid, message = validate_request(request)
+    account_type = request.get('account type')
+    email = request['email']
+    attributes_to_fetch = [attr for attr, include in request.get('attributes', {}).items() if include]
+
+    valid, message = validate_request(request, account_type_schema, account_type)
     if not valid:
-        # Return the error message from validate_request if the request is invalid
         return {'error': message}
 
-    account_type = request['account type']
-    email = request['email']
-    # Create a string of attributes to select based on the request, excluding 'account type'
-    attributes = ', '.join([key for key in request.keys() if key != 'account type'])
+    # Construct the attributes string for the query
+    attributes = ', '.join(attributes_to_fetch)
 
-    # Fetch the account from the specified table using the email
     try:
         data = supabase.table(account_type + "s").select(attributes).eq("email", email).execute()
+        if data.data:
+            return {'in_use': True, 'message': 'Email is already registered with user', 'data': data.data[0]}
+        else:
+            return {'in_use': False, 'message': "Email is not in use."}
     except Exception as e:
-        # Handle any exception that might occur during the API call
         return {'error': f"An API error occurred: {str(e)}"}
-
-    # Check if the query was successful and if any account was found
-    if data.data:
-        # Return the requested account information
-        return {'in_use': True, 'message': f"Email is already registered with user: {data.data[0]}."}
-    else:
-        # Return a descriptive error message if no account is found
-        return {'in_use': False, 'message': "Email is not in use and account creation can proceed."}
 
 
 @app.route('/fetch_account_info', methods=['POST'])
