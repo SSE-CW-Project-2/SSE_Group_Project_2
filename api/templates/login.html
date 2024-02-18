@@ -1,20 +1,49 @@
 {% extends "base.html" %}
 
 {% block title %}Login{% endblock %}
+
 {% block content %}
 <h2>Login</h2>
 <form action="/login" method="POST">
     <div>
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username" placeholder="'venue' or 'customer'"required>
+        <input type="text" id="username" name="username" placeholder="'venue' or 'customer'" required>
     </div>
     <div>
         <label for="password">Password:</label>
-        <input type="password" id="password" name="password" placeholder="'password'"required>
+        <input type="password" id="password" name="password" placeholder="'password'" required>
     </div>
     <button type="submit">Login</button>
     {% if error %}
         <p>Invalid username or password. Please try again.</p>
     {% endif %}
 </form>
+
+<!-- Google Sign-In button -->
+<div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+
+<script>
+  function onSignIn(googleUser) {
+    var id_token = googleUser.getAuthResponse().id_token;
+    fetch('/google-login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ token: id_token })
+    }).then(response => response.json())
+      .then(data => {
+        console.log(data);
+        // Handle the response from your server, like redirecting to another page
+        // For example, if login is successful, redirect to the home page
+        if (data && !data.error) {
+          window.location.href = '/'; // Adjust the URL as needed
+        } else {
+          console.error('Failed to log in with Google');
+          // Optionally, display an error message to the user
+        }
+      }).catch(error => console.error(error));
+  }
+</script>
+
 {% endblock %}

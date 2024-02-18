@@ -2,20 +2,33 @@ from flask import (
     Flask, render_template, request, redirect,
     url_for, session, flash
 )
+from authlib.integrations.flask_client import OAuth
 from functools import wraps
-
-# List of TODOs:
-# 1. Make sure the venue is the correct one
-# 2. Check username is not already taken and add user to database
-# 3. Call to database to check if login info is correct
-# 4. Call to database to get event details
-# 5. Functionality to delete an event
-# 6. Replace test login info with more secure user info (with env. variables)
-# 7. Call to database to check that event is being managed by correct venue
+import os
+import google.oauth2.id_token
+import google.auth.transport.requests
 
 app = Flask(__name__)
 
-app.secret_key = '3w45768j6565t6879m0'  # I mashed the keyboard here
+# Load sensitive information from environment variables for security
+app.secret_key = os.environ.get('FLASK_SECRET_KEY', 'optional_default_key')
+
+# Configure Authlib OAuth registry
+oauth = OAuth(app)
+google = oauth.register(
+    name='google',
+    client_id='950999785047-1csqo80m63b1ppeiv4dcc12ol7t8phuf.apps.googleusercontent.com',
+    client_secret='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',
+    access_token_url='https://accounts.google.com/o/oauth2/token',
+    authorize_url='https://accounts.google.com/o/oauth2/auth',
+    api_base_url='https://www.googleapis.com/oauth2/v1/',
+    userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
+    client_kwargs={'scope': 'openid email profile'},
+)
+
+
+
+# app.secret_key = '3w45768j6565t6879m0'  # I mashed the keyboard here
 
 example_events = [{
             'name': 'Event 1',
@@ -217,6 +230,26 @@ def delete_event(event_id):
     # This does nothing ############################################
     flash('Event deleted', 'success')
     return redirect(url_for('events'))
+
+
+@app.route('/google-login', methods=['POST'])
+def google_login():
+    # Extract the token from the request
+    token = request.json.get('token')
+    
+    # Verify the token using Google's verifier
+    try:
+        idinfo = google.oauth2.id_token.verify_oauth2_token(token, google.auth.transport.requests.Request())
+        
+        # ID token is valid. Get the user's Google Account ID from the decoded token.
+        userid = idinfo['sub']
+        
+        # Here, you could look up or create a user in your database, start a session, etc.
+        # For now, let's just return a success message.
+        return jsonify({'message': 'Google login successful', 'userid': userid}), 200
+    except ValueError:
+        # Invalid token
+        return jsonify({'error': 'Invalid token'}), 403
 
 
 if __name__ == '__main__':

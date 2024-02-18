@@ -6,6 +6,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css')}}" />
+    <!-- Google Identity Services (GIS) library -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      function handleCredentialResponse(response) {
+        console.log("Encoded JWT ID token: " + response.credential);
+        // Here you should send the `response.credential` (JWT ID token) to your backend for verification
+      }
+      
+      function initGoogleSignIn() {
+        google.accounts.id.initialize({
+          client_id: "950999785047-1csqo80m63b1ppeiv4dcc12ol7t8phuf.apps.googleusercontent.com", // Use your actual Google Client ID
+          callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+          document.getElementById("buttonDiv"), // Make sure you have a div with id="buttonDiv" in your HTML
+          { theme: "outline", size: "large" }  // Customize the button appearance
+        );
+        google.accounts.id.prompt(); // Prompt the user to sign in if necessary
+      }
+
+      window.onload = function() {
+        initGoogleSignIn();
+      };
+    </script>
 </head>
 <body>
     <div class="navbar">
@@ -29,5 +53,7 @@
     {% endwith %}
     {% block content %}
     {% endblock %}
+    <!-- Placeholder for the Google Sign-In button -->
+    <div id="buttonDiv"></div>
 </body>
 </html>
