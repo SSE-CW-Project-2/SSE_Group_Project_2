@@ -26,8 +26,12 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-# Base User model, which establishments, entertainers and individuals inherit from
 class User(db.Model):
+    """
+    Abstract user parent class laying out attributes shared across the three user classes: unique
+    id number, username, email, password hash, and user type.
+    """
+    __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -40,8 +44,10 @@ class User(db.Model):
     }
 
 
-# Establishment model
 class Establishment(User):
+    """
+    Establishment account object, for users who own venues to host live music events.
+    """
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     events = db.relationship('Event', backref='establishment', lazy=True)
 
@@ -52,6 +58,10 @@ class Establishment(User):
 
 # Entertainer model
 class Entertainer(User):
+    """
+    Entertainment account object, for group or individual acts looking to book gigs at any of the
+    platform's venues.
+    """
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     genres = db.Column(db.String(200))  # Just an example of a unique attribute
     gigs = db.relationship('Event', secondary='gig_entertainers', backref=db.backref('entertainers', lazy='dynamic'))
@@ -63,6 +73,10 @@ class Entertainer(User):
 
 # Individual User model
 class IndividualUser(User):
+    """
+    Individual user account object, for individuals looking to buy tickets to gigs and events using
+    the event management platform.
+    """
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     tickets_purchased = db.relationship('Ticket', backref='individual', lazy=True)
 
