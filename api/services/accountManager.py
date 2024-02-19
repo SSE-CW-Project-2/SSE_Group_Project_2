@@ -40,8 +40,8 @@ attributes_schema = {'venue': ['user_id', 'email', 'username', 'location'],
                      'event': ['event_id', 'venue_id', 'event_name', 'date_time',
                                'total_tickets', 'sold_tickets', 'artist_ids'],
                      'ticket': ['ticket_id', 'event_id', 'attendee_id', 'price', 'redeemed']}
-# Attribute keys are paired with true if the data is being pulled and false otherwise to limit
-# size of Supabase requests.
+# Attribute keys are paired with boolean values for get requests, or the value to be added to the
+# database otherwise.
 request_template = ['function', 'object_type', 'identifier', 'attributes']
 
 
@@ -521,7 +521,7 @@ def api_check_email_in_use():
         return jsonify(result), 500
     else:
         # Return result of the email check
-        return jsonify(result)
+        return jsonify(result), 200
 
 
 @app.route('/get_account_info', methods=['POST'])
@@ -541,7 +541,7 @@ def api_get_account_info():
         return (jsonify(result), 404 if result['error'] ==
                                         "No account found for the provided email." else 500)
 
-    return jsonify(result)
+    return jsonify(result), 200
 
 
 @app.route('/create_account', methods=['POST'])
