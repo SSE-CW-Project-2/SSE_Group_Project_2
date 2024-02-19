@@ -1,7 +1,7 @@
 ####################################################################################################
 # Project Name: Motive Event Management System
 # Course: COMP70025 - Software Systems Engineering
-# File: testAccountInfoRetrieval.py
+# File: testAccountManager.py
 # Description: This file contains unit tests for each function in the accountManager.py file.
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
@@ -9,7 +9,7 @@
 # Version: 2.1
 #
 # Notes: Supabase interactions tested using patch and MagicMock from unittest.mock. Unit tests for
-#        validate_delete_request are still outstanding
+#        validate_delete_request are still outstanding.
 ####################################################################################################
 
 

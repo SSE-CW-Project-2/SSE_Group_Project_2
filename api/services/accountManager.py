@@ -6,7 +6,7 @@
 #              artists and attendees.
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
-# Date: 2024-02-17
+# Date: 2024-02-19
 # Version: 2.1
 #
 # Notes: Combined with creation, updating and deletion functions for ease of development.
