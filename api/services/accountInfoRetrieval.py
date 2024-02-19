@@ -28,36 +28,79 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 # Schema for request validation
-account_types = ['venue', 'artist', 'attendee']
-account_type_schema = {'venue': ['email', 'username', 'user_id', 'location'],
-                       'artist': ['email', 'username', 'user_id', 'genre'],
-                       'attendee': ['email', 'username', 'user_id', 'city']}
+object_types = ['venue', 'artist', 'attendee', 'event', 'ticket']
+attributes_schema = {'venue': ['user_id', 'email', 'username', 'location'],
+                     'artist': ['user_id', 'email', 'username', 'genre'],
+                     'attendee': ['user_id', 'email', 'username', 'city'],
+                     'event': ['event_id', 'venue_id', 'event_name', 'date_time',
+                               'total_tickets', 'sold_tickets', 'artist_ids'],
+                     'ticket': ['ticket_id', 'event_id', 'attendee_id', 'redeemed']}
+# Attribute keys are paired with true if the data is being pulled and false otherwise to limit
+# size of Supabase requests.
+request_template = ['function', 'object_type', 'identifier', 'attributes']
 
 
-def validate_request(request, account_type_schema, account_type):
+def validate_get_request(request_json):
     """
-    Validate the request against the account type schema.
+    Validates whether a JSON request directed to this API follows a valid template to prevent
+        accessing information that should not be available to it and limit calls to Supabase that
+        cannot be processed.
 
     Args:
-        request: A dictionary with 'email' and 'attributes'.
-        account_type_schema: A dictionary representing valid fields for an account type.
-        account_type: A string corresponding to one of the rows in the account_type_schema
+        request_json: A JSON-format dictionary containing the type of function ('get', 'create',
+            'update', or 'delete'), the object being queried ('venue', 'artist', 'attendee',
+            'event', or 'ticket'), the identifier being used to query the database (an email address
+            for account types, or a unique id for the tickets and events), and a list of the
+            attributes that should be returned from the data request.
 
     Returns:
-        A tuple (bool, str) indicating if the request is valid and a message.
+        A tuple (bool, str) indicating if the request template is valid and a message explaining why
+            or why not.
     """
-    email = request.get('email')
-    if not email or not is_valid_email(email):
+    # Check if function is 'get'
+    if request_json.get('function') != 'get':
+        return False, "Invalid function. Only 'get' is allowed."
+
+    # Check if object_type is valid
+    object_type = request_json.get('object_type')
+    if object_type is None:
+        return False, "Must specify an object type."
+    if object_type not in object_types:
+        return False, f"Invalid object_type. Must be one of {object_types}."
+
+    # Validate identifier based on object_type
+    identifier = request_json.get('identifier')
+    if identifier is None:
         return False, "Invalid or missing email."
+    elif object_type in ['venue', 'artist', 'attendee']:
+        if not is_valid_email(identifier):
+            return False, f"Identifier for {object_type} must be a valid email."
 
-    if account_type not in account_types:
-        return False, "Invalid account type specified."
+    # For 'event' and 'ticket', let's say we are using 'event_id' and 'ticket_id' as identifiers
+    if object_type == 'event' and not isinstance(identifier, str):
+        return False, "Identifier for event must be event_id (string)."
 
-    requested_attributes = request.get('attributes', {})
-    invalid_attrs = [attr for attr in requested_attributes if attr not in account_type_schema[account_type]]
-    if invalid_attrs:
-        return False, f"Invalid attributes requested: {', '.join(invalid_attrs)}."
+    if object_type == 'ticket' and not isinstance(identifier, str):
+        return False, "Identifier for ticket must be ticket_id (string)."
 
+    # Check attributes
+    attributes = request_json.get('attributes')
+    if not attributes:
+        return False, "Attributes must be provided for querying."
+
+    valid_attributes = attributes_schema.get(object_type)
+    queried_attributes = attributes.keys()
+
+    # At least one valid attribute must be queried
+    if not any(attr in valid_attributes for attr in queried_attributes):
+        return False, "At least one valid attribute must be queried."
+
+    # No extra attributes should be present in the query
+    for attr in queried_attributes:
+        if attr not in valid_attributes:
+            return False, f"Invalid attribute '{attr}' for object_type '{object_type}'."
+
+    # If we reach here, the request is valid
     return True, "Request is valid."
 
 
@@ -92,7 +135,8 @@ def check_email_in_use(email):
         return {'error': "Invalid email format."}
 
     try:
-        # Executing the raw SQL query
+        # Executing the raw SQL query, saved on Supabase as a rpc function
+        # Queries all three tables without making separate api calls
         data = supabase.rpc("check_email_in_use", {"input_email": email}).execute()
 
         # Check if any data was returned
@@ -117,13 +161,13 @@ def fetch_account_info(request):
     Returns:
         A dictionary with requested data or an error message.
     """
-    account_type = request.get('account type')
-    email = request['email']
-    attributes_to_fetch = [attr for attr, include in request.get('attributes', {}).items() if include]
-
-    valid, message = validate_request(request, account_type_schema, account_type)
+    valid, message = validate_get_request(request)
     if not valid:
         return {'error': message}
+
+    account_type = request.get('object_type')
+    email = request['identifier']
+    attributes_to_fetch = [attr for attr, include in request.get('attributes', {}).items() if include]
 
     # Construct the attributes string for the query
     attributes = ', '.join(attributes_to_fetch)
@@ -131,12 +175,32 @@ def fetch_account_info(request):
     try:
         data = supabase.table(account_type + "s").select(attributes).eq("email", email).execute()
         if data.data:
-            return {'in_use': True, 'message': 'Email is already registered with user', 'data': data.data[0]}
+            return {'in_use': True, 'message': 'Email is registered with user', 'data': data.data[0]}
         else:
             return {'in_use': False, 'message': "Email is not in use."}
     except Exception as e:
         return {'error': f"An API error occurred: {str(e)}"}
 
+
+# def fetch_event_info(request):
+    """Fetches information on a specific event"""
+    # object_type = request.get('object_type')
+
+# def fetch_venues_events(request):
+    """Fetches IDs and information for each event being hosted by a specific venue"""
+    """Includes the total number of tickets and the number remaining unsold"""
+
+# def fetch_artists_events(request):
+    """Fetches IDs and information for each event an artist is performing at"""
+
+# def fetch_ticket_info():
+    """Fetches information for a specific ticket"""
+
+# fetch_users_tickets():
+    """Fetches IDs and information for all tickets owned by a """
+
+# fetch_users_upcoming_events():
+    """Fetches IDss and information for all future events a user has a ticket for"""
 
 @app.route('/fetch_account_info', methods=['POST'])
 def api_fetch_account_info():

@@ -16,8 +16,8 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-from accountInfoRetrieval import (validate_request, is_valid_email,
-                                  check_email_in_use, fetch_account_info, account_type_schema)
+from accountInfoRetrieval import (validate_get_request, is_valid_email,
+                                  check_email_in_use, fetch_account_info)
 
 class TestValidateRequest(unittest.TestCase):
 
@@ -27,66 +27,97 @@ class TestValidateRequest(unittest.TestCase):
 
     def test_valid_requests_with_attributes(self):
         request = {
-            'account type': 'venue',
-            'email': 'venue@example.com',
-            'attributes': {'username': True, 'location': True}
+            'function': 'get', 
+            'object_type': 'venue', 
+            'identifier': 'venue@example.com', 
+            'attributes': {
+                'user_id': True,
+                'location': True
+            }
         }
-        account_type = 'venue'
-        self.assertEqual(validate_request(request,account_type_schema, account_type), (True, "Request is valid."))
+        self.assertEqual(validate_get_request(request), (True, "Request is valid."))
 
     def test_request_with_nonexistant_attributes(self):
         request = {
-            'account type': 'artist',
-            'email': 'artist@example.com',
-            'attributes': {'username': True, 'genre': True, 'extra_field': False}
+            'function': 'get', 
+            'object_type': 'artist', 
+            'identifier': 'artist@example.com', 
+            'attributes': {
+                'user_id': True,
+                'genre': True,
+                'extra_field': False
+            }
         }
-        account_type = 'artist'
-        valid, message = validate_request(request, account_type_schema, account_type)
+        valid, message = validate_get_request(request)
         self.assertFalse(valid)
         self.assertIn('extra_field', message)
 
     def test_invalid_email_in_request(self):
         request = {
-            'account type': 'attendee',
-            'email': 'invalid-email',
-            'attributes': {'username': True}
+            'function': 'get', 
+            'object_type': 'artist', 
+            'identifier': 'invalid-email', 
+            'attributes': {
+                'user_id': True,
+                'genre': True
+            }
         }
-        account_type = 'attendee'
-        self.assertEqual(validate_request(request, account_type_schema, account_type), (False, "Invalid or missing email."))
+        self.assertEqual(validate_get_request(request),
+                         (False, "Identifier for artist must be a valid email."))
 
     def test_missing_email(self):
         request = {
-            'account type': 'venue',
-            'attributes': {'location': True}
+            'function': 'get',
+            'object_type': 'artist',
+            'identifier': 'invalid-email',
+            'attributes': {
+                'user_id': True,
+                'email': False,
+                'username': False,
+                'genre': False
+            }
         }
-        account_type = 'venue'
-        self.assertEqual(validate_request(request, account_type_schema, account_type), (False, "Invalid or missing email."))
+        self.assertEqual(validate_get_request(request),
+                         (False, "Identifier for artist must be a valid email."))
 
     def test_invalid_account_type(self):
         request = {
-            'account type': 'nonexistent',
-            'email': 'user@example.com',
-            'attributes': {'username': True}
+            'function': 'get',
+            'object_type': 'non-defined_account_type',
+            'identifier': 'invalid-email',
+            'attributes': {
+                'user_id': True,
+                'genre': True
+            }
         }
-        account_type = 'performer'
-        self.assertEqual(validate_request(request, account_type_schema, account_type), (False, "Invalid account type specified."))
+        self.assertEqual(validate_get_request(request),
+                         (False, "Invalid object_type. Must be one of "
+                                 "['venue', 'artist', 'attendee', 'event', 'ticket']."))
 
     def test_missing_account_type(self):
         request = {
-            'email': 'user@example.com',
-            'attributes': {'username': True}
+            'function': 'get',
+            'identifier': 'invalid-email',
+            'attributes': {
+                'user_id': True,
+                'genre': True
+            }
         }
-        account_type = ''
-        self.assertEqual(validate_request(request, account_type_schema, account_type), (False, "Invalid account type specified."))
+        self.assertEqual(validate_get_request(request), (False, "Must specify an object type."))
 
     def test_request_with_all_false_attributes(self):
         request = {
-            'account type': 'venue',
-            'email': 'venue@example.com',
-            'attributes': {'username': False, 'location': False}
+            'function': 'get',
+            'object_type': 'artist',
+            'identifier': 'example@example.com',
+            'attributes': {
+                'user_id': False,
+                'email': False,
+                'username': False,
+                'genre': False
+            }
         }
-        account_type = 'venue'
-        self.assertEqual(validate_request(request,account_type_schema, account_type), (True, "Request is valid."))
+        self.assertEqual(validate_get_request(request), (True, "Request is valid."))
 
 
 class TestEmailValidation(unittest.TestCase):
@@ -146,44 +177,72 @@ class TestCheckEmailInUse(unittest.TestCase):
 class TestFetchAccountInfo(unittest.TestCase):
 
     @patch('accountInfoRetrieval.supabase')
-    @patch('accountInfoRetrieval.validate_request')
+    @patch('accountInfoRetrieval.validate_get_request')
     def test_valid_request_with_account_found(self, mock_validate, mock_supabase):
-        # Mock validate_request to return valid
+        # Mock validate_get_request to return valid
         mock_validate.return_value = (True, "Request is valid.")
         # Mock Supabase response
         mock_supabase.table().select().eq().execute.return_value.data = [{'user_id': '123'}]
 
-        request = {'account type': 'venue', 'email': 'test@example.com', 'username': 'Test Venue'}
+        request = {
+            'function': 'get',
+            'object_type': 'venue',
+            'identifier': 'new@example.com',
+            'attributes': {
+                'user_id': True,
+                'username': True
+            }
+        }
         result = fetch_account_info(request)
         self.assertTrue(result['in_use'])
-        self.assertIn('Email is already registered with user', result['message'])
+        self.assertIn('Email is registered with user', result['message'])
 
     @patch('accountInfoRetrieval.supabase')
-    @patch('accountInfoRetrieval.validate_request')
+    @patch('accountInfoRetrieval.validate_get_request')
     def test_valid_request_no_account_found(self, mock_validate, mock_supabase):
         mock_validate.return_value = (True, "Request is valid.")
         mock_supabase.table().select().eq().execute.return_value.data = []
 
-        request = {'account type': 'venue', 'email': 'new@example.com', 'username': 'New Venue'}
+        request = {
+            'function': 'get',
+            'object_type': 'venue',
+            'identifier': 'new@example.com',
+            'attributes': {
+                'user_id': True,
+                'username': True
+            }
+        }
         result = fetch_account_info(request)
         self.assertFalse(result['in_use'])
         self.assertEqual(result['message'], "Email is not in use.")
 
-    @patch('accountInfoRetrieval.validate_request')
+    @patch('accountInfoRetrieval.validate_get_request')
     def test_invalid_request(self, mock_validate):
         mock_validate.return_value = (False, "Invalid request.")
 
-        request = {'account type': 'unknown', 'email': 'test@example.com'}
+        request = {
+            'function': 'undefined',
+            'object_type': 'unknown',
+            'identifier': 'new@example.com',
+        }
         result = fetch_account_info(request)
         self.assertEqual(result, {'error': 'Invalid request.'})
 
     @patch('accountInfoRetrieval.supabase')
-    @patch('accountInfoRetrieval.validate_request')
+    @patch('accountInfoRetrieval.validate_get_request')
     def test_api_error(self, mock_validate, mock_supabase):
         mock_validate.return_value = (True, "Request is valid.")
         mock_supabase.table().select().eq().execute.side_effect = Exception("API error")
 
-        request = {'account type': 'venue', 'email': 'test@example.com'}
+        request = {
+            'function': 'get',
+            'object_type': 'unknown',
+            'identifier': 'new@example.com',
+            'attributes': {
+                'user_id': True,
+                'username': True
+            }
+        }
         result = fetch_account_info(request)
         self.assertTrue('error' in result)
         self.assertEqual(result['error'], "An API error occurred: API error")
