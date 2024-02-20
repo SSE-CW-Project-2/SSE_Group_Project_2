@@ -1,20 +1,28 @@
 ####################################################################################################
 # Project Name: Motive Event Management System
+# Course: COMP70025 - Software Systems Engineering
 # File: ticketManager.py
 # Description:
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
 # Date: 2024-02-20
-# Version: 1.1
+# Version: 1.2
+#
+# Changes: Added assign_tickets_to_attendee, get_tickets_info, get_tickets_info_for_users,
+#          update_tickets_redeemed_status, and delete_expired_tickets functions.
 #
 # Notes: Might be worth modifying functions to take a list of JSON requests - not just a single
 #        ticket per request to avoid unnecessary back and forth with Supabase.
+#           Need to set up app routes at the end of the file for API calls and define a
+#        validate_request function once there is a standardised JSON request template.
 ####################################################################################################
 
 
 from flask import Flask
 from supabase import create_client, Client
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
+import pytz
 import os
 
 app = Flask(__name__)
@@ -175,10 +183,69 @@ def get_tickets_info_for_users(attendee_ids, requested_attributes):
         return False, f"An exception occurred: {str(e)}"
 
 
-# # def delete_ticket(request):
-#       """ Delete all tickets that are expired past a certain timeframe """
+def update_tickets_redeemed_status(ticket_ids, redeemed_status):
+    """
+    Updates the 'redeemed' status of a set of tickets.
+
+    Args:
+        ticket_ids (list of str): A list of unique identifiers for the tickets to be updated.
+        redeemed_status (bool): The new redeemed status to set for the tickets.
+
+    Returns:
+        A tuple containing a boolean indicating success, and either a success message or an error message.
+    """
+    # valid, message = validate_request(request)
+
+    # Prepare the data for update
+    update_data = {'redeemed': redeemed_status}
+
+    try:
+        # Update the redeemed status for all specified tickets
+        result = supabase.table('tickets').update(update_data).in_('ticket_id', ticket_ids).execute()
+
+        if result.error:
+            return False, f"An error occurred while updating tickets: {result.error}"
+        else:
+            return True, f"Updated redeemed status for tickets successfully."
+    except Exception as e:
+        return False, f"An exception occurred: {str(e)}"
 
 
-# def redeem_ticket():
-#       """ Mark boolean redemption status as true, meaning it cannot be used again """
+# Note: Can be replaced with Supabase scheduled tasks (cron jobs) if we are happy to integrate
+# further with Supabase. Cron jobs would be easier to set up but harder to migrate from.
+def delete_expired_tickets(days_ago):
+    """
+    Deletes tickets for events that occurred a specified number of days ago or more.
 
+    Args:
+        days_ago (int): The number of days in the past to consider tickets for deletion.
+
+    Returns:
+        A tuple containing a boolean indicating success, and either a success message or an error message.
+    """
+    # valid, message = validate_request(request)
+
+    # Calculate the cutoff datetime
+    cutoff_date = datetime.now(pytz.utc) - timedelta(days=days_ago)
+
+    try:
+        # Fetch event_ids for events before the cutoff_date
+        events_result = supabase.table('events').select('event_id').lte('date_time', cutoff_date.isoformat()).execute()
+        if events_result.error:
+            return False, f"Error fetching events: {events_result.error}"
+
+        # Extract event_ids from the query result
+        event_ids = [event['event_id'] for event in events_result.data]
+
+        # Delete tickets linked to those event_ids
+        if event_ids:
+            delete_result = supabase.table('tickets').delete().in_('event_id', event_ids).execute()
+            if delete_result.error:
+                return False, f"Error deleting tickets: {delete_result.error}"
+
+        return True, "Old tickets successfully deleted."
+    except Exception as e:
+        return False, f"An exception occurred: {str(e)}"
+
+
+# Set up app routes

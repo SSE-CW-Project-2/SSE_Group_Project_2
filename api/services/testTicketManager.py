@@ -6,16 +6,21 @@
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
 # Date: 2024-02-20
-# Version: 1.1
+# Version: 1.2
 #
-# Notes:
+# Changes: Added tests for assign_tickets_to_attendee, get_tickets_info, get_tickets_info_for_users,
+#          update_tickets_redeemed_status, and delete_expired_tickets.
+#
+# Notes: Tests do not verify whether schema/request format works with actual Supabase queries - only
+#        the mocked responses.
 ####################################################################################################
 
 
 import unittest
 from unittest.mock import patch, MagicMock
 from ticketManager import (create_tickets, assign_tickets_to_attendee, get_tickets_info,
-                           get_tickets_info_for_users)
+                           get_tickets_info_for_users, update_tickets_redeemed_status, 
+                           delete_expired_tickets)
 
 
 class TestCreateTicketsForEvent(unittest.TestCase):
@@ -200,5 +205,103 @@ class TestGetTicketsInfoForUsers(unittest.TestCase):
         self.assertIn("An exception occurred", error_message)
 
 
+class TestUpdateTicketsRedeemedStatus(unittest.TestCase):
+    @patch('ticketManager.supabase')
+    def test_update_tickets_redeemed_status_success(self, mock_supabase):
+        # Mock Supabase response for a successful update operation
+        mock_result = MagicMock()
+        mock_result.error = None
+        mock_supabase.table().update().in_().execute.return_value = mock_result
+
+        ticket_ids = ['ticket-1', 'ticket-2']
+        redeemed_status = True
+
+        success, message = update_tickets_redeemed_status(ticket_ids, redeemed_status)
+
+        self.assertTrue(success)
+        self.assertIn("Updated redeemed status for tickets successfully", message)
+
+    @patch('ticketManager.supabase')
+    def test_update_tickets_redeemed_status_failure(self, mock_supabase):
+        # Setup mock Supabase response for a failed update operation
+        mock_result = MagicMock()
+        mock_result.error = "Database error"
+        mock_supabase.table().update().in_().execute.return_value = mock_result
+
+        ticket_ids = ['ticket-1', 'ticket-2']
+        redeemed_status = False
+
+        success, error_message = update_tickets_redeemed_status(ticket_ids, redeemed_status)
+
+        self.assertFalse(success)
+        self.assertIn("An error occurred while updating tickets", error_message)
+
+    @patch('ticketManager.supabase')
+    def test_update_tickets_redeemed_status_exception(self, mock_supabase):
+        # Setup mock Supabase to raise an exception during the update operation
+        mock_supabase.table().update().in_().execute.side_effect = Exception("Unexpected error")
+
+        ticket_ids = ['ticket-1', 'ticket-2']
+        redeemed_status = True
+
+        success, error_message = update_tickets_redeemed_status(ticket_ids, redeemed_status)
+
+        self.assertFalse(success)
+        self.assertIn("An exception occurred", error_message)
+        
+        
+class TestDeleteOldTickets(unittest.TestCase):
+    @patch('ticketManager.supabase')
+    def test_delete_expired_tickets_success(self, mock_supabase):
+        # Mock fetching events successfully
+        mock_events_result = MagicMock()
+        mock_events_result.error = None
+        mock_events_result.data = [{'event_id': 'event-1'}, {'event_id': 'event-2'}]
+
+        # Mock successful deletion of tickets
+        mock_delete_result = MagicMock()
+        mock_delete_result.error = None
+
+        # Setup mock side effects for the sequence of operations
+        mock_supabase.table().select().lte().execute.return_value = mock_events_result
+        mock_supabase.table().delete().in_().execute.return_value = mock_delete_result
+
+        days_ago = 30
+        success, message = delete_expired_tickets(days_ago)
+
+        self.assertTrue(success)
+        self.assertEqual(message, "Old tickets successfully deleted.")
+
+    @patch('ticketManager.supabase')
+    def test_delete_expired_tickets_fetch_error(self, mock_supabase):
+        # Mock Supabase response for a failed event fetch
+        mock_events_result = MagicMock()
+        mock_events_result.error = "Database error fetching events"
+        mock_supabase.table().select().lte().execute.return_value = mock_events_result
+
+        days_ago = 30
+        success, message = delete_expired_tickets(days_ago)
+
+        self.assertFalse(success)
+        self.assertIn("Error fetching events", message)
+
+    @patch('ticketManager.supabase')
+    def test_delete_expired_tickets_delete_error(self, mock_supabase):
+        # Mock Supabase response for successful event fetch but failed ticket deletion
+        mock_events_result = MagicMock()
+        mock_events_result.error = None
+        mock_events_result.data = [{'event_id': 'event-1'}]
+        # Mock failed ticket deletion
+        mock_delete_result = MagicMock()
+        mock_delete_result.error = "Database error deleting tickets"
+        mock_supabase.table().select().lte().execute.side_effect = [mock_events_result, mock_delete_result]
+
+        days_ago = 30
+        success, message = delete_expired_tickets(days_ago)
+
+        self.assertFalse(success)
+        self.assertIn("Error deleting tickets", message)
+        
+    
 if __name__ == '__main__':
     unittest.main()

@@ -1,11 +1,14 @@
 ####################################################################################################
 # Project Name: Motive Event Management System
+# Course: COMP70025 - Software Systems Engineering
 # File: eventManager.py
 # Description: Defines CRUD functionality for events.
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
-# Date: 2024-02-19
-# Version: 1.0
+# Date: 2024-02-20
+# Version: 1.1
+#
+# Changes: Fixed behaviour of functions against unit tests.
 #
 # Notes: Currently, all functions rely on the unique event_id assigned by Supabase to pull
 #        information, which may not be ideal for the front end. Also need to complete the api
@@ -17,7 +20,6 @@ from flask import Flask, request, jsonify
 from supabase import create_client, Client
 from dotenv import load_dotenv
 import os
-import re
 
 app = Flask(__name__)
 
@@ -219,6 +221,9 @@ def get_events_for_attendee(attendee_id):
 
 # def fetch_events_near_postcode(postcode, max_distance)
 #       Use an API, e.g. Google Maps, to identify which events are near the user
+
+
+# Finish setting up app routes
 
 
 @app.route('/create_event', methods=['POST'])
