@@ -11,7 +11,8 @@
 #
 # Notes: Combined with creation, updating and deletion functions for ease of development.
 #        validate_delete_request function needs to be completed for additional resilience and
-#        verification.
+#        verification. Should look into generalising functions to repeat for multiple identifiers
+#        as we have done with tickets.
 ####################################################################################################
 
 
