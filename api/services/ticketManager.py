@@ -48,21 +48,36 @@ def purchase_ticket(event_id, attendee_id):
     """
     try:
         # Check for available tickets for the event
-        available_tickets = supabase.table('tickets').select('ticket_id').eq('event_id', event_id).eq('status', 'available').limit(1).execute()
+        available_tickets = (
+            supabase.table("tickets")
+            .select("ticket_id")
+            .eq("event_id", event_id)
+            .eq("status", "available")
+            .limit(1)
+            .execute()
+        )
 
         if available_tickets.error or not available_tickets.data:
             return False, "No available tickets for this event."
 
-        ticket_id = available_tickets.data[0]['ticket_id']
+        ticket_id = available_tickets.data[0]["ticket_id"]
 
         # Update the ticket to mark it as sold and assign the attendee_id
-        update_result = supabase.table('tickets').update({'status': 'sold', 'attendee_id': attendee_id}).eq('ticket_id', ticket_id).execute()
+        update_result = (
+            supabase.table("tickets")
+            .update({"status": "sold", "attendee_id": attendee_id})
+            .eq("ticket_id", ticket_id)
+            .execute()
+        )
 
         if update_result.error:
             return False, "Failed to update ticket status."
 
         # Assuming successful payment and ticket update
-        return True, f"Ticket {ticket_id} successfully purchased for event {event_id} by attendee {attendee_id}."
+        return (
+            True,
+            f"Ticket {ticket_id} successfully purchased for event {event_id} by attendee {attendee_id}.",
+        )
 
     except Exception as e:
         return False, str(e)
@@ -91,20 +106,26 @@ def create_tickets(event_id, price, n_tickets):
     """
     # valid, message = validate_request(request)
 
-    tickets_data = [{
-        'event_id': event_id,
-        'attendee_id': None,  # No attendee_id since tickets have not been bought yet
-        'price': price,
-        'redeemed': False
-    } for _ in range(n_tickets)]  # Generate N tickets
+    tickets_data = [
+        {
+            "event_id": event_id,
+            "attendee_id": None,  # No attendee_id since tickets have not been bought yet
+            "price": price,
+            "redeemed": False,
+        }
+        for _ in range(n_tickets)
+    ]  # Generate N tickets
 
     try:
-        result = supabase.table('tickets').insert(tickets_data).execute()
+        result = supabase.table("tickets").insert(tickets_data).execute()
 
         if result.error:
             return False, f"An error occurred while creating tickets: {result.error}"
         else:
-            return True, f"{n_tickets} tickets successfully created for event {event_id}."
+            return (
+                True,
+                f"{n_tickets} tickets successfully created for event {event_id}.",
+            )
     except Exception as e:
         return False, f"An exception occurred: {str(e)}"
 
@@ -124,11 +145,19 @@ def assign_tickets_to_attendee(ticket_ids, attendee_id):
 
     try:
         # Add attendee id to all tickets specified in one call to the Supabase API
-        update_data = {'attendee_id': attendee_id}
-        result = supabase.table('tickets').update(update_data).in_('ticket_id', ticket_ids).execute()
+        update_data = {"attendee_id": attendee_id}
+        result = (
+            supabase.table("tickets")
+            .update(update_data)
+            .in_("ticket_id", ticket_ids)
+            .execute()
+        )
 
         if result.error:
-            return False, f"An error occurred while assigning the tickets: {result.error}"
+            return (
+                False,
+                f"An error occurred while assigning the tickets: {result.error}",
+            )
         else:
             return True, f"Tickets successfully assigned to user {attendee_id}."
     except Exception as e:
@@ -142,7 +171,7 @@ def get_tickets_info(ticket_ids, requested_attributes):
     Args:
         ticket_ids (list of str): A list of unique identifiers for the tickets.
         requested_attributes (dict): A dictionary where keys are attribute names (e.g., 'price', 'redeemed')
-                                     and values are booleans indicating whether that attribute should be returned.
+        and values are booleans indicating whether that attribute should be returned.
 
     Returns:
         A tuple containing a boolean indicating success, and either the list of ticket data or an error message.
@@ -150,20 +179,30 @@ def get_tickets_info(ticket_ids, requested_attributes):
     # valid, message = validate_request(request)
 
     # Filter the requested attributes to include only those marked as True
-    attributes_to_fetch = [attr for attr, include in requested_attributes.items() if include]
+    attributes_to_fetch = [
+        attr for attr, include in requested_attributes.items() if include
+    ]
 
     # Ensure that we always include 'ticket_id' for identification, if not already included
-    if 'ticket_id' not in attributes_to_fetch:
-        attributes_to_fetch.append('ticket_id')
+    if "ticket_id" not in attributes_to_fetch:
+        attributes_to_fetch.append("ticket_id")
 
     # Construct the select query based on the filtered attributes
     select_query = ", ".join(attributes_to_fetch)
 
     try:
-        result = supabase.table('tickets').select(select_query).in_('ticket_id', ticket_ids).execute()
+        result = (
+            supabase.table("tickets")
+            .select(select_query)
+            .in_("ticket_id", ticket_ids)
+            .execute()
+        )
 
         if result.error:
-            return False, f"An error occurred while fetching ticket info: {result.error}"
+            return (
+                False,
+                f"An error occurred while fetching ticket info: {result.error}",
+            )
         elif len(result.data) == 0:
             return False, "No tickets found with the provided IDs."
         else:
@@ -179,7 +218,7 @@ def get_tickets_info_for_users(attendee_ids, requested_attributes):
     Args:
         attendee_ids (list of str): A list of unique identifiers for the users (attendees).
         requested_attributes (dict): A dictionary where keys are attribute names (e.g., 'price', 'redeemed')
-                                     and values are booleans indicating whether that attribute should be returned.
+        and values are booleans indicating whether that attribute should be returned.
 
     Returns:
         A dictionary with attendee IDs as keys and a list of ticket information dictionaries as values.
@@ -187,30 +226,42 @@ def get_tickets_info_for_users(attendee_ids, requested_attributes):
     # valid, message = validate_request(request)
 
     # Determine which attributes to fetch based on requested_attributes
-    attributes_to_fetch = [attr for attr, include in requested_attributes.items() if include]
+    attributes_to_fetch = [
+        attr for attr, include in requested_attributes.items() if include
+    ]
 
     # Always include 'ticket_id' and 'attendee_id' for identification
-    if 'ticket_id' not in attributes_to_fetch:
-        attributes_to_fetch.append('ticket_id')
-    if 'attendee_id' not in attributes_to_fetch:
-        attributes_to_fetch.append('attendee_id')
+    if "ticket_id" not in attributes_to_fetch:
+        attributes_to_fetch.append("ticket_id")
+    if "attendee_id" not in attributes_to_fetch:
+        attributes_to_fetch.append("attendee_id")
 
     # Construct the select query
     select_query = ", ".join(attributes_to_fetch)
 
     try:
         # Fetch tickets for the given user IDs
-        result = supabase.table('tickets').select(select_query).in_('attendee_id', attendee_ids).execute()
+        result = (
+            supabase.table("tickets")
+            .select(select_query)
+            .in_("attendee_id", attendee_ids)
+            .execute()
+        )
 
         if result.error:
-            return False, f"An error occurred while fetching tickets for users: {result.error}"
+            return (
+                False,
+                f"An error occurred while fetching tickets for users: {result.error}",
+            )
 
         # Organize tickets by attendee_id
         tickets_by_user = {attendee_id: [] for attendee_id in attendee_ids}
         for ticket in result.data:
-            attendee_id = ticket.get('attendee_id')
+            attendee_id = ticket.get("attendee_id")
             if attendee_id in tickets_by_user:
-                tickets_by_user[attendee_id].append({attr: ticket[attr] for attr in attributes_to_fetch})
+                tickets_by_user[attendee_id].append(
+                    {attr: ticket[attr] for attr in attributes_to_fetch}
+                )
 
         return True, tickets_by_user
     except Exception as e:
@@ -231,16 +282,21 @@ def update_tickets_redeemed_status(ticket_ids, redeemed_status):
     # valid, message = validate_request(request)
 
     # Prepare the data for update
-    update_data = {'redeemed': redeemed_status}
+    update_data = {"redeemed": redeemed_status}
 
     try:
         # Update the redeemed status for all specified tickets
-        result = supabase.table('tickets').update(update_data).in_('ticket_id', ticket_ids).execute()
+        result = (
+            supabase.table("tickets")
+            .update(update_data)
+            .in_("ticket_id", ticket_ids)
+            .execute()
+        )
 
         if result.error:
             return False, f"An error occurred while updating tickets: {result.error}"
         else:
-            return True, f"Updated redeemed status for tickets successfully."
+            return True, "Updated redeemed status for tickets successfully."
     except Exception as e:
         return False, f"An exception occurred: {str(e)}"
 
@@ -264,16 +320,23 @@ def delete_expired_tickets(days_ago):
 
     try:
         # Fetch event_ids for events before the cutoff_date
-        events_result = supabase.table('events').select('event_id').lte('date_time', cutoff_date.isoformat()).execute()
+        events_result = (
+            supabase.table("events")
+            .select("event_id")
+            .lte("date_time", cutoff_date.isoformat())
+            .execute()
+        )
         if events_result.error:
             return False, f"Error fetching events: {events_result.error}"
 
         # Extract event_ids from the query result
-        event_ids = [event['event_id'] for event in events_result.data]
+        event_ids = [event["event_id"] for event in events_result.data]
 
         # Delete tickets linked to those event_ids
         if event_ids:
-            delete_result = supabase.table('tickets').delete().in_('event_id', event_ids).execute()
+            delete_result = (
+                supabase.table("tickets").delete().in_("event_id", event_ids).execute()
+            )
             if delete_result.error:
                 return False, f"Error deleting tickets: {delete_result.error}"
 

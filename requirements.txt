@@ -4,3 +4,4 @@ werkzeug~=3.0.1
 postgrest~=0.15.0
 supabase~=2.3.5
 python-dotenv~=1.0.1
+black==24.2.0

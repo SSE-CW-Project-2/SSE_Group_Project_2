@@ -1,0 +1,34 @@
+name: Code Quality
+on: [push, pull_request]
+jobs:
+  python-formatting:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install flake8
+      run: pip install flake8
+    - name: Install black
+      run: pip install black
+    - name: Run black
+      run: black api/*.py
+    - name: Run flake8 (with adjustments to allow for black's formatting)
+      run: flake8 api/*.py --extend-ignore E203  --extend-ignore E722 --max-line-length 120
+
+  type-checking:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+    - name: Install dependencies from requirements.txt
+      run: pip install -r requirements.txt
+    - name: Run mypy
+      run: mypy api/*.py

@@ -3,21 +3,21 @@ import pytest
 
 # Replace these with more secure user info
 sample_venue_data = {
-    'username': 'venue',
-    'password': 'password',
-    'user_id': 1,
+    "username": "venue",
+    "password": "password",
+    "user_id": 1,
 }
 
 sample_customer_data = {
-    'username': 'customer',
-    'password': 'password',
-    'user_id': 1,
+    "username": "customer",
+    "password": "password",
+    "user_id": 1,
 }
 
 
 @pytest.fixture
 def client():
-    app.config['TESTING'] = True
+    app.config["TESTING"] = True
     with app.test_client() as client:
         yield client
 
@@ -35,10 +35,8 @@ def test_must_be_logged_in_to_see_events(client):
 
 
 def test_login_works(client):
-    sample_venue_data['next'] = '/events'
-    response = client.post("/login",
-                           data=sample_venue_data,
-                           follow_redirects=True)
+    sample_venue_data["next"] = "/events"
+    response = client.post("/login", data=sample_venue_data, follow_redirects=True)
     assert b"Events" in response.data, "Did not redirect from login page"
 
 
@@ -68,15 +66,12 @@ def test_can_manage_event_as_venue_with_correct_id(client):
 def test_cannot_manage_event_with_incorrect_id(client):
     client.post("/login", data=sample_venue_data, follow_redirects=True)
     response = client.post("/manage/2", follow_redirects=True)
-    assert b"Manage" not in response.data, \
-        "Was able to manage with incorrect id"
+    assert b"Manage" not in response.data, "Was able to manage with incorrect id"
 
 
 # Note: The sample venue data user owns events 1 and 3
 def test_can_delete_event_with_correct_id(client):
-    client.post("/login",
-                data=sample_venue_data,
-                follow_redirects=True)
+    client.post("/login", data=sample_venue_data, follow_redirects=True)
     response = client.post("/delete/1", follow_redirects=True)
     assert b"Date" in response.data, "Was not able to delete with correct id"
 
@@ -85,5 +80,4 @@ def test_can_delete_event_with_correct_id(client):
 def test_cannot_delete_event_with_incorrect_id(client):
     client.post("/login", data=sample_venue_data, follow_redirects=True)
     response = client.post("/delete/2", follow_redirects=True)
-    assert b"Date" not in response.data, \
-        "Was able to delete with incorrect id"
+    assert b"Date" not in response.data, "Was able to delete with incorrect id"

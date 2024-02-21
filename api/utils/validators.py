@@ -74,4 +74,3 @@ def validate_password(password):
     # Updated pattern to include a broader set of special characters and a length check
     pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d])[A-Za-z\d\W\S]{8,32}$"
     return re.match(pattern, password) is not None
-

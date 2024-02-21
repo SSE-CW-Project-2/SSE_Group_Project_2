@@ -29,63 +29,71 @@ SUPABASE_KEY = os.getenv("SUPABASE_PRIVATE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
-@app.route('/upload', methods=['POST'])
+@app.route("/upload", methods=["POST"])
 def upload_photo():
     # # Authenticate the user and get user_id if necessary
     # user_id, error = authenticate(request)
     # if error:
     #     return jsonify({'error': error}), 401
-    user_id = request.args.get('user_id')
+    user_id = request.args.get("user_id")
 
-    if 'file' not in request.files:
-        return jsonify({'message': 'No file part'}), 400
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'message': 'No selected file'}), 400
+    if "file" not in request.files:
+        return jsonify({"message": "No file part"}), 400
+    file = request.files["file"]
+    if file.filename == "":
+        return jsonify({"message": "No selected file"}), 400
 
     # Organize uploads by user_id
     file_path = f"uploads/{user_id}/{file.filename}"
 
     # Upload to Supabase
-    response = supabase.storage.from_('profile-photos').upload(file_path, file)
+    response = supabase.storage.from_("profile-photos").upload(file_path, file)
 
-    if response.get('error') is None:
-        public_url = supabase.storage.from_('profile-photos').get_public_url(file_path).data.get('publicURL')
+    if response.get("error") is None:
+        public_url = (
+            supabase.storage.from_("profile-photos")
+            .get_public_url(file_path)
+            .data.get("publicURL")
+        )
 
         # Insert URL into images table to more easily associate photos with user IDs
-        db_insert_result = supabase.table('images').insert({'url': public_url, 'user_id': user_id}).execute()
+        # db_insert_result = (
+        #     supabase.table("images")
+        #     .insert({"url": public_url, "user_id": user_id})
+        #     .execute()
+        # )
 
-        return jsonify({'url': public_url}), 200
+        return jsonify({"url": public_url}), 200
     else:
-        return jsonify({'error': response['error']['message']}), 500
+        return jsonify({"error": response["error"]["message"]}), 500
 
 
-@app.route('/get-images', methods=['GET'])
+@app.route("/get-images", methods=["GET"])
 def get_images():
     # Note: Have assumed so far that we want to store/filter by user_id
-    user_id = request.args.get('user_id')
+    user_id = request.args.get("user_id")
 
     if not user_id:
-        return jsonify({'error': 'user_id is required'}), 400
+        return jsonify({"error": "user_id is required"}), 400
 
     # Fetch images filtered by user_id
     response = supabase.table("images").select("*").eq("user_id", user_id).execute()
 
     if response.error:
-        return jsonify({'error': response.error.message}), 500
+        return jsonify({"error": response.error.message}), 500
     else:
-        image_urls = [row['url'] for row in response.data]
+        image_urls = [row["url"] for row in response.data]
         return jsonify(image_urls), 200
 
 
-@app.route('/delete-photo', methods=['POST'])
+@app.route("/delete-photo", methods=["POST"])
 def delete_photo():
     # Extract photo ID and user ID from the request - must coordinate with front end
     data = request.json
-    photo_id = data.get('photo_id')
-    user_id = data.get('user_id') 
+    photo_id = data.get("photo_id")
+    user_id = data.get("user_id")
 
-    # Fetch the photo from the database 
+    # Fetch the photo from the database
     photo_query = supabase.table("photos").select("*").eq("id", photo_id).execute()
 
     if photo_query.error:
@@ -97,11 +105,13 @@ def delete_photo():
     photo = photo_query.data[0]
 
     # Verify that the photo belongs to the user
-    if photo['user_id'] != user_id:
+    if photo["user_id"] != user_id:
         return jsonify({"error": "Unauthorized to delete this photo"}), 403
 
     # Delete the photo file from storage
-    storage_response = supabase.storage.from_("profile-photos").remove([photo['file_path']])
+    storage_response = supabase.storage.from_("profile-photos").remove(
+        [photo["file_path"]]
+    )
     if storage_response.error:
         return jsonify({"error": "Failed to delete photo from storage"}), 500
 
@@ -113,7 +123,7 @@ def delete_photo():
     return jsonify({"success": True, "message": "Photo deleted successfully"}), 200
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
 
 
@@ -208,7 +218,7 @@ if __name__ == '__main__':
 #         headers: {
 #             'Content-Type': 'application/json',
 #         },
-#         body: JSON.stringify({photo_id: photoId, user_id: 'user_id_here'}), // Ensure user_id is securely obtained, e.g., from session
+#         body: JSON.stringify({photo_id: photoId, user_id: 'user_id_here'}),
 #     });
 #
 #     if (response.ok) {
@@ -224,7 +234,8 @@ if __name__ == '__main__':
 # function addPhotoToPage(photo) {
 #     const photoList = document.getElementById('photoList');
 #     const photoElem = document.createElement('div');
-#     photoElem.innerHTML = `<img src="${photo.url}" width="100"><button onclick="deletePhoto('${photo.id}')">Delete</button>`;
+#     photoElem.innerHTML = `<img src="${photo.url}" width="100"> \
+#    <button onclick="deletePhoto('${photo.id}')">Delete</button>`;
 #     photoList.appendChild(photoElem);
 # }
 # </script>

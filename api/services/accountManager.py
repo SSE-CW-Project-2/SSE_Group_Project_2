@@ -32,18 +32,27 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
 # Schema for request validation
-object_types = ['venue', 'artist', 'attendee', 'event', 'ticket']
-account_types = [ot for ot in object_types if ot not in ['event', 'ticket']]
+object_types = ["venue", "artist", "attendee", "event", "ticket"]
+account_types = [ot for ot in object_types if ot not in ["event", "ticket"]]
 non_account_types = [ot for ot in object_types if ot not in account_types]
-attributes_schema = {'venue': ['user_id', 'email', 'username', 'location'],
-                     'artist': ['user_id', 'email', 'username', 'genre'],
-                     'attendee': ['user_id', 'email', 'username', 'city'],
-                     'event': ['event_id', 'venue_id', 'event_name', 'date_time',
-                               'total_tickets', 'sold_tickets', 'artist_ids'],
-                     'ticket': ['ticket_id', 'event_id', 'attendee_id', 'price', 'redeemed', 'status']}
+attributes_schema = {
+    "venue": ["user_id", "email", "username", "location"],
+    "artist": ["user_id", "email", "username", "genre"],
+    "attendee": ["user_id", "email", "username", "city"],
+    "event": [
+        "event_id",
+        "venue_id",
+        "event_name",
+        "date_time",
+        "total_tickets",
+        "sold_tickets",
+        "artist_ids",
+    ],
+    "ticket": ["ticket_id", "event_id", "attendee_id", "price", "redeemed", "status"],
+}
 # Attribute keys are paired with boolean values for get requests, or the value to be added to the
 # database otherwise.
-request_template = ['function', 'object_type', 'identifier', 'attributes']
+request_template = ["function", "object_type", "identifier", "attributes"]
 
 
 def is_valid_email(email):
@@ -74,7 +83,7 @@ def check_email_in_use(email):
     """
     # Guard against injection attacks in case third party authentication not implemented properly
     if not is_valid_email(email):
-        return {'error': "Invalid email format."}
+        return {"error": "Invalid email format."}
 
     try:
         # Executing the raw SQL query, saved on Supabase as a rpc function
@@ -84,13 +93,16 @@ def check_email_in_use(email):
         # Check if any data was returned
         if data.data:
             # Assuming user_id is unique across all tables and found an entry
-            return {'account_type': data.data[0]['account_type'], 'user_id': data.data[0]['user_id']}
+            return {
+                "account_type": data.data[0]["account_type"],
+                "user_id": data.data[0]["user_id"],
+            }
         else:
             # If no data is found, the email is not in use
-            return {'message': "Email is not in use."}
+            return {"message": "Email is not in use."}
     except Exception as e:
         # Handle any exception that might occur during the API call
-        return {'error': f"An error occurred: {str(e)}"}
+        return {"error": f"An error occurred: {str(e)}"}
 
 
 def validate_request(request):
@@ -106,12 +118,12 @@ def validate_request(request):
             or why not.
     """
     # Common validations for all request types
-    function = request.get('function')
-    object_type = request.get('object_type')
-    identifier = request.get('identifier')
+    function = request.get("function")
+    object_type = request.get("object_type")
+    identifier = request.get("identifier")
 
     # Validate function
-    if function not in ['get', 'create', 'update', 'delete']:
+    if function not in ["get", "create", "update", "delete"]:
         return False, "Invalid function specified."
 
     # Validate object type
@@ -125,13 +137,13 @@ def validate_request(request):
         return False, "Invalid or missing email identifier."
 
     # Delegate to specific validation functions based on the function type
-    if function == 'get':
+    if function == "get":
         return validate_get_request(request)
-    elif function == 'create':
+    elif function == "create":
         return validate_create_request(request)
-    elif function == 'update':
+    elif function == "update":
         return validate_update_request(request)
-    elif function == 'delete':
+    elif function == "delete":
         return validate_delete_request(request)
 
     return True, "Request is valid."
@@ -151,11 +163,11 @@ def extract_and_prepare_attributes(request):
             which is assigned automatically by the database.
     """
     # Parse request
-    attributes = request.get('attributes', {})
-    object_type = request.get('object_type')
+    attributes = request.get("attributes", {})
+    object_type = request.get("object_type")
 
     # Filter for objects that can be modified (user_id is uuid assigned by Supabase)
-    validation_attributes = {k: v for k, v in attributes.items() if k != 'user_id'}
+    validation_attributes = {k: v for k, v in attributes.items() if k != "user_id"}
 
     return object_type, validation_attributes
 
@@ -175,11 +187,14 @@ def check_for_extra_attributes(validation_attributes, object_type):
             present, or False and an error message otherwise.
     """
     # Identify attributes required for the function
-    required_attributes = set(attributes_schema.get(object_type, [])) - {'user_id'}
+    required_attributes = set(attributes_schema.get(object_type, [])) - {"user_id"}
 
     # Guard against non-defined object_type
     if not required_attributes and validation_attributes:
-        return True, "No defined schema for object type, so no attributes are considered extra."
+        return (
+            True,
+            "No defined schema for object type, so no attributes are considered extra.",
+        )
 
     # Check for attributes not defined in the database
     if not all(key in required_attributes for key in validation_attributes.keys()):
@@ -203,12 +218,15 @@ def check_required_attributes(validation_attributes, object_type):
             or False and an error message if not.
     """
     # Identify attributes required for the function
-    required_attributes = set(attributes_schema.get(object_type, [])) - {'user_id'}
+    required_attributes = set(attributes_schema.get(object_type, [])) - {"user_id"}
 
     # Check for presence of all required attribute keys, regardless of their values
     missing_attributes = required_attributes - set(validation_attributes.keys())
     if missing_attributes:
-        return False, f"Missing required attribute keys: {', '.join(missing_attributes)}."
+        return (
+            False,
+            f"Missing required attribute keys: {', '.join(missing_attributes)}.",
+        )
 
     return True, ""
 
@@ -226,23 +244,34 @@ def get_account_info(request):
     """
     valid, message = validate_request(request)
     if not valid:
-        return {'error': message}
+        return {"error": message}
 
-    account_type = request.get('object_type')
-    email = request['identifier']
-    attributes_to_fetch = [attr for attr, include in request.get('attributes', {}).items() if include]
+    account_type = request.get("object_type")
+    email = request["identifier"]
+    attributes_to_fetch = [
+        attr for attr, include in request.get("attributes", {}).items() if include
+    ]
 
     # Construct the attributes string for the query
-    attributes = ', '.join(attributes_to_fetch)
+    attributes = ", ".join(attributes_to_fetch)
 
     try:
-        data = supabase.table(account_type + "s").select(attributes).eq("email", email).execute()
+        data = (
+            supabase.table(account_type + "s")
+            .select(attributes)
+            .eq("email", email)
+            .execute()
+        )
         if data.data:
-            return {'in_use': True, 'message': 'Email is registered with user', 'data': data.data[0]}
+            return {
+                "in_use": True,
+                "message": "Email is registered with user",
+                "data": data.data[0],
+            }
         else:
-            return {'in_use': False, 'message': "Email is not in use."}
+            return {"in_use": False, "message": "Email is not in use."}
     except Exception as e:
-        return {'error': f"An API error occurred: {str(e)}"}
+        return {"error": f"An API error occurred: {str(e)}"}
 
 
 def validate_get_request(request):
@@ -285,8 +314,8 @@ def extract_and_prepare_attributes_for_get(request):
             in the request.
     """
     # Parse request
-    attributes = request.get('attributes', [])
-    object_type = request.get('object_type')
+    attributes = request.get("attributes", [])
+    object_type = request.get("object_type")
 
     # Convert to dictionary if 'attributes' is a list, assuming the user wants all to be true
     if isinstance(attributes, list):
@@ -313,7 +342,10 @@ def validate_queried_attributes(queried_attributes, object_type):
     if object_type in non_account_types:
         return False, f"Management of {object_type + 's'} is handled by a separate API."
     if object_type not in account_types:
-        return False, "Invalid object type. Must be one of ['venue', 'artist', 'attendee']."
+        return (
+            False,
+            "Invalid object type. Must be one of ['venue', 'artist', 'attendee'].",
+        )
 
     # Check if queried_attributes is empty
     if not queried_attributes:
@@ -323,7 +355,10 @@ def validate_queried_attributes(queried_attributes, object_type):
         if attr not in valid_attributes:
             return False, f"Invalid attribute '{attr}' for object_type '{object_type}'."
         if not value:
-            return False, "At least one valid attribute must be queried with a true value."
+            return (
+                False,
+                "At least one valid attribute must be queried with a true value.",
+            )
     return True, ""
 
 
@@ -341,8 +376,8 @@ def create_account(request):
     if not valid:
         return None, validation_message
 
-    object_type = request['object_type']
-    attributes = request['attributes']
+    object_type = request["object_type"]
+    attributes = request["attributes"]
 
     # Construct the data to insert. Supabase automatically assigns a UUID.
     data_to_insert = {key: value for key, value in attributes.items() if value is True}
@@ -356,7 +391,7 @@ def create_account(request):
             return None, f"An error occurred: {result.error}"
         else:
             # Supabase returns the inserted record, including the 'user_id'
-            user_id = result.data[0]['user_id']  # Assuming 'user_id' is the primary key
+            user_id = result.data[0]["user_id"]  # Assuming 'user_id' is the primary key
             return user_id, "Account creation was successful."
     except Exception as e:
         return None, f"An exception occurred: {str(e)}"
@@ -408,19 +443,25 @@ def update_account(request):
     if not valid:
         return False, validation_message
 
-    object_type = request['object_type']
-    identifier = request['identifier']
-    attributes = request['attributes']
+    object_type = request["object_type"]
+    identifier = request["identifier"]
+    attributes = request["attributes"]
 
     # Filter out attributes with no value provided
-    data_to_update = {key: value for key, value in attributes.items() if value is not None}
+    data_to_update = {
+        key: value for key, value in attributes.items() if value is not None
+    }
 
     if not data_to_update:
         return False, "No valid attributes provided for update."
 
     try:
         # Update the record in the specified table
-        query = supabase.table(object_type + "s").update(data_to_update).eq('identifier_column_name', identifier)
+        query = (
+            supabase.table(object_type + "s")
+            .update(data_to_update)
+            .eq("identifier_column_name", identifier)
+        )
         result = query.execute()
 
         # Check if the update was successful
@@ -474,12 +515,17 @@ def delete_account(request):
     if not valid:
         return False, validation_message
 
-    object_type = request['object_type']
-    identifier = request['identifier']
+    object_type = request["object_type"]
+    identifier = request["identifier"]
 
     try:
         # Delete the record from the specified table
-        result = supabase.table(object_type + "s").delete().eq('identifier_column_name', identifier).execute()
+        result = (
+            supabase.table(object_type + "s")
+            .delete()
+            .eq("identifier_column_name", identifier)
+            .execute()
+        )
 
         # Check if the delete operation was successful
         if result.error:
@@ -504,20 +550,20 @@ def validate_delete_request(request):
     return True, "Request is valid."
 
 
-@app.route('/check_email_in_use', methods=['POST'])
+@app.route("/check_email_in_use", methods=["POST"])
 def api_check_email_in_use():
     req_data = request.get_json()
 
     # Check that an email string has been received
-    if not req_data or 'email' not in req_data:
-        return jsonify({'error': 'Invalid or missing email in JSON payload'}), 400
+    if not req_data or "email" not in req_data:
+        return jsonify({"error": "Invalid or missing email in JSON payload"}), 400
 
     # Function call
-    email = req_data['email']
+    email = req_data["email"]
     result = check_email_in_use(email)
 
     # Handle the possible outcomes
-    if 'error' in result:
+    if "error" in result:
         # Return 500 status code (internal server error)
         return jsonify(result), 500
     else:
@@ -525,55 +571,61 @@ def api_check_email_in_use():
         return jsonify(result), 200
 
 
-@app.route('/get_account_info', methods=['POST'])
+@app.route("/get_account_info", methods=["POST"])
 def api_get_account_info():
     req_data = request.get_json()
 
     # Check a valid payload was received
     if not req_data:
-        return jsonify({'error': 'Invalid or missing JSON payload'}), 400
+        return jsonify({"error": "Invalid or missing JSON payload"}), 400
 
     # Call function
     result = get_account_info(req_data)
 
     # Handle outcomes
-    if 'error' in result:
+    if "error" in result:
         # Return 404 if account not found, or 500 for all other errors in reaching the database
-        return (jsonify(result), 404 if result['error'] ==
-                                        "No account found for the provided email." else 500)
+        return (
+            jsonify(result),
+            (
+                404
+                if result["error"] == "No account found for the provided email."
+                else 500
+            ),
+        )
 
     return jsonify(result), 200
 
 
-@app.route('/create_account', methods=['POST'])
+@app.route("/create_account", methods=["POST"])
 def api_create_account():
     request_data = request.json
     user_id, message = create_account(request_data)
     if user_id:
-        return jsonify({'user_id': user_id, 'message': message}), 200
+        return jsonify({"user_id": user_id, "message": message}), 200
     else:
-        return jsonify({'error': message}), 400
+        return jsonify({"error": message}), 400
 
 
-@app.route('/update_account', methods=['POST'])
+@app.route("/update_account", methods=["POST"])
 def api_update_account():
     request_data = request.json
     success, message = update_account(request_data)
     if success:
-        return jsonify({'message': message}), 200
+        return jsonify({"message": message}), 200
     else:
-        return jsonify({'error': message}), 400
+        return jsonify({"error": message}), 400
 
 
-@app.route('/delete_account', methods=['POST'])
+@app.route("/delete_account", methods=["POST"])
 def api_delete_account():
     request_data = request.json
     success, message = delete_account(request_data)
     if success:
-        return jsonify({'message': message}), 200
+        return jsonify({"message": message}), 200
     else:
-        return jsonify({'error': message}), 400
+        return jsonify({"error": message}), 400
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)

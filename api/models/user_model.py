@@ -26,11 +26,13 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
+
 class User(db.Model):
     """
     Abstract user parent class laying out attributes shared across the three user classes: unique
     id number, username, email, password hash, and user type.
     """
+
     __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -38,21 +40,19 @@ class User(db.Model):
     password_hash = db.Column(db.String(128))
     type = db.Column(db.String(50))
 
-    __mapper_args__ = {
-        'polymorphic_identity': 'user',
-        'polymorphic_on': type
-    }
+    __mapper_args__ = {"polymorphic_identity": "user", "polymorphic_on": type}
 
 
 class Establishment(User):
     """
     Establishment account object, for users who own venues to host live music events.
     """
-    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    events = db.relationship('Event', backref='establishment', lazy=True)
+
+    id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    events = db.relationship("Event", backref="establishment", lazy=True)
 
     __mapper_args__ = {
-        'polymorphic_identity': 'establishment',
+        "polymorphic_identity": "establishment",
     }
 
 
@@ -62,12 +62,17 @@ class Entertainer(User):
     Entertainment account object, for group or individual acts looking to book gigs at any of the
     platform's venues.
     """
-    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+
+    id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
     genres = db.Column(db.String(200))  # Just an example of a unique attribute
-    gigs = db.relationship('Event', secondary='gig_entertainers', backref=db.backref('entertainers', lazy='dynamic'))
+    gigs = db.relationship(
+        "Event",
+        secondary="gig_entertainers",
+        backref=db.backref("entertainers", lazy="dynamic"),
+    )
 
     __mapper_args__ = {
-        'polymorphic_identity': 'entertainer',
+        "polymorphic_identity": "entertainer",
     }
 
 
@@ -77,11 +82,12 @@ class IndividualUser(User):
     Individual user account object, for individuals looking to buy tickets to gigs and events using
     the event management platform.
     """
-    id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
-    tickets_purchased = db.relationship('Ticket', backref='individual', lazy=True)
+
+    id = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    tickets_purchased = db.relationship("Ticket", backref="individual", lazy=True)
 
     __mapper_args__ = {
-        'polymorphic_identity': 'individual',
+        "polymorphic_identity": "individual",
     }
 
 
@@ -90,19 +96,26 @@ class Event(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    establishment_id = db.Column(db.Integer, db.ForeignKey('establishment.id'), nullable=False)
+    establishment_id = db.Column(
+        db.Integer, db.ForeignKey("establishment.id"), nullable=False
+    )
 
 
 # Association table for Entertainers and Events
-gig_entertainers = db.Table('gig_entertainers',
-                            db.Column('event_id', db.Integer, db.ForeignKey('event.id'), primary_key=True),
-                            db.Column('entertainer_id', db.Integer, db.ForeignKey('entertainer.id'), primary_key=True)
-                            )
+gig_entertainers = db.Table(
+    "gig_entertainers",
+    db.Column("event_id", db.Integer, db.ForeignKey("event.id"), primary_key=True),
+    db.Column(
+        "entertainer_id", db.Integer, db.ForeignKey("entertainer.id"), primary_key=True
+    ),
+)
 
 
 # Ticket model for events purchased by Individual Users - does not inherit from User
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), nullable=False)
-    individual_id = db.Column(db.Integer, db.ForeignKey('individual.id'), nullable=False)
+    event_id = db.Column(db.Integer, db.ForeignKey("event.id"), nullable=False)
+    individual_id = db.Column(
+        db.Integer, db.ForeignKey("individual.id"), nullable=False
+    )
     purchase_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)

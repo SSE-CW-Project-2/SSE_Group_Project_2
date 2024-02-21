@@ -14,6 +14,7 @@
 import unittest
 from utils.validators.py import validate_email, validate_password
 
+
 class TestValidateEmail(unittest.TestCase):
 
     def test_valid_email(self):
@@ -30,11 +31,11 @@ class TestValidateEmail(unittest.TestCase):
 
     def test_email_edge_cases(self):
         # Edge case: Email is exactly at the domain limit
-        self.assertTrue(validate_email("a"*64 + "@example.com"))
+        self.assertTrue(validate_email("a" * 64 + "@example.com"))
         # Edge case: Local part is too long
-        self.assertFalse(validate_email("a"*65 + "@example.com"))
+        self.assertFalse(validate_email("a" * 65 + "@example.com"))
         # Edge case: Domain part is too long
-        self.assertFalse(validate_email("email@" + "a"*256 + ".com"))
+        self.assertFalse(validate_email("email@" + "a" * 256 + ".com"))
 
 
 class TestValidatePassword(unittest.TestCase):
@@ -51,16 +52,18 @@ class TestValidatePassword(unittest.TestCase):
         self.assertFalse(validate_password("nouppercase1@"))  # No uppercase letter
         self.assertFalse(validate_password("NOLOWERCASE1@"))  # No lowercase letter
         self.assertFalse(validate_password("NoNumber!"))  # No digit
-        self.assertFalse(validate_password("NoSpecialCharacter1"))  # No special character
+        self.assertFalse(
+            validate_password("NoSpecialCharacter1")
+        )  # No special character
 
     def test_password_edge_cases(self):
         # Edge case: Password is exactly at the maximum limit
-        self.assertTrue(validate_password("A" + "a"*10 + "1"*10 + "@"*42))
+        self.assertTrue(validate_password("A" + "a" * 10 + "1" * 10 + "@" * 42))
         # Edge case: Password exceeds the maximum length
-        self.assertFalse(validate_password("A" + "a"*10 + "1"*10 + "@"*43))
+        self.assertFalse(validate_password("A" + "a" * 10 + "1" * 10 + "@" * 43))
         # Edge case: Password includes a wide variety of special characters
         self.assertTrue(validate_password("Valid1@!#$%^&*()"))
 
-if __name__ == '__main__':
-    unittest.main()
 
+if __name__ == "__main__":
+    unittest.main()

@@ -25,58 +25,62 @@ from flask import Blueprint, request, jsonify
 from services.user_service import create_user, authenticate_user, update_user
 from utils.validators import validate_email, validate_password
 
-user_bp = Blueprint('user_bp', __name__)
+user_bp = Blueprint("user_bp", __name__)
 
 
-@user_bp.route('/register', methods=['POST'])
+@user_bp.route("/register", methods=["POST"])
 def register():
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    email = data.get("email")
+    password = data.get("password")
 
     # Basic validation
     if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
+        return jsonify({"error": "Email and password are required"}), 400
     if not validate_email(email):
-        return jsonify({'error': 'Invalid email format'}), 400
+        return jsonify({"error": "Invalid email format"}), 400
     if not validate_password(password):
-        return jsonify({'error': 'Password does not meet complexity requirements'}), 400
+        return jsonify({"error": "Password does not meet complexity requirements"}), 400
 
     # Attempt to create a new user
     result = create_user(data)
-    if result.get('error'):
+    if result.get("error"):
         return jsonify(result), 400
 
-    return jsonify({'message': 'User registered successfully'}), 201
+    return jsonify({"message": "User registered successfully"}), 201
 
 
-@user_bp.route('/login', methods=['POST'])
+@user_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
+    email = data.get("email")
+    password = data.get("password")
 
     if not email or not password:
-        return jsonify({'error': 'Email and password are required'}), 400
+        return jsonify({"error": "Email and password are required"}), 400
 
     auth_result = authenticate_user(email, password)
-    if auth_result.get('error'):
+    if auth_result.get("error"):
         return jsonify(auth_result), 401
 
-    return jsonify({'message': 'Login successful', 'token': auth_result.get('token')}), 200
+    return (
+        jsonify({"message": "Login successful", "token": auth_result.get("token")}),
+        200,
+    )
 
 
-@user_bp.route('/update-profile', methods=['POST'])
+@user_bp.route("/update-profile", methods=["POST"])
 def update_profile():
     # This would require authentication to get the user_id
-    user_id = request.headers.get('user_id')  # Simplified example
+    user_id = request.headers.get("user_id")  # Simplified example
     data = request.get_json()
 
     update_result = update_user(user_id, data)
-    if update_result.get('error'):
+    if update_result.get("error"):
         return jsonify(update_result), 400
 
-    return jsonify({'message': 'Profile updated successfully'}), 200
+    return jsonify({"message": "Profile updated successfully"}), 200
+
 
 # Remember to register user_bp in your app.py or where we initialize the Flask app
 # app.register_blueprint(user_bp, url_prefix='/user')
