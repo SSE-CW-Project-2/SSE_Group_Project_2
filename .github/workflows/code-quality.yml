@@ -4,7 +4,7 @@ on:
 jobs:
   python-formatting:
     runs-on: ubuntu-latest
-    environment: staging
+    environment: Staging
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -22,6 +22,13 @@ jobs:
       run: |
         echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
         echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> $GITHUB_ENV
+    - name: Check if secret is set
+      run: |
+        if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+          echo "Secret is empty or not set."
+        else
+          echo "Secret is set."
+        fi
     - name: Find all Python files excluding the .venv directory
       run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
 
