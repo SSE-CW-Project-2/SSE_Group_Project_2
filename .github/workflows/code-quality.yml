@@ -31,7 +31,7 @@ jobs:
 
     - name: Run pytest
       run: xargs -0 pytest < python_files.tmp
-      with: 
+      env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
