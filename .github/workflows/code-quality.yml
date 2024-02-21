@@ -21,22 +21,6 @@ jobs:
       run: |
         echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
         echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> $GITHUB_ENV
-    - name: Verify environment variables
-      run: |
-        if [ -z "${{ secrets.GCP_SA_KEY}}" ]; then
-          echo "SUPABASE_URL is not set."
-          exit 1
-        else
-          echo "SUPABASE_URL is set."
-        fi
-
-        if [ -z "${{ secrets.SUPABASE_KEY }}" ]; then
-          echo "SUPABASE_KEY is not set."
-          exit 1
-        else
-          echo "SUPABASE_KEY is set."
-          echo ${#SUPABASE_URL}
-        fi
     - name: Find all Python files excluding the .venv directory
       run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
 
@@ -47,6 +31,9 @@ jobs:
 
     - name: Run pytest
       run: xargs -0 pytest < python_files.tmp
+      with: 
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
     - name: Run flake8 (with adjustments to allow for black's formatting)
       run: xargs -0 flake8 < python_files.tmp --extend-ignore E203  --extend-ignore E722 --max-line-length 120
