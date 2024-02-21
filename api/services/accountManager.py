@@ -40,7 +40,7 @@ attributes_schema = {'venue': ['user_id', 'email', 'username', 'location'],
                      'attendee': ['user_id', 'email', 'username', 'city'],
                      'event': ['event_id', 'venue_id', 'event_name', 'date_time',
                                'total_tickets', 'sold_tickets', 'artist_ids'],
-                     'ticket': ['ticket_id', 'event_id', 'attendee_id', 'price', 'redeemed']}
+                     'ticket': ['ticket_id', 'event_id', 'attendee_id', 'price', 'redeemed', 'status']}
 # Attribute keys are paired with boolean values for get requests, or the value to be added to the
 # database otherwise.
 request_template = ['function', 'object_type', 'identifier', 'attributes']

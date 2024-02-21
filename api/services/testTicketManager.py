@@ -17,10 +17,46 @@
 
 
 import unittest
+import pytest
 from unittest.mock import patch, MagicMock
 from ticketManager import (create_tickets, assign_tickets_to_attendee, get_tickets_info,
                            get_tickets_info_for_users, update_tickets_redeemed_status, 
-                           delete_expired_tickets)
+                           delete_expired_tickets, purchase_ticket)
+
+
+class TestPurchaseTicket(unittest.TestCase):
+
+    @patch('ticketManager.supabase.table')
+    def test_purchase_ticket_success(self, mock_table):
+        # Mock the chain of method calls for a successful ticket query and update
+        mock_table().select().eq().eq().limit().execute.return_value = MagicMock(data=[{'ticket_id': '123'}], error=None)
+        mock_table().update().eq().execute.return_value = MagicMock(data={}, error=None)
+
+        success, message = purchase_ticket('event123', 'attendee456')
+
+        self.assertTrue(success)
+        self.assertIn("successfully purchased", message)
+
+    @patch('ticketManager.supabase.table')
+    def test_no_available_tickets(self, mock_table):
+        # Simulate no available tickets found
+        mock_table().select().eq().eq().limit().execute.return_value = MagicMock(data=[], error=None)
+
+        success, message = purchase_ticket('event123', 'attendee456')
+
+        self.assertFalse(success)
+        self.assertIn("No available tickets", message)
+
+    @patch('ticketManager.supabase.table')
+    def test_update_ticket_status_failure(self, mock_table):
+        # Simulate finding an available ticket but failing to update its status
+        mock_table().select().eq().eq().limit().execute.return_value = MagicMock(data=[{'ticket_id': '123'}], error=None)
+        mock_table().update().eq().execute.return_value = MagicMock(data={}, error='Update failed')
+
+        success, message = purchase_ticket('event123', 'attendee456')
+
+        self.assertFalse(success)
+        self.assertIn("Failed to update ticket status", message)
 
 
 class TestCreateTicketsForEvent(unittest.TestCase):
