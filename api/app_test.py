@@ -1,4 +1,4 @@
-from app import app
+from .app import app
 import pytest
 
 # Replace these with more secure user info
