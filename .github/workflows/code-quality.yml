@@ -23,7 +23,7 @@ jobs:
         echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> $GITHUB_ENV
     - name: Verify environment variables
       run: |
-        if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
+        if [ -z "${{ secrets.GCP_SA_KEY}}" ]; then
           echo "SUPABASE_URL is not set."
           exit 1
         else
