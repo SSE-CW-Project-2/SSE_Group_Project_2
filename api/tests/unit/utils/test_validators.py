@@ -12,7 +12,7 @@
 ####################################################################################################
 
 import unittest
-from utils.validators.py import validate_email, validate_password
+from utils.validators import validate_email, validate_password
 
 
 class TestValidateEmail(unittest.TestCase):
