@@ -11,10 +11,12 @@ on:
 jobs:
   code-quality:
     uses: ./.github/workflows/code-quality.yml
+    secrets: inherit
 
   deploy-to-staging:
     needs: code-quality
     uses: ./.github/workflows/deploy-to-staging.yml
+    secrets: inherit
   
   deploy-to-production:
     needs: deploy-to-staging
