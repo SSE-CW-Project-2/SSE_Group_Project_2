@@ -7,9 +7,9 @@
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
 # Date: 2024-02-21
-# Version: 1.0
+# Version: 1.1
 #
-# Changes: Created.
+# Changes: Added delete function.
 #
 # Notes: JS partial code to upload and retrieve photos included at the end of the file.
 ####################################################################################################
@@ -76,6 +76,41 @@ def get_images():
     else:
         image_urls = [row['url'] for row in response.data]
         return jsonify(image_urls), 200
+
+
+@app.route('/delete-photo', methods=['POST'])
+def delete_photo():
+    # Extract photo ID and user ID from the request - must coordinate with front end
+    data = request.json
+    photo_id = data.get('photo_id')
+    user_id = data.get('user_id') 
+
+    # Fetch the photo from the database 
+    photo_query = supabase.table("photos").select("*").eq("id", photo_id).execute()
+
+    if photo_query.error:
+        return jsonify({"error": "Failed to fetch photo information"}), 500
+
+    if not photo_query.data:
+        return jsonify({"error": "Photo not found"}), 404
+
+    photo = photo_query.data[0]
+
+    # Verify that the photo belongs to the user
+    if photo['user_id'] != user_id:
+        return jsonify({"error": "Unauthorized to delete this photo"}), 403
+
+    # Delete the photo file from storage
+    storage_response = supabase.storage.from_("profile-photos").remove([photo['file_path']])
+    if storage_response.error:
+        return jsonify({"error": "Failed to delete photo from storage"}), 500
+
+    # Delete the photo reference from the database
+    db_response = supabase.table("photos").delete().eq("id", photo_id).execute()
+    if db_response.error:
+        return jsonify({"error": "Failed to delete photo reference from database"}), 500
+
+    return jsonify({"success": True, "message": "Photo deleted successfully"}), 200
 
 
 if __name__ == '__main__':
@@ -157,4 +192,40 @@ if __name__ == '__main__':
 #     })
 #     .catch(error => console.error('Error fetching images:', error));
 #
+####################################################################################################
+
+####################################################################################################
+# Clientside JS placeholder to delete a user's photo - ChatGPT suggestion, need to tailor
+# --------------------------------------------------------------------------------------------------
+# <div id="photoList">
+#     <!-- Dynamically list photos here -->
+# </div>
+#
+# <script>
+# async function deletePhoto(photoId) {
+#     const response = await fetch('/delete-photo', {
+#         method: 'POST',
+#         headers: {
+#             'Content-Type': 'application/json',
+#         },
+#         body: JSON.stringify({photo_id: photoId, user_id: 'user_id_here'}), // Ensure user_id is securely obtained, e.g., from session
+#     });
+#
+#     if (response.ok) {
+#         alert("Photo deleted successfully");
+#         // Remove the photo element from the DOM or refresh the photo list
+#     } else {
+#         const error = await response.json();
+#         alert(error.message);
+#     }
+# }
+#
+# // Example function to dynamically add photos to the page (simplified)
+# function addPhotoToPage(photo) {
+#     const photoList = document.getElementById('photoList');
+#     const photoElem = document.createElement('div');
+#     photoElem.innerHTML = `<img src="${photo.url}" width="100"><button onclick="deletePhoto('${photo.id}')">Delete</button>`;
+#     photoList.appendChild(photoElem);
+# }
+# </script>
 ####################################################################################################
