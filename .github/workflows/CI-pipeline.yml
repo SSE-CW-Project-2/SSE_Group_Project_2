@@ -1,0 +1,23 @@
+name: CI/CD Pipeline
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  code-quality:
+    uses: ./.github/workflows/code-quality.yml
+
+  deploy-to-staging:
+    needs: code-quality
+    uses: ./.github/workflows/deploy-to-staging.yml
+  
+  deploy-to-production:
+    needs: deploy-to-staging
+    uses: ./.github/workflows/deploy-to-production.yml
+    
+    
