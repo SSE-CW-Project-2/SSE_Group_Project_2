@@ -1,9 +1,9 @@
-name: Deploy to production
+name: Deploy to staging
 on:
   workflow_call:
 
 jobs:
-  build-and-push:
+  deploy-to-staging:
     runs-on: ubuntu-latest
     environment: staging
     steps:
