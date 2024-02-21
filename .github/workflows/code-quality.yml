@@ -19,6 +19,10 @@ jobs:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       run: |
+        echo "SUPABASE_URL='${SUPABASE_URL}'" >> $GITHUB_ENV
+        echo "SUPABASE_KEY='${SUPABASE_KEY}'" >> $GITHUB_ENV
+    - name: Verify environment variables
+      run: |
         if [ -z "${SUPABASE_URL}" ]; then
           echo "SUPABASE_URL is not set."
           exit 1
@@ -31,6 +35,7 @@ jobs:
           exit 1
         else
           echo "SUPABASE_KEY is set."
+          echo ${#SUPABASE_URL}
         fi
     - name: Find all Python files excluding the .venv directory
       run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
