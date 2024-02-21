@@ -15,8 +15,9 @@ jobs:
       run: echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
 
     - name: Set environment variables
-      env: |
+      env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      env:
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
       run: |
         echo "SUPABASE_URL=${SUPABASE_URL}" >> $GITHUB_ENV
