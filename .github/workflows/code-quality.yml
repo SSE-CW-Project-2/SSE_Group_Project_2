@@ -11,11 +11,27 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: 3.9
-    - name: Install flake8
-      run: pip install flake8
-    - name: Install black
-      run: pip install black
+    - name: Set project path environment variable
+      run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+
+    - name: Find all Python files excluding the .venv directory
+      run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pytest flake8 mypy black
     - name: Run black
       run: black api/
+
+    - name: Run pytest
+      run: xargs -0 pytest < python_files.tmp
+
     - name: Run flake8 (with adjustments to allow for black's formatting)
-      run: flake8 api/*.py --extend-ignore E203  --extend-ignore E722 --max-line-length 120
+      run: xargs -0 flake8 < python_files.tmp --extend-ignore E203  --extend-ignore E722 --max-line-length 120
+    - name: Run mypy
+      run: |
+        xargs -0 < python_files.tmp echo > newline_python_files.tmp
+        mypy --namespace-packages --explicit-package-bases -p newline_python_files.tmp
+    - name: Clean up
+      run: rm -f python_files.tmp newline_python_files.tmp
