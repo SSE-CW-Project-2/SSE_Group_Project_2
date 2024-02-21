@@ -15,7 +15,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-from accountManager import (
+from .accountManager import (
     is_valid_email,
     check_email_in_use,
     validate_request,

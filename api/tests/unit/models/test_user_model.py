@@ -11,7 +11,7 @@
 # Notes:
 ####################################################################################################
 
-from models.user_model.py import Establishment
+from api.models.user_model import Establishment
 
 
 # Testing that Establishment objects are created with the correct attributes
