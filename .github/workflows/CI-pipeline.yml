@@ -19,5 +19,6 @@ jobs:
   deploy-to-production:
     needs: deploy-to-staging
     uses: ./.github/workflows/deploy-to-production.yml
+    secrets: inherit
     
     
