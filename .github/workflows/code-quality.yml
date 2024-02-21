@@ -18,11 +18,9 @@ jobs:
       run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
 
     - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install pytest flake8 mypy black
+      run: pip install -r requirements.txt
     - name: Run black
-      run: black api/
+      run: xargs -0 black < python_files.tmp
 
     - name: Run pytest
       run: xargs -0 pytest < python_files.tmp
