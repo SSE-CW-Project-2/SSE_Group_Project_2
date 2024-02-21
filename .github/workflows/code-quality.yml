@@ -11,8 +11,8 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: 3.9
-    - name: Set project path environment variable
-      run: echo "PYTHONPATH=${{ github.workspace }}" >> $GITHUB_ENV
+    - name: Set PYTHONPATH to the api directory
+      run: echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
 
     - name: Find all Python files excluding the .venv directory
       run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
