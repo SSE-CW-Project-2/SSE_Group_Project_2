@@ -34,6 +34,40 @@ SUPABASE_KEY = os.getenv("SUPABASE_PRIVATE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 
+def purchase_ticket(event_id, attendee_id):
+    """
+    Attempts to purchase a ticket for a given event on behalf of an attendee. This simplified
+    version does not explicitly use transactions but assumes atomic operations where possible.
+
+    Args:
+        event_id (str): The unique identifier for the event.
+        attendee_id (str): The unique identifier for the attendee purchasing the ticket.
+
+    Returns:
+        A tuple containing a boolean indicating success, and either a success message or an error message.
+    """
+    try:
+        # Check for available tickets for the event
+        available_tickets = supabase.table('tickets').select('ticket_id').eq('event_id', event_id).eq('status', 'available').limit(1).execute()
+
+        if available_tickets.error or not available_tickets.data:
+            return False, "No available tickets for this event."
+
+        ticket_id = available_tickets.data[0]['ticket_id']
+
+        # Update the ticket to mark it as sold and assign the attendee_id
+        update_result = supabase.table('tickets').update({'status': 'sold', 'attendee_id': attendee_id}).eq('ticket_id', ticket_id).execute()
+
+        if update_result.error:
+            return False, "Failed to update ticket status."
+
+        # Assuming successful payment and ticket update
+        return True, f"Ticket {ticket_id} successfully purchased for event {event_id} by attendee {attendee_id}."
+
+    except Exception as e:
+        return False, str(e)
+
+
 # To be completed once all function requests standardised as with account manager:
 def validate_request(request):
     """
