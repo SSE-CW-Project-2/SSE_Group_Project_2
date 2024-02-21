@@ -1,9 +1,14 @@
 #! usr/bin/bash
+
+
+
 echo -e "\033[1;34mRunning tests and style checks...\033[0m"
 echo -e "\033[1;33mRequirements:\033[0m"
+echo -e "  - The script must be run from the project's \033[0;32mroot\033[0m directory."
 echo -e "  - \033[0;32mpytest\033[0m, \033[0;32mflake8\033[0m, and \033[0;32mmypy\033[0m must be installed."
 echo -e "  - The virtual environment should be \033[1;35mactivated\033[0m."
 echo -e "  - The virtual environment is expected to be located in a directory named \033[1;35m.venv\033[0m at the project's root."
+export PYTHONPATH=$PWD
 
 # Your script continues here...
 
