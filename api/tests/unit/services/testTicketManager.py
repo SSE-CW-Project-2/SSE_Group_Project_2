@@ -38,7 +38,7 @@ class TestPurchaseTicket(unittest.TestCase):
         self.assertTrue(success)
         self.assertIn("successfully purchased", message)
 
-    @patch("ticketManager.supabase.table")
+    @patch("services.ticketManager.supabase.table")
     def test_no_available_tickets(self, mock_table):
         # Simulate no available tickets found
         mock_table().select().eq().eq().limit().execute.return_value = MagicMock(
@@ -50,7 +50,7 @@ class TestPurchaseTicket(unittest.TestCase):
         self.assertFalse(success)
         self.assertIn("No available tickets", message)
 
-    @patch("ticketManager.supabase.table")
+    @patch("services.ticketManager.supabase.table")
     def test_update_ticket_status_failure(self, mock_table):
         # Simulate finding an available ticket but failing to update its status
         mock_table().select().eq().eq().limit().execute.return_value = MagicMock(
