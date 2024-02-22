@@ -57,7 +57,7 @@ jobs:
       run: pip install -r requirements.txt
     - name: Run unit tests
       run: | 
-        pytest api/tests/unit/routes/*.py
+        pytest -v -s api/tests/unit/routes/*.py
         pytest api/tests/unit/services/*.py
         pytest api/tests/unit/models/*.py
         pytest api/tests/unit/utils/*.py
