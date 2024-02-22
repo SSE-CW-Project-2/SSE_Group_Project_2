@@ -16,27 +16,27 @@ sys.path.append('../../../services')
 
 import unittest
 from unittest.mock import patch, MagicMock
-from services import accountManager as am
+from services.accountManager import *
 
 
 class TestEmailValidation(unittest.TestCase):
     def test_valid_email(self):
-        self.assertTrue(am.is_valid_email("test@example.com"))
+        self.assertTrue(is_valid_email("test@example.com"))
 
     def test_missing_domain(self):
-        self.assertFalse(am.is_valid_email("test@"))
+        self.assertFalse(is_valid_email("test@"))
 
     def test_missing_at_symbol(self):
-        self.assertFalse(am.is_valid_email("testexample.com"))
+        self.assertFalse(is_valid_email("testexample.com"))
 
     def test_invalid_characters(self):
-        self.assertFalse(am.is_valid_email("test@exa$mple.com"))
+        self.assertFalse(is_valid_email("test@exa$mple.com"))
 
     def test_invalid_domain(self):
-        self.assertFalse(am.is_valid_email("test@example"))
+        self.assertFalse(is_valid_email("test@example"))
 
     def test_empty_string(self):
-        self.assertFalse(am.is_valid_email(""))
+        self.assertFalse(is_valid_email(""))
 
 
 # class TestCheckEmailInUse(unittest.TestCase):
