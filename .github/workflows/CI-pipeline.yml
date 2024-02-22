@@ -41,7 +41,7 @@ jobs:
       with:
         python-version: 3.9
     - name: Install dependencies
-      run: pip install black flake8 mypy
+      run: pip install -r requirements.txt
     - name: Set PYTHONPATH to the api directory
       run: echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
     - name: Find all Python files excluding the .venv directory
