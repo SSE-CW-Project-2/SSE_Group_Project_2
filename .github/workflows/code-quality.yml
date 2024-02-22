@@ -4,7 +4,6 @@ on:
 jobs:
   python-formatting:
     runs-on: ubuntu-latest
-    environment: Production
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -14,21 +13,6 @@ jobs:
         python-version: 3.9
     - name: Set PYTHONPATH to the api directory
       run: echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
-
-    - name: Set environment variables
-      env:
-        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-        SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-      run: |
-        echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
-        echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> $GITHUB_ENV
-    - name: Check if secret is set
-      run: |
-        if [ -z "${{ secrets.SUPABASE_URL }}" ]; then
-          echo "Secret is empty or not set."
-        else
-          echo "Secret is set."
-        fi
     - name: Find all Python files excluding the .venv directory
       run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
 
@@ -36,10 +20,6 @@ jobs:
       run: pip install -r requirements.txt
     - name: Run black
       run: xargs -0 black < python_files.tmp
-
-    - name: Run pytest
-      run: xargs -0 pytest < python_files.tmp
-
     - name: Run flake8 (with adjustments to allow for black's formatting)
       run: xargs -0 flake8 < python_files.tmp --extend-ignore E203  --extend-ignore E722 --max-line-length 120
     - name: Run mypy

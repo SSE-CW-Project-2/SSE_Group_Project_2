@@ -10,7 +10,15 @@ on:
 
 jobs:
   code-quality:
+    uses: ./.github/workflows/testing.yml
+    secrets: inherit
+
+  testing:
     uses: ./.github/workflows/code-quality.yml
+    secrets: inherit
+  
+  container-setup:
+    uses: ./.github/workflows/container-setup.yml
     secrets: inherit
 
   deploy-to-staging:
