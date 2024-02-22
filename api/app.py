@@ -112,7 +112,6 @@ def login_required(f):
 
 @app.route("/")
 def home():
-    return "Change made in staging environment"
     # return render_template("index.html")
 
 
