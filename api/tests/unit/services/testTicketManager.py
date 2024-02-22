@@ -19,7 +19,8 @@ sys.path.append('../../../services')
 
 import unittest
 from unittest.mock import patch, MagicMock
-from services import ticketManager as tm
+from services import ticketManager
+from services.ticketManager import purchase_ticket
 
 
 class TestPurchaseTicket(unittest.TestCase):
@@ -32,7 +33,7 @@ class TestPurchaseTicket(unittest.TestCase):
         )
         mock_table().update().eq().execute.return_value = MagicMock(data={}, error=None)
 
-        success, message = tm.purchase_ticket("event123", "attendee456")
+        success, message = purchase_ticket("event123", "attendee456")
 
         self.assertTrue(success)
         self.assertIn("successfully purchased", message)
@@ -44,7 +45,7 @@ class TestPurchaseTicket(unittest.TestCase):
             data=[], error=None
         )
 
-        success, message = tm.purchase_ticket("event123", "attendee456")
+        success, message = purchase_ticket("event123", "attendee456")
 
         self.assertFalse(success)
         self.assertIn("No available tickets", message)
@@ -59,7 +60,7 @@ class TestPurchaseTicket(unittest.TestCase):
             data={}, error="Update failed"
         )
 
-        success, message = tm.purchase_ticket("event123", "attendee456")
+        success, message = purchase_ticket("event123", "attendee456")
 
         self.assertFalse(success)
         self.assertIn("Failed to update ticket status", message)
