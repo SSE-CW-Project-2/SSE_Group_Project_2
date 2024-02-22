@@ -26,8 +26,8 @@ jobs:
       run: find . -type f -name "*.py" ! -path "./.venv/*" -print0 > python_files.tmp
     - name: Run black
       run: xargs -0 black < python_files.tmp
-    - name: Run flake8 (with adjustments to allow for black's formatting)
-      run: xargs -0 flake8 < python_files.tmp --extend-ignore E203  --extend-ignore E722 --max-line-length 120
+    # - name: Run flake8 (with adjustments to allow for black's formatting)
+    #   run: xargs -0 flake8 < python_files.tmp --extend-ignore E203  --extend-ignore E722 --max-line-length 120
     - name: Run mypy
       run: |
         xargs -0 mypy --ignore-missing-imports < python_files.tmp

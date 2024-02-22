@@ -13,6 +13,10 @@
 ####################################################################################################
 
 import pkgutil
+print("Available modules in sys.path / PYTHONPATH:")
+for importer, modname, ispkg in pkgutil.iter_modules(path=None, prefix=''):
+    print(f"{modname}, Package: {ispkg}")
+
 import unittest
 from unittest.mock import patch, MagicMock
 from services.accountManager import (
@@ -33,9 +37,6 @@ from services.accountManager import (
     delete_account,
 )
 
-print("Available modules in sys.path / PYTHONPATH:")
-for importer, modname, ispkg in pkgutil.iter_modules(path=None, prefix=''):
-    print(f"{modname}, Package: {ispkg}")
 
 class TestEmailValidation(unittest.TestCase):
     def test_valid_email(self):
