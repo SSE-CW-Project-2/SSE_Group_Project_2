@@ -11,10 +11,12 @@
 # Notes: Supabase interactions tested using patch and MagicMock from unittest.mock. Unit tests for
 #        validate_delete_request are still outstanding.
 ####################################################################################################
+pythonpath = os.getenv('PYTHONPATH')
+
 
 import unittest
 from unittest.mock import patch, MagicMock
-from ....services.accountManager import (
+from services.accountManager.py import (
     is_valid_email,
     check_email_in_use,
     validate_request,
