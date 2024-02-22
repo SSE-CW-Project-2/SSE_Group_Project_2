@@ -56,9 +56,9 @@ jobs:
     - name: Install dependencies
       run: pip install -r requirements.txt
     - name: Run unit tests
-      run: pytest tests/unit/*.py
+      run: pytest api/tests/unit/*.py
     - name: Run integration tests
-      run: pytest tests/integration/*.py
+      run: pytest api/tests/integration/*.py
   
   container-setup:
     runs-on: ubuntu-latest
