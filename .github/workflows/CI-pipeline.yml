@@ -14,15 +14,17 @@ jobs:
     secrets: inherit
 
   testing:
+    needs: code-quality
     uses: ./.github/workflows/code-quality.yml
     secrets: inherit
   
   container-setup:
+    needs: testing
     uses: ./.github/workflows/container-setup.yml
     secrets: inherit
 
   deploy-to-staging:
-    needs: code-quality
+    needs: container-setup
     uses: ./.github/workflows/deploy-to-staging.yml
     secrets: inherit
   
