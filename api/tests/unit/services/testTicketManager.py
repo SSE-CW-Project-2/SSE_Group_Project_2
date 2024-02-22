@@ -20,12 +20,12 @@ sys.path.append('../../../services')
 import unittest
 from unittest.mock import patch, MagicMock
 from services import ticketManager
-from services.ticketManager import *
+from services.ticketManager import purchase_ticket
 
 
 class TestPurchaseTicket(unittest.TestCase):
 
-    @patch("ticketManager.supabase.table")
+    @patch("services.ticketManager.supabase.table")
     def test_purchase_ticket_success(self, mock_table):
         # Mock the chain of method calls for a successful ticket query and update
         mock_table().select().eq().eq().limit().execute.return_value = MagicMock(

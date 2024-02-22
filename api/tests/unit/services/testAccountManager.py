@@ -17,6 +17,7 @@ sys.path.append('../../../services')
 import unittest
 from unittest.mock import patch, MagicMock
 from services.accountManager import *
+from services import accountManager
 
 
 class TestEmailValidation(unittest.TestCase):
