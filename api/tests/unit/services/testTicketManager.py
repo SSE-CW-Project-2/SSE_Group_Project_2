@@ -18,7 +18,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-from api.services.ticketManager import (
+from services.ticketManager.py import (
     create_tickets,
     assign_tickets_to_attendee,
     get_tickets_info,
