@@ -12,7 +12,6 @@
 #        validate_delete_request are still outstanding.
 ####################################################################################################
 
-import sys
 import pkgutil
 
 print("Available modules in sys.path / PYTHONPATH:")
