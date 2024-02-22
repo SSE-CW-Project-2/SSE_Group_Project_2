@@ -20,7 +20,7 @@ sys.path.append('../../../services')
 import unittest
 from unittest.mock import patch, MagicMock
 from services import ticketManager
-from services.ticketManager import purchase_ticket
+from services.ticketManager import *
 
 
 class TestPurchaseTicket(unittest.TestCase):
