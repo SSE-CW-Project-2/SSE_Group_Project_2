@@ -52,7 +52,9 @@ jobs:
         echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> $GITHUB_ENV
         echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> $GITHUB_ENV
     - name: Set PYTHONPATH to the api directory
-      run: echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
+      run: | 
+        echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
+        echo "PYTHONPATH=${{ github.workspace }}/api/services:$PYTHONPATH" >> $GITHUB_ENV
     - name: List Python Modules in PYTHONPATH
       run: |
         python list_python_modules.py
