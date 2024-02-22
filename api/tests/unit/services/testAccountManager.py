@@ -12,10 +12,16 @@
 #        validate_delete_request are still outstanding.
 ####################################################################################################
 
+import sys
+import pkgutil
+
+print("Available modules in sys.path / PYTHONPATH:")
+for importer, modname, ispkg in pkgutil.iter_modules(path=None, prefix=''):
+    print(f"{modname}, Package: {ispkg}")
 
 import unittest
 from unittest.mock import patch, MagicMock
-from api.services.accountManager import (
+from services.accountManager import (
     is_valid_email,
     check_email_in_use,
     validate_request,
