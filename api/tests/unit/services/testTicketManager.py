@@ -14,7 +14,8 @@
 # Notes: Tests do not verify whether schema/request format works with actual Supabase queries - only
 #        the mocked responses.
 ####################################################################################################
-
+import sys
+sys.path.append('../../../services')
 
 import unittest
 from unittest.mock import patch, MagicMock
