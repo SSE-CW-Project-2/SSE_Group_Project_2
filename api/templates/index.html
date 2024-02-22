@@ -9,7 +9,8 @@
     <p><a href="/events">Events</a></p>
 {% else %}
     <p>You are not logged in.</p>
-    <a href="/login">Login</a> 
-    <br><br><a href="/register">Register</a>
+    <button onclick="window.location.href='/login';">Login</button>
+    <br><br>
+    <button onclick="window.location.href='/register';">Register</button>
 {% endif %}
 {% endblock %}
