@@ -1,119 +1,108 @@
-/* Add a base style for the body to increase font readability */
+/* Base styles with CSS Variables for easy theme management */
+:root {
+    --background-color: #121212;
+    --text-color: #E0E0E0;
+    --accent-color: #BB86FC;
+    --button-color: #BB86FC;
+    --button-hover-color: #7033bb;
+    --container-bg-color: #1E1E1E;
+    --header-bg-color: #333;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+}
+
 body {
-    font-family: Arial, sans-serif;
-    margin: 20px;
-    background-color: #f4f4f4;
+    font-family: 'Roboto', sans-serif; /* Modern, clean typography */
+    margin: 0;
+    padding: 20px;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: var(--container-bg-color);
+    border-radius: 10px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+header {
+    background-color: var(--header-bg-color);
+    color: #fff;
+    padding: 20px 0;
+    border-radius: 8px;
+    text-align: center;
+    animation: fadeIn 2s ease-out;
+}
+
+/* Keyframes for subtle animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h1, h2 {
+    font-weight: 400;
+}
+
+.content {
+    padding: 20px;
+    background-color: var(--background-color);
+    border-radius: 8px;
 }
 
 .button {
-    display: inline-block;
-    padding: 10px 15px;
-    margin: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    text-align: center;
-    text-decoration: none;
-    outline: none;
-    color: #fff;
-    background-color: #4CAF50;
+    background-color: var(--button-color);
+    color: #000;
     border: none;
-    border-radius: 15px;
-  }
+    margin: 10px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
 
-  .button:hover {background-color: #3e8e41}
-
-  .button:active {
-    background-color: #3e8e41;
-    box-shadow: 0 5px #666;
-    transform: translateY(4px);
-  }
-
-.navbar {
-    background-color: #333;
-    overflow: hidden;
+.button:hover {
+    background-color: var(--button-hover-color);
 }
 
 .navbar a {
-    float: left;
-    display: block;
-    color: #f2f2f2;
-    text-align: center;
-    padding: 14px 20px;
-    text-decoration: none;
+    background-color: transparent;
+    color: var(--accent-color);
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
 }
 
 .navbar a:hover {
-    background-color: #ddd;
-    color: black;
-}
-
-/* Style the table with a border, and full width */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    margin-top: 20px;
-}
-
-/* Add border and padding to table cells */
-th, td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-}
-
-/* Style the table header with a different background */
-thead th {
-    background-color: #4CAF50;
-    color: white;
-}
-
-/* Add a hover effect for table rows */
-tbody tr:hover {
-    background-color: #f5f5f5;
-}
-
-/* Style for the capacity and price columns to align text to the right */
-td:nth-child(5), /* Capacity column */
-td:nth-child(6) { /* Price column */
-    text-align: right;
-}
-
-/* Add some spacing between the table and other elements */
-table + * {
-    margin-top: 20px;
-}
-
-.flashes {
-    list-style: none;
-    padding: 0;
+    background-color: var(--accent-color);
+    color: var(--background-color);
 }
 
 .flash-message {
-    background-color: #f8d7da; /* Red color for error messages, you can change it */
-    color: #721c24; /* Dark red text color, you can change it */
+    background-color: #CF6679;
+    color: var(--background-color);
     padding: 10px;
-    margin-bottom: 10px;
     border-radius: 5px;
-}
-
-h2 {
-    color: #333;
-    font-size: 24px;
-    margin-bottom: 20px;
-}
-
-p {
-    color: #666;
-    font-size: 16px;
     margin-bottom: 10px;
 }
 
 a {
-    color: #007bff;
-    text-decoration: none;
+    color: var(--accent-color);
+    transition: color 0.3s ease;
 }
 
 a:hover {
-    text-decoration: underline;
+    color: #FFB74D; /* Bright hover color for links */
 }
+
+/* Apply Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
