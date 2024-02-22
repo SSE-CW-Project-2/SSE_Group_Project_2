@@ -14,7 +14,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
 from services.accountManager import *
-from services import accountManager
 
 class TestEmailValidation(unittest.TestCase):
     def test_valid_email(self):

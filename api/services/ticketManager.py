@@ -16,8 +16,6 @@
 #           Need to set up app routes at the end of the file for API calls and define a
 #        validate_request function once there is a standardised JSON request template.
 ####################################################################################################
-
-
 from flask import Flask
 from supabase import create_client, Client
 from dotenv import load_dotenv
