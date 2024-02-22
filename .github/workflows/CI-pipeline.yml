@@ -126,7 +126,7 @@ jobs:
       - name: Deploy to Google Cloud Run
         run: |
           gcloud run deploy sse-main-app-staging \
-            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app \
+            --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA \
             --platform managed \
             --region europe-west2 \
             --port 5000
