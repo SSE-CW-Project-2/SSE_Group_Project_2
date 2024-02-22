@@ -54,7 +54,6 @@ jobs:
     - name: Set PYTHONPATH to the api directory
       run: | 
         echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
-        echo "PYTHONPATH=${{ github.workspace }}/api/services:$PYTHONPATH" >> $GITHUB_ENV
     - name: List Python Modules in PYTHONPATH
       run: |
         python list_python_modules.py
