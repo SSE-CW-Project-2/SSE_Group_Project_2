@@ -13,7 +13,23 @@
 ####################################################################################################
 import unittest
 from unittest.mock import patch, MagicMock
-from services.accountManager import *
+from services.accountManager import (
+    is_valid_email,
+    check_email_in_use,
+    validate_request,
+    extract_and_prepare_attributes,
+    check_for_extra_attributes,
+    check_required_attributes,
+    get_account_info,
+    validate_get_request,
+    extract_and_prepare_attributes_for_get,
+    validate_queried_attributes,
+    create_account,
+    validate_create_request,
+    update_account,
+    validate_update_request,
+    delete_account,
+)
 
 class TestEmailValidation(unittest.TestCase):
     def test_valid_email(self):

@@ -16,8 +16,15 @@
 ####################################################################################################
 import unittest
 from unittest.mock import patch, MagicMock
-from services.ticketManager import *
-
+from services.ticketManager import (
+    create_tickets,
+    assign_tickets_to_attendee,
+    get_tickets_info,
+    get_tickets_info_for_users,
+    update_tickets_redeemed_status,
+    delete_expired_tickets,
+    purchase_ticket,
+)
 
 class TestPurchaseTicket(unittest.TestCase):
 
