@@ -13,7 +13,8 @@
 ####################################################################################################
 import unittest
 from unittest.mock import patch, MagicMock
-from services.accountManager.py import (
+from services import accountManager
+from services.accountManager import (
     is_valid_email,
     check_email_in_use,
     validate_request,
