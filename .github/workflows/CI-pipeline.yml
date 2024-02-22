@@ -52,10 +52,9 @@ jobs:
       run: xargs -0 flake8 < python_files.tmp --extend-ignore E203  --extend-ignore E722 --max-line-length 120
     - name: Run mypy
       run: |
-        xargs -0 < python_files.tmp echo > newline_python_files.tmp
-        mypy --namespace-packages --explicit-package-bases -p newline_python_files.tmp
+        xargs -0 mypy < python_files.tmp
     - name: Clean up
-      run: rm -f python_files.tmp newline_python_files.tmp
+      run: rm -f python_files.tmp
 
   testing:
     runs-on: ubuntu-latest
