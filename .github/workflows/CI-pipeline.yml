@@ -53,11 +53,13 @@ jobs:
         echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> $GITHUB_ENV
     - name: Set PYTHONPATH to the api directory
       run: echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
+    - name: Print PYTHONPATH
+      run: echo $PYTHONPATH
     - name: Install dependencies
       run: pip install -r requirements.txt
     - name: Run unit tests
       run: | 
-        pytest -v -s api/tests/unit/routes/*.py
+        pytest api/tests/unit/routes/*.py
         pytest api/tests/unit/services/*.py
         pytest api/tests/unit/models/*.py
         pytest api/tests/unit/utils/*.py
