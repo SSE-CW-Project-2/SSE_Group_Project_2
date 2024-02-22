@@ -88,8 +88,8 @@ jobs:
         project_id: ${{ secrets.GCP_PROJECT_ID }}
         service_account_key: ${{ secrets.GCP_SA_KEY }}
         export_default_credentials: true
-      - name: Confirm Google Cloud Authentication
-        run: gcloud auth list
+    - name: Confirm Google Cloud Authentication
+      run: gcloud auth list
     - name: Build and push Docker image to GCR
       run: |
         gcloud auth configure-docker --project=${{ secrets.GCP_PROJECT_ID }}
