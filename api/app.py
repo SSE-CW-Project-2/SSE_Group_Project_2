@@ -14,6 +14,11 @@ import os
 import google.oauth2.id_token
 import google.auth.transport.requests
 
+def hello_world(request):
+    """Responds to any HTTP request with a 'Hello World' message."""
+    return 'Hello World!'
+
+
 app = Flask(__name__)
 
 # Load sensitive information from environment variables for security

@@ -133,6 +133,15 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
+      - name: Deploy Function
+        run: |
+          gcloud functions deploy hello_world \
+          --runtime python39 \
+          --trigger-http \
+          --allow-unauthenticated \
+          --source . \
+          --entry-point hello_world
+
   deploy-to-production:
     runs-on: ubuntu-latest
     environment: Production
