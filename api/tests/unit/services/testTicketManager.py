@@ -26,6 +26,7 @@ from services.ticketManager import (
     purchase_ticket,
 )
 
+
 class TestPurchaseTicket(unittest.TestCase):
 
     @patch("services.ticketManager.supabase.table")
