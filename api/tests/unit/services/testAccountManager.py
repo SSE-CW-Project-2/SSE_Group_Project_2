@@ -15,7 +15,7 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-from accountManager import (
+from services.accountManager import (
     is_valid_email,
     check_email_in_use,
     validate_request,
@@ -56,7 +56,7 @@ class TestEmailValidation(unittest.TestCase):
 
 class TestCheckEmailInUse(unittest.TestCase):
 
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.supabase")
     def test_email_in_use(self, mock_supabase):
         # Mock the response from Supabase
         mock_supabase.rpc.return_value.execute.return_value.data = [
@@ -66,7 +66,7 @@ class TestCheckEmailInUse(unittest.TestCase):
         result = check_email_in_use("test@example.com")
         self.assertEqual(result, {"account_type": "venue", "user_id": "123"})
 
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.supabase")
     def test_email_not_in_use(self, mock_supabase):
         # Mock the response to indicate no data found
         mock_supabase.rpc.return_value.execute.return_value.data = []
@@ -74,13 +74,13 @@ class TestCheckEmailInUse(unittest.TestCase):
         result = check_email_in_use("new@example.com")
         self.assertEqual(result, {"message": "Email is not in use."})
 
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.supabase")
     def test_invalid_email_format(self, mock_supabase):
         # Test for invalid email format, which should not even attempt to query Supabase
         result = check_email_in_use("invalid-email")
         self.assertEqual(result, {"error": "Invalid email format."})
 
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.supabase")
     def test_supabase_error(self, mock_supabase):
         # Mock an exception being raised during the Supabase call
         mock_supabase.rpc.side_effect = Exception("Supabase query failed")
@@ -269,7 +269,7 @@ class TestCheckForExtraAttributes(unittest.TestCase):
         "venue": {"location", "capacity"},
     }
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_no_extra_attributes(self):
         validation_attributes = {"name": "John Doe", "genre": "Rock"}
         object_type = "artist"
@@ -277,7 +277,7 @@ class TestCheckForExtraAttributes(unittest.TestCase):
             check_for_extra_attributes(validation_attributes, object_type)[0]
         )
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_with_extra_attributes(self):
         validation_attributes = {
             "name": "John Doe",
@@ -289,7 +289,7 @@ class TestCheckForExtraAttributes(unittest.TestCase):
             check_for_extra_attributes(validation_attributes, object_type)[0]
         )
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_with_all_required_attributes(self):
         validation_attributes = {"location": "Downtown", "capacity": 5000}
         object_type = "venue"
@@ -297,7 +297,7 @@ class TestCheckForExtraAttributes(unittest.TestCase):
             check_for_extra_attributes(validation_attributes, object_type)[0]
         )
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_object_type_not_in_schema(self):
         validation_attributes = {"field": "value"}
         object_type = "nonexistent"
@@ -306,7 +306,7 @@ class TestCheckForExtraAttributes(unittest.TestCase):
             "Should return True as there are no defined attributes to violate.",
         )
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_empty_validation_attributes(self):
         validation_attributes = {}
         object_type = "artist"
@@ -323,7 +323,7 @@ class TestCheckRequiredAttributes(unittest.TestCase):
         "venue": {"location", "capacity"},
     }
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_all_required_attributes_provided(self):
         validation_attributes = {"name": "John Doe", "genre": "Rock", "country": "USA"}
         object_type = "artist"
@@ -331,7 +331,7 @@ class TestCheckRequiredAttributes(unittest.TestCase):
             check_required_attributes(validation_attributes, object_type)[0]
         )
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_missing_required_attributes(self):
         validation_attributes = {
             "name": "John Doe",
@@ -342,7 +342,7 @@ class TestCheckRequiredAttributes(unittest.TestCase):
             check_required_attributes(validation_attributes, object_type)[0]
         )
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_object_type_not_in_schema(self):
         validation_attributes = {"field": "value"}
         object_type = "nonexistent"
@@ -352,7 +352,7 @@ class TestCheckRequiredAttributes(unittest.TestCase):
             "Should return True as there are no defined required attributes to miss.",
         )
 
-    @patch("accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
     def test_empty_validation_attributes(self):
         validation_attributes = {}
         object_type = "artist"
@@ -365,8 +365,8 @@ class TestCheckRequiredAttributes(unittest.TestCase):
 
 class TestGetAccountInfo(unittest.TestCase):
 
-    @patch("accountManager.supabase")
-    @patch("accountManager.validate_request")
+    @patch("services.accountManager.supabase")
+    @patch("services.accountManager.validate_request")
     def test_valid_request_with_account_found(self, mock_validate, mock_supabase):
         # Mock validate_request to return valid
         mock_validate.return_value = (True, "Request is valid.")
@@ -385,8 +385,8 @@ class TestGetAccountInfo(unittest.TestCase):
         self.assertTrue(result["in_use"])
         self.assertIn("Email is registered with user", result["message"])
 
-    @patch("accountManager.supabase")
-    @patch("accountManager.validate_request")
+    @patch("services.accountManager.supabase")
+    @patch("services.accountManager.validate_request")
     def test_valid_request_no_account_found(self, mock_validate, mock_supabase):
         mock_validate.return_value = (True, "Request is valid.")
         mock_supabase.table().select().eq().execute.return_value.data = []
@@ -401,7 +401,7 @@ class TestGetAccountInfo(unittest.TestCase):
         self.assertFalse(result["in_use"])
         self.assertEqual(result["message"], "Email is not in use.")
 
-    @patch("accountManager.validate_request")
+    @patch("services.accountManager.validate_request")
     def test_invalid_function(self, mock_validate):
         mock_validate.return_value = (False, "Invalid function specified.")
 
@@ -413,8 +413,8 @@ class TestGetAccountInfo(unittest.TestCase):
         result = get_account_info(request)
         self.assertEqual(result, {"error": "Invalid function specified."})
 
-    @patch("accountManager.supabase")
-    @patch("accountManager.validate_request")
+    @patch("services.accountManager.supabase")
+    @patch("services.accountManager.validate_request")
     def test_api_error(self, mock_validate, mock_supabase):
         mock_validate.return_value = (True, "Request is valid.")
         mock_supabase.table().select().eq().execute.side_effect = Exception("API error")
@@ -431,8 +431,8 @@ class TestGetAccountInfo(unittest.TestCase):
 
 
 class TestValidateGetRequest(unittest.TestCase):
-    @patch("accountManager.extract_and_prepare_attributes_for_get")
-    @patch("accountManager.validate_queried_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes_for_get")
+    @patch("services.accountManager.validate_queried_attributes")
     def test_successful_validation(self, mock_validate_queried, mock_extract):
         # Setup mock responses
         mock_extract.return_value = ("artist", {"name": True, "genre": True})
@@ -444,7 +444,7 @@ class TestValidateGetRequest(unittest.TestCase):
         self.assertTrue(valid)
         self.assertEqual(message, "Request is valid.")
 
-    @patch("accountManager.extract_and_prepare_attributes_for_get")
+    @patch("services.accountManager.extract_and_prepare_attributes_for_get")
     def test_no_attributes_provided(self, mock_extract):
         # Setup mock response to simulate no attributes provided
         mock_extract.return_value = ("artist", {})
@@ -455,8 +455,8 @@ class TestValidateGetRequest(unittest.TestCase):
         self.assertFalse(valid)
         self.assertEqual(message, "Attributes must be provided for querying.")
 
-    @patch("accountManager.extract_and_prepare_attributes_for_get")
-    @patch("accountManager.validate_queried_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes_for_get")
+    @patch("services.accountManager.validate_queried_attributes")
     def test_queried_attributes_validation_fails(
         self, mock_validate_queried, mock_extract
     ):
@@ -510,9 +510,9 @@ class TestValidateQueriedAttributes(unittest.TestCase):
     account_types = ["venue", "artist", "attendee"]
     non_account_types = ["event", "ticket"]
 
-    @patch("accountManager.attributes_schema", attributes_schema)
-    @patch("accountManager.account_types", account_types)
-    @patch("accountManager.non_account_types", non_account_types)
+    @patch("services.accountManager.attributes_schema", attributes_schema)
+    @patch("services.accountManager.account_types", account_types)
+    @patch("services.accountManager.non_account_types", non_account_types)
     def test_valid_queried_attributes(self):
         queried_attributes = {"name": True, "genre": True}
         object_type = "artist"
@@ -555,8 +555,8 @@ class TestValidateQueriedAttributes(unittest.TestCase):
 
 
 class TestCreateAccount(unittest.TestCase):
-    @patch("accountManager.validate_get_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_get_request")
+    @patch("services.accountManager.supabase")
     def test_valid_request(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
@@ -575,7 +575,7 @@ class TestCreateAccount(unittest.TestCase):
         self.assertEqual(user_id, "12345")
         self.assertEqual(message, "Account creation was successful.")
 
-    @patch("accountManager.validate_get_request")
+    @patch("services.accountManager.validate_get_request")
     def test_invalid_request(self, mock_validate):
         mock_validate.return_value = (False, "Invalid request")
 
@@ -586,8 +586,8 @@ class TestCreateAccount(unittest.TestCase):
         self.assertIsNone(user_id)
         self.assertEqual(message, "Invalid request")
 
-    @patch("accountManager.validate_get_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_get_request")
+    @patch("services.accountManager.supabase")
     def test_supabase_insert_error(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
@@ -605,8 +605,8 @@ class TestCreateAccount(unittest.TestCase):
         self.assertIsNone(user_id)
         self.assertIn("An error occurred", message)
 
-    @patch("accountManager.validate_get_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_get_request")
+    @patch("services.accountManager.supabase")
     def test_exception_during_insert(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_supabase.table().insert().execute.side_effect = Exception(
@@ -626,9 +626,9 @@ class TestCreateAccount(unittest.TestCase):
 
 
 class TestValidateCreateRequest(unittest.TestCase):
-    @patch("accountManager.extract_and_prepare_attributes")
-    @patch("accountManager.check_required_attributes")
-    @patch("accountManager.check_for_extra_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes")
+    @patch("services.accountManager.check_required_attributes")
+    @patch("services.accountManager.check_for_extra_attributes")
     def test_successful_validation(
         self, mock_check_extra, mock_check_required, mock_extract
     ):
@@ -646,8 +646,8 @@ class TestValidateCreateRequest(unittest.TestCase):
         self.assertTrue(valid)
         self.assertEqual(message, "Request is valid.")
 
-    @patch("accountManager.extract_and_prepare_attributes")
-    @patch("accountManager.check_required_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes")
+    @patch("services.accountManager.check_required_attributes")
     def test_missing_required_attributes(self, mock_check_required, mock_extract):
         # Simulate missing required attributes
         mock_extract.return_value = ("artist", {"genre": "Rock"})
@@ -659,8 +659,8 @@ class TestValidateCreateRequest(unittest.TestCase):
         self.assertFalse(valid)
         self.assertEqual(message, "Missing required attributes.")
 
-    @patch("accountManager.extract_and_prepare_attributes")
-    @patch("accountManager.check_for_extra_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes")
+    @patch("services.accountManager.check_for_extra_attributes")
     def test_extra_undefined_attributes(self, mock_check_extra, mock_extract):
         # Simulate extra undefined attributes
         mock_extract.return_value = (
@@ -688,7 +688,7 @@ class TestValidateCreateRequest(unittest.TestCase):
             message, "Additional, undefined attributes cannot be specified."
         )
 
-    @patch("accountManager.extract_and_prepare_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes")
     def test_attributes_without_value(self, mock_extract):
         # Simulate an attribute without a value
         mock_extract.return_value = (
@@ -711,8 +711,8 @@ class TestValidateCreateRequest(unittest.TestCase):
 
 
 class TestUpdateAccount(unittest.TestCase):
-    @patch("accountManager.validate_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_request")
+    @patch("services.accountManager.supabase")
     def test_valid_update_request(self, mock_supabase, mock_validate):
         # Setup mock responses
         mock_validate.return_value = (True, "")
@@ -730,7 +730,7 @@ class TestUpdateAccount(unittest.TestCase):
         self.assertTrue(success)
         self.assertEqual(message, "Account update was successful.")
 
-    @patch("accountManager.validate_request")
+    @patch("services.accountManager.validate_request")
     def test_invalid_request_structure(self, mock_validate):
         mock_validate.return_value = (False, "Invalid request structure")
 
@@ -740,7 +740,7 @@ class TestUpdateAccount(unittest.TestCase):
         self.assertFalse(success)
         self.assertEqual(message, "Invalid request structure")
 
-    @patch("accountManager.validate_request")
+    @patch("services.accountManager.validate_request")
     def test_no_valid_attributes_for_update(self, mock_validate):
         mock_validate.return_value = (True, "")
 
@@ -754,8 +754,8 @@ class TestUpdateAccount(unittest.TestCase):
         self.assertFalse(success)
         self.assertEqual(message, "No valid attributes provided for update.")
 
-    @patch("accountManager.validate_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_request")
+    @patch("services.accountManager.supabase")
     def test_supabase_update_error(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
@@ -772,8 +772,8 @@ class TestUpdateAccount(unittest.TestCase):
         self.assertFalse(success)
         self.assertIn("An error occurred: Supabase error", message)
 
-    @patch("accountManager.validate_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_request")
+    @patch("services.accountManager.supabase")
     def test_exception_during_update_operation(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_supabase.table().update().eq().execute.side_effect = Exception(
@@ -792,8 +792,8 @@ class TestUpdateAccount(unittest.TestCase):
 
 
 class TestValidateUpdateRequest(unittest.TestCase):
-    @patch("accountManager.extract_and_prepare_attributes")
-    @patch("accountManager.check_for_extra_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes")
+    @patch("services.accountManager.check_for_extra_attributes")
     def test_valid_update_request(self, mock_check_extra, mock_extract):
         # Setup mock responses for a successful validation
         mock_extract.return_value = ("artist", {"name": "New Artist Name"})
@@ -805,7 +805,7 @@ class TestValidateUpdateRequest(unittest.TestCase):
         self.assertTrue(valid)
         self.assertEqual(message, "Request is valid.")
 
-    @patch("accountManager.extract_and_prepare_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes")
     def test_no_attributes_specified_for_update(self, mock_extract):
         # Simulate no attributes provided for update
         mock_extract.return_value = ("artist", {})
@@ -818,8 +818,8 @@ class TestValidateUpdateRequest(unittest.TestCase):
             message, "At least one attribute must be specified for update."
         )
 
-    @patch("accountManager.extract_and_prepare_attributes")
-    @patch("accountManager.check_for_extra_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes")
+    @patch("services.accountManager.check_for_extra_attributes")
     def test_extra_undefined_attributes_provided(self, mock_check_extra, mock_extract):
         # Simulate extra, undefined attributes provided
         mock_extract.return_value = ("artist", {"undefined_attr": "value"})
@@ -836,8 +836,8 @@ class TestValidateUpdateRequest(unittest.TestCase):
             message, "Additional, undefined attributes cannot be specified."
         )
 
-    @patch("accountManager.extract_and_prepare_attributes")
-    @patch("accountManager.check_for_extra_attributes")
+    @patch("services.accountManager.extract_and_prepare_attributes")
+    @patch("services.accountManager.check_for_extra_attributes")
     def test_valid_request_with_multiple_attributes(
         self, mock_check_extra, mock_extract
     ):
@@ -859,8 +859,8 @@ class TestValidateUpdateRequest(unittest.TestCase):
 
 
 class TestDeleteAccount(unittest.TestCase):
-    @patch("accountManager.validate_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_request")
+    @patch("services.accountManager.supabase")
     def test_valid_delete_request(self, mock_supabase, mock_validate):
         # Setup mock responses
         mock_validate.return_value = (True, "")
@@ -877,7 +877,7 @@ class TestDeleteAccount(unittest.TestCase):
         self.assertTrue(success)
         self.assertEqual(message, "Account deletion was successful.")
 
-    @patch("accountManager.validate_request")
+    @patch("services.accountManager.validate_request")
     def test_invalid_request_structure(self, mock_validate):
         mock_validate.return_value = (False, "Invalid request structure")
 
@@ -887,8 +887,8 @@ class TestDeleteAccount(unittest.TestCase):
         self.assertFalse(success)
         self.assertEqual(message, "Invalid request structure")
 
-    @patch("accountManager.validate_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_request")
+    @patch("services.accountManager.supabase")
     def test_supabase_delete_error(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_result = MagicMock()
@@ -904,8 +904,8 @@ class TestDeleteAccount(unittest.TestCase):
         self.assertFalse(success)
         self.assertIn("An error occurred: Supabase error", message)
 
-    @patch("accountManager.validate_request")
-    @patch("accountManager.supabase")
+    @patch("services.accountManager.validate_request")
+    @patch("services.accountManager.supabase")
     def test_exception_during_delete_operation(self, mock_supabase, mock_validate):
         mock_validate.return_value = (True, "")
         mock_supabase.table().delete().eq().execute.side_effect = Exception(
