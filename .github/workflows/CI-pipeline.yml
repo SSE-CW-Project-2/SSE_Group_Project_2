@@ -139,7 +139,7 @@ jobs:
           --runtime python39 \
           --trigger-http \
           --allow-unauthenticated \
-          --source . \
+          --source ./api \
           --entry-point hello_world
 
   deploy-to-production:
