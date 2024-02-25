@@ -1,8 +1,9 @@
 import os
 import sys
 
+
 def list_python_modules():
-    pythonpath = os.getenv('PYTHONPATH')
+    pythonpath = os.getenv("PYTHONPATH")
     if not pythonpath:
         print("PYTHONPATH is not set.")
         sys.exit(1)
@@ -17,6 +18,7 @@ def list_python_modules():
                         print(f" - {os.path.join(root, file)}")
         else:
             print(f"Path {path} does not exist.")
+
 
 if __name__ == "__main__":
     list_python_modules()
