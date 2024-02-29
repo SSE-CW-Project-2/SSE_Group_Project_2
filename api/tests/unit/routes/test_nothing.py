@@ -1,18 +1,14 @@
 ####################################################################################################
 # Project Name: Motive Event Management System
 # Course: COMP70025 - Software Systems Engineering
-# File: testEventManager.py
-# Description: This file contains unit tests for each function in the eventManager.py file.
+# File: test_nothing.py
+# Description: This file contains a stub test to ensure that the routes unit testing framework is working.
 #
 # Authors: James Hartley, Ankur Desai, Patrick Borman, Julius Gasson, and Vadim Dunaevskiy
-# Date: 2024-02-20
-# Version: 1.1
+# Date: 2024-02-22
+# Version: 1.0
 #
-# Changes: Added tests for X.
-#
-# Notes: TBC
+# Notes:
 ####################################################################################################
-
-
-# import unittest
-# from unittest.mock import patch, MagicMock
+def test_nothing():
+    assert True
