@@ -73,9 +73,6 @@ jobs:
     - name: Set PYTHONPATH to the api directory
       run: | 
         echo "PYTHONPATH=${{ github.workspace }}/api" >> $GITHUB_ENV
-    - name: List Python Modules in PYTHONPATH
-      run: |
-        python list_python_modules.py
     - name: Install dependencies
       run: pip install -r requirements.txt
     - name: Run unit tests
@@ -113,7 +110,6 @@ jobs:
         gcloud auth configure-docker --project=${{ secrets.GCP_PROJECT_ID }}
         docker build -t gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA .
         docker push gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA  
-
   deploy-to-staging:
     runs-on: ubuntu-latest
     needs: container-setup
@@ -138,8 +134,8 @@ jobs:
       - name: List Image Tags and Details in GCR
         run: gcloud container images list-tags gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app
 
-      - name: Set port for Google Cloud Run service
-        run: gcloud run services update sse-main-app-staging --port=5000 --platform=managed --region=europe-west2
+      # - name: Set port for Google Cloud Run service
+      #   run: gcloud run services update sse-main-app-staging --port=5000 --platform=managed --region=europe-west2
 
       - name: Deploy to Google Cloud Run
         run: |
@@ -187,5 +183,3 @@ jobs:
             --port 5000
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
-    
-    
