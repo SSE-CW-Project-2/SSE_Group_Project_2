@@ -141,7 +141,8 @@ jobs:
             --platform managed \
             --region europe-west2 \
             --port 5000
-            --set-env-vars GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            --set-env-vars "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
+            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
@@ -176,7 +177,8 @@ jobs:
             --platform managed \
             --region europe-west2 \
             --port 5000
-            --set-env-vars GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }},GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            --set-env-vars "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
+            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
