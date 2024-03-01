@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session, redirect, url_for
+from flask import Flask, request, jsonify, session, redirect, url_for, render_template
 # from google.oauth2 import id_token
 # from google.auth.transport import requests as google_requests
 from flask_dance.contrib.google import make_google_blueprint, google
@@ -55,10 +55,13 @@ def google_auth():
             f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
         )
         response.raise_for_status()
-        # user_info = response.json() Uncomment when needed
+        user_info = response.json()  # Uncomment when needed
+        session["user_info"] = user_info
+        session["logged_in"] = True
         # Perform your authentication logic here
         # For example, check if the user exists in your database
         # If the user is authenticated successfully:
+
         return jsonify({"success": True, "message": "User authenticated"}), 200
     except requests.RequestException:
         return (
@@ -71,12 +74,7 @@ def google_auth():
 
 @app.route("/")
 def home():
-    user_info = session.get("user_info", None)
-    # Display home page with or without login based on session
-    if user_info:
-        return f"Welcome {user_info['email']}! <br><a href='/logout'>Logout</a>", 200
-    else:
-        return "Welcome Guest! <br><a href='/login'>Login</a>", 200
+    return render_template("index.html")
 
 
 if __name__ == "__main__":
