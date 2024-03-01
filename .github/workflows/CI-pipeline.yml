@@ -140,7 +140,7 @@ jobs:
             --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA \
             --platform managed \
             --region europe-west2 \
-            --port 5000
+            --port 5000 \
             --set-env-vars "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
             --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
         env:
@@ -176,7 +176,7 @@ jobs:
             --image gcr.io/${{ secrets.GCP_PROJECT_ID }}/sse-main-app:$GITHUB_SHA \
             --platform managed \
             --region europe-west2 \
-            --port 5000
+            --port 5000 \
             --set-env-vars "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
             --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
         env:
