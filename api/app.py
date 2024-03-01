@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, session, redirect, url_for
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
+# from google.oauth2 import id_token
+# from google.auth.transport import requests as google_requests
 from flask_dance.contrib.google import make_google_blueprint, google
 import os
 import requests  # Ensure this is imported at the top
@@ -41,8 +41,6 @@ def after_login():
 def login():
     if not google.authorized:
         return redirect(url_for("google.login"))
-
-    print("Hello, world!")
     return redirect(url_for("google.login"))
 
 
@@ -57,13 +55,12 @@ def google_auth():
             f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
         )
         response.raise_for_status()
-        user_info = response.json()
-
+        # user_info = response.json() Uncomment when needed
         # Perform your authentication logic here
         # For example, check if the user exists in your database
         # If the user is authenticated successfully:
         return jsonify({"success": True, "message": "User authenticated"}), 200
-    except requests.RequestException as e:
+    except requests.RequestException:
         return (
             jsonify(
                 {"success": False, "message": "Failed to authenticate with Google"}
