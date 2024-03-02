@@ -2,14 +2,26 @@
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<h2>Welcome to the Home Page</h2>
-{% if authorized %}
-    <p>You are logged in as a(n) {{ session.get('user_type') }}.</p>
-    <p><a href="/logout">Logout</a></p>
-    <p><a href="/events">Events</a></p>
-{% else %}
-    <p>You are not logged in.</p>
-    <a href="/login" class="button">Login</a>
-    <a href="/register" class="button">Register</a>
-{% endif %}
+<div class="container mt-5">
+    <h2>Welcome to the Home Page</h2>
+    {% if authorized %}
+        <div class="alert alert-success" role="alert">
+            You are logged in as a(n) {{ session.get('user_type', 'user') }}.
+        </div>
+        <p>
+            <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
+        </p>
+        <p>
+            <a href="{{ url_for('events') }}" class="btn btn-success">Events</a>
+        </p>
+    {% else %}
+        <div class="alert alert-warning" role="alert">
+            You are not logged in.
+        </div>
+        <p>
+            <a href="{{ url_for('login') }}" class="btn btn-primary">Login</a>
+            <a href="{{ url_for('register') }}" class="btn btn-secondary">Register</a>
+        </p>
+    {% endif %}
+</div>
 {% endblock %}

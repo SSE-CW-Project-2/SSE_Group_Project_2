@@ -3,7 +3,13 @@
 {% block title %}Profile{% endblock %}
 
 {% block content %}
-<h2>Welcome to the Profile Page, {{ session['username'] }}!</h2>
-<p>You are logged in as a(n) {{ session['user_type'] }}.</p>
-<p><a href="/logout">Logout</a></p>
+<div class="container mt-5">
+    <div class="jumbotron">
+        <h2 class="display-4">Welcome to the Profile Page, {{ session['username'] }}!</h2>
+        <p class="lead">You are logged in as a(n) {{ session['user_type'] }}.</p>
+        <hr class="my-4">
+        <p>Use the button below to log out of your session.</p>
+        <a class="btn btn-danger btn-lg" href="{{ url_for('logout') }}" role="button">Logout</a>
+    </div>
+</div>
 {% endblock %}

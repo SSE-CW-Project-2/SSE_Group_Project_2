@@ -2,34 +2,39 @@
 {% block title %}Events{% endblock %}
 
 {% block content %}
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Date</th>
-            <th>Location</th>
-            <th>Capacity</th>
-            <th>Price</th>
-            <th>Action</th> <!-- Add a new column for the action -->
-        </tr>
-    </thead>
-    <tbody>
-        {% for event in events %}
-            <tr>
-                <td>{{ event.name }}</td>
-                <td>{{ event.description }}</td>
-                <td>{{ event.date }}</td>
-                <td>{{ event.location }}</td>
-                <td>{{ event.capacity }}</td>
-                <td>{{ event.price }}</td>
-                {% if session['user_type'] == 'customer' %}
-                    <td><a href="/buy/{{ event.event_id }}">Buy Now</a></td>
-                {% elif session['user_type'] == 'venue' %}
-                    <td><a href="/manage/{{ event.event_id }}">Manage event</a></td>
-                {% endif %}
-            </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container mt-5">
+    <h2>Events</h2>
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Capacity</th>
+                    <th>Price</th>
+                    <th>Action</th> <!-- Add a new column for the action -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                    <tr>
+                        <td>{{ event.name }}</td>
+                        <td>{{ event.description }}</td>
+                        <td>{{ event.date }}</td>
+                        <td>{{ event.location }}</td>
+                        <td>{{ event.capacity }}</td>
+                        <td>${{ event.price }}</td>
+                        {% if session['user_type'] == 'customer' %}
+                            <td><a href="/buy/{{ event.event_id }}" class="btn btn-primary">Buy Now</a></td>
+                        {% elif session['user_type'] == 'venue' %}
+                            <td><a href="/manage/{{ event.event_id }}" class="btn btn-secondary">Manage event</a></td>
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
 {% endblock %}
