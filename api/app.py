@@ -6,11 +6,12 @@ import os
 import requests
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "your_default_secret_key")
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['PREFERRED_URL_SCHEME'] = 'https'
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)  # type: ignore
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
