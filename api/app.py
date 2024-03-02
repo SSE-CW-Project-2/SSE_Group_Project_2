@@ -9,7 +9,6 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "your_default_secret_key")
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['PREFERRED_URL_SCHEME'] = 'https'
-app.url_scheme = "https"
 
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
