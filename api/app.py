@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, session, redirect, url_for, render_template
-from google.oauth2 import id_token
-from google.auth.transport import requests as google_requests
+# from google.oauth2 import id_token
+# from google.auth.transport import requests as google_requests
 from flask_dance.contrib.google import make_google_blueprint, google
 import os
 import requests
@@ -93,9 +93,9 @@ def after_login():
     if account_info.ok:
         account_info_json = account_info.json()
         session["user_info"] = account_info_json
-        if False:  #### IF USER CAN BE FOUND IN DATABASE
+        if False:  # IF USER CAN BE FOUND IN DATABASE
             pass
-        if True:  #### IF USER CAN'T BE FOUND IN DATABASE
+        if True:  # IF USER CAN'T BE FOUND IN DATABASE
             pass
         return redirect(url_for("home"))
     return "Failed to fetch user info"
@@ -108,26 +108,25 @@ def login():
     return redirect(url_for("home"))
 
 
-    @app.route("/login/google", methods=["POST"])
-    def google_auth():
-        # Extract the ID token from the request body
-        id_token = request.json.get("token")
-
-        # Verify the ID token with Google's servers
-        try:
-            response = requests.get(
-                f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
-            )
-            response.raise_for_status()
-            session['logged_in'] = True
-            return jsonify({"success": True, "message": "User authenticated"}), 200
-        except requests.RequestException:
-            return (
-                jsonify(
-                    {"success": False, "message": "Failed to authenticate with Google"}
-                ),
-                400,
-            )
+@app.route("/login/google", methods=["POST"])
+def google_auth():
+    # Extract the ID token from the request body
+    id_token = request.json.get("token")
+    # Verify the ID token with Google's servers
+    try:
+        response = requests.get(
+            f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
+        )
+        response.raise_for_status()
+        session['logged_in'] = True
+        return jsonify({"success": True, "message": "User authenticated"}), 200
+    except requests.RequestException:
+        return (
+            jsonify(
+                {"success": False, "message": "Failed to authenticate with Google"}
+            ),
+            400,
+        )
 
 
 @app.route("/profile")
@@ -138,7 +137,7 @@ def profile():
 
 @app.route("/logout")
 def logout():
-    ### Logic for logging out
+    # Logic for logging out
     return redirect(url_for("home"))
 
 
@@ -154,7 +153,7 @@ def events():
     # TODO: CALL TO DATABASE TO GET EVENTS FOR USER ###
     # PLACEHOLDER FOR NOW #############################################
     events = example_events
-    session["user_type"] = "customer" ##### CHANGE THIS
+    session["user_type"] = "customer"  # CHANGE THIS
     session["user_id"] = 1
     if session["user_type"] == "venue":
         events = [e for e in events if e["venue_id"] == session.get("user_id")]
