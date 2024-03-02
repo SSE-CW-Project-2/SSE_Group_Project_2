@@ -97,36 +97,17 @@ def after_login():
             pass
         if True:  # IF USER CAN'T BE FOUND IN DATABASE
             pass
+        session['logged_in'] = True
         return redirect(url_for("home"))
     return "Failed to fetch user info"
 
 
 @app.route("/login")
 def login():
-    if not google.authorized:
+    authorized = session.get("logged_in", False) and google.authorized
+    if not authorized:
         return redirect(url_for("google.login"))
     return redirect(url_for("home"))
-
-
-@app.route("/login/google", methods=["POST"])
-def google_auth():
-    # Extract the ID token from the request body
-    id_token = request.json.get("token")
-    # Verify the ID token with Google's servers
-    try:
-        response = requests.get(
-            f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
-        )
-        response.raise_for_status()
-        session['logged_in'] = True
-        return jsonify({"success": True, "message": "User authenticated"}), 200
-    except requests.RequestException:
-        return (
-            jsonify(
-                {"success": False, "message": "Failed to authenticate with Google"}
-            ),
-            400,
-        )
 
 
 @app.route("/profile")
@@ -137,13 +118,15 @@ def profile():
 
 @app.route("/logout")
 def logout():
-    # Logic for logging out
+    # Clear the user's session
+    session.clear()
     return redirect(url_for("home"))
 
 
 @app.route("/")
 def home():
-    return render_template("index.html", authorized=google.authorized)
+    authorized = session.get("logged_in", False) and google.authorized
+    return render_template("index.html", authorized=authorized)
 
 
 @app.route("/events")
@@ -154,27 +137,30 @@ def events():
     events = example_events
     session["user_type"] = "customer"  # CHANGE THIS
     session["user_id"] = 1
+    authorized = session.get("logged_in", False) and google.authorized
     if session["user_type"] == "venue":
         events = [e for e in events if e["venue_id"] == session.get("user_id")]
-    return render_template("events.html", user_type=session["user_type"], events=events, authorized=google.authorized)
+    return render_template("events.html", user_type=session["user_type"], events=events, authorized=authorized)
 
 
 @app.route("/buy/<id>", methods=["GET", "POST"])
 def buy_event(id):
     # TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
     event = None
+    authorized = session.get("logged_in", False) and google.authorized
     for e in example_events:
         if e["event_id"] == int(id):
             event = e
             break
     if event is None:
         return "Event not found"
-    return render_template("buy.html", event=event, authorized=google.authorized)
+    return render_template("buy.html", event=event, authorized=authorized)
 
 
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
-    return render_template("checkout.html", event_id=event_id, authorized=google.authorized)
+    authorized = session.get("logged_in", False) and google.authorized
+    return render_template("checkout.html", event_id=event_id, authorized=authorized)
 
 
 @app.route("/manage/<event_id>", methods=["GET", "POST"])
@@ -187,7 +173,8 @@ def manage_event(event_id):
             break
     if event is None:
         return "Event not found"
-    return render_template("manage.html", event=event, authorized=google.authorized)
+    authorized = session.get("logged_in", False) and google.authorized
+    return render_template("manage.html", event=event, authorized=authorized)
 
 
 if __name__ == "__main__":
