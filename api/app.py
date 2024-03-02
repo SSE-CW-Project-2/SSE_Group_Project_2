@@ -1,9 +1,8 @@
-from flask import Flask, request, jsonify, session, redirect, url_for, render_template
+from flask import Flask, request, session, redirect, url_for, render_template
 # from google.oauth2 import id_token
 # from google.auth.transport import requests as google_requests
 from flask_dance.contrib.google import make_google_blueprint, google
 import os
-import requests
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 
