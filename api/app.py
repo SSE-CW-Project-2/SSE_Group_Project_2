@@ -1,11 +1,45 @@
 from flask import Flask, request, jsonify, session, redirect, url_for, render_template
-# from google.oauth2 import id_token
-# from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 from flask_dance.contrib.google import make_google_blueprint, google
 import os
 import requests
+from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 
+
+example_events = [
+    {
+        "name": "Event 1",
+        "date": "01/01/2020",
+        "location": "Location 1",
+        "description": "Example description for Event 1",
+        "capacity": 100,
+        "price": 10.99,
+        "event_id": 1,
+        "venue_id": 1,
+    },
+    {
+        "name": "Event 2",
+        "date": "01/02/2020",
+        "location": "Location 2",
+        "description": "Example description for Event 2",
+        "capacity": 50,
+        "price": 15.99,
+        "event_id": 2,
+        "venue_id": 2,
+    },
+    {
+        "name": "Event 3",
+        "date": "01/03/2020",
+        "location": "Location 3",
+        "description": "Example description for Event 3",
+        "capacity": 200,
+        "price": 20.99,
+        "event_id": 3,
+        "venue_id": 1,
+    },
+]
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "your_default_secret_key")
@@ -30,12 +64,40 @@ google_blueprint = make_google_blueprint(
 app.register_blueprint(google_blueprint, url_prefix="/login")
 
 
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not google.authorized:
+            # If the user is not logged in, redirect to the login page
+            return redirect(url_for("login", next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def one_user_type_allowed(user_type):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not google.authorized:
+                return redirect(url_for("login", next=request.url))
+            if session.get("user_type", "") != user_type:
+                return redirect(url_for("home"))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
+
+
 @app.route("/after_login")
 def after_login():
     account_info = google.get("/oauth2/v2/userinfo")
     if account_info.ok:
         account_info_json = account_info.json()
-        return f"Welcome {account_info_json['name']}!"
+        session["user_info"] = account_info_json
+        if False:  #### IF USER CAN BE FOUND IN DATABASE
+            pass
+        if True:  #### IF USER CAN'T BE FOUND IN DATABASE
+            pass
+        return redirect(url_for("home"))
     return "Failed to fetch user info"
 
 
@@ -43,40 +105,91 @@ def after_login():
 def login():
     if not google.authorized:
         return redirect(url_for("google.login"))
-    return redirect(url_for("google.login"))
+    return redirect(url_for("home"))
 
 
-@app.route("/login/google", methods=["POST"])
-def google_auth():
-    # Extract the ID token from the request body
-    id_token = request.json.get("token")
+    @app.route("/login/google", methods=["POST"])
+    def google_auth():
+        # Extract the ID token from the request body
+        id_token = request.json.get("token")
 
-    # Verify the ID token with Google's servers
-    try:
-        response = requests.get(
-            f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
-        )
-        response.raise_for_status()
-        user_info = response.json()  # Uncomment when needed
-        session["user_info"] = user_info
-        session["logged_in"] = True
-        # Perform your authentication logic here
-        # For example, check if the user exists in your database
-        # If the user is authenticated successfully:
+        # Verify the ID token with Google's servers
+        try:
+            response = requests.get(
+                f"https://oauth2.googleapis.com/tokeninfo?id_token={id_token}"
+            )
+            response.raise_for_status()
+            session['logged_in'] = True
+            return jsonify({"success": True, "message": "User authenticated"}), 200
+        except requests.RequestException:
+            return (
+                jsonify(
+                    {"success": False, "message": "Failed to authenticate with Google"}
+                ),
+                400,
+            )
 
-        return jsonify({"success": True, "message": "User authenticated"}), 200
-    except requests.RequestException:
-        return (
-            jsonify(
-                {"success": False, "message": "Failed to authenticate with Google"}
-            ),
-            400,
-        )
+
+@app.route("/profile")
+@login_required
+def profile():
+    return render_template("profile.html")
+
+
+@app.route("/logout")
+def logout():
+    ### Logic for logging out
+    return redirect(url_for("home"))
 
 
 @app.route("/")
 def home():
+    print(google.authorized)
     return render_template("index.html")
+
+
+@app.route("/events")
+@login_required
+def events():
+    # TODO: CALL TO DATABASE TO GET EVENTS FOR USER ###
+    # PLACEHOLDER FOR NOW #############################################
+    events = example_events
+    session["user_type"] = "customer" ##### CHANGE THIS
+    session["user_id"] = 1
+    if session["user_type"] == "venue":
+        events = [e for e in events if e["venue_id"] == session.get("user_id")]
+    return render_template("events.html", user_type=session["user_type"], events=events)
+
+
+@app.route("/buy/<id>", methods=["GET", "POST"])
+def buy_event(id):
+    # TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
+    event = None
+    for e in example_events:
+        if e["event_id"] == int(id):
+            event = e
+            break
+    if event is None:
+        return "Event not found"
+    return render_template("buy.html", event=event)
+
+
+@app.route("/checkout/<event_id>", methods=["GET", "POST"])
+def checkout(event_id):
+    return render_template("checkout.html", event_id=event_id)
+
+
+@app.route("/manage/<event_id>", methods=["GET", "POST"])
+def manage_event(event_id):
+    # TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
+    event = None
+    for e in example_events:
+        if e["event_id"] == int(event_id):
+            event = e
+            break
+    if event is None:
+        return "Event not found"
+    return render_template("manage.html", event=event)
 
 
 if __name__ == "__main__":
