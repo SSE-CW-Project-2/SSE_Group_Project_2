@@ -3,14 +3,14 @@ from flask import Flask, request, jsonify, session, redirect, url_for, render_te
 # from google.auth.transport import requests as google_requests
 from flask_dance.contrib.google import make_google_blueprint, google
 import os
-import requests  # Ensure this is imported at the top
-
+import requests
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "your_default_secret_key")
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['PREFERRED_URL_SCHEME'] = 'https'
+app.url_scheme = "https"
 
-
-# Assuming you've set your Google Client ID in the environment variables
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 
