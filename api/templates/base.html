@@ -34,7 +34,7 @@
 <body>
     <div class="navbar">
         <a href="/">Home</a>
-        {% if session['logged_in'] %}
+        {% if google.authorized %}
             <a href="/profile">Profile</a>
             <a href="/events">Explore events</a>
         {% else %}
