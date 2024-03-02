@@ -3,7 +3,7 @@
 
 {% block content %}
 <h2>Welcome to the Home Page</h2>
-{% if google.authorized %}
+{% if authorized %}
     <p>You are logged in as a(n) {{ session.get('user_type') }}.</p>
     <p><a href="/logout">Logout</a></p>
     <p><a href="/events">Events</a></p>

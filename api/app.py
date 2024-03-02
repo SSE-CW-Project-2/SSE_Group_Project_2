@@ -143,8 +143,7 @@ def logout():
 
 @app.route("/")
 def home():
-    print(google.authorized)
-    return render_template("index.html")
+    return render_template("index.html", authorized=google.authorized)
 
 
 @app.route("/events")
@@ -157,7 +156,7 @@ def events():
     session["user_id"] = 1
     if session["user_type"] == "venue":
         events = [e for e in events if e["venue_id"] == session.get("user_id")]
-    return render_template("events.html", user_type=session["user_type"], events=events)
+    return render_template("events.html", user_type=session["user_type"], events=events, authorized=google.authorized)
 
 
 @app.route("/buy/<id>", methods=["GET", "POST"])
@@ -170,12 +169,12 @@ def buy_event(id):
             break
     if event is None:
         return "Event not found"
-    return render_template("buy.html", event=event)
+    return render_template("buy.html", event=event, authorized=google.authorized)
 
 
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
-    return render_template("checkout.html", event_id=event_id)
+    return render_template("checkout.html", event_id=event_id, authorized=google.authorized)
 
 
 @app.route("/manage/<event_id>", methods=["GET", "POST"])
@@ -188,7 +187,7 @@ def manage_event(event_id):
             break
     if event is None:
         return "Event not found"
-    return render_template("manage.html", event=event)
+    return render_template("manage.html", event=event, authorized=google.authorized)
 
 
 if __name__ == "__main__":
