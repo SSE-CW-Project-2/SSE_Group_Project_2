@@ -1,59 +1,58 @@
-import time
 import requests
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
 import os
 import json
 
-# Load the service account JSON string from environment variables
-service_account_json_string = os.environ.get('SERVICE_ACCOUNT_JSON')
-
-# If the environment variable is not found, this will be None
-if service_account_json_string is None:
-    raise ValueError("SERVICE_ACCOUNT_JSON environment variable is not set")
-
-# Convert the JSON string to a dictionary
-service_account_info = json.loads(service_account_json_string)
-
-# Configure these variables with your own values
-host = "https://see-project-gateway-c4vspufr.uc.gateway.dev"
-endpoint_path = "/create_account"
-API_URL = f"{host}{endpoint_path}"
-AUDIENCE = 'https://see-project-gateway-c4vspufr.uc.gateway.dev'
 
 def get_token():
-    # Use the already loaded service account info to create ID token credentials
+    service_account_json_string = os.environ.get('SERVICE_ACCOUNT_JSON')
+    if service_account_json_string is None:
+        raise ValueError("SERVICE_ACCOUNT_JSON environment variable is not set")
+    service_account_info = json.loads(service_account_json_string)
     credentials = service_account.IDTokenCredentials.from_service_account_info(
         service_account_info,
-        target_audience=AUDIENCE,
+        target_audience=os.environ.get('GATEWAY_HOST'),
     )
 
-    # Obtain an OAuth2 access token using the JWT
     credentials.refresh(Request())
     return credentials.token
 
-def make_jwt_request(signed_jwt, url=API_URL):
+
+def make_jwt_request(signed_jwt, endpoint_path, request):
+    host = os.environ.get('GATEWAY_HOST')
     """Makes an authorized request to the endpoint"""
+
+    headers = {
+        "Authorization": f"Bearer {signed_jwt}",
+        "content-type": "application/json",
+    }
+    url = f"{host}{endpoint_path}"
+    response = requests.post(url, headers=headers, json=request)
+    print(response.status_code, response.content)
+    response.raise_for_status()
+    return response.json()
+
+
+def make_authorized_request(endpoint_path, request):
+    token = get_token()
+    return make_jwt_request(token, endpoint_path, request)
+
+
+if __name__ == "__main__":
+    endpoint_path = "/create_account"
     request = {
         "function": "create",
         "object_type": "artist",
         "identifier": "testartist21@example.com",
         "attributes": {
+            "user_id": "12345",
+            # "artist_name": "Test Artist 21",
             "email": "testartist21@example.com",
-            "username": "test21artist",
-            "genre": "Jazz",
+            # "username": "test21artist",
+            "genres": "Jazz",
+            # "spotify_artist_id": "12345",
         },
     }
-    headers = {
-        "Authorization": f"Bearer {signed_jwt}",
-        "content-type": "application/json",
-    }
-    response = requests.post(url, headers=headers, json=request)
-    print(response.status_code, response.content)
-    response.raise_for_status()
-
-# Obtain token
-token = get_token()
-
-# Make authorized JWT request
-make_jwt_request(token)
+    result = make_authorized_request(endpoint_path, request)
+    print(result)

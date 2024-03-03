@@ -85,10 +85,12 @@ def one_user_type_allowed(user_type):
         return decorated_function
     return decorator
 
+
 def is_user_new(email):
     # Hardcoded list of existing user emails
     existing_users = ['juliusgasson@gmail.com']
     return email not in existing_users
+
 
 def save_user_session_data(account_info_json):
     # Save necessary user info in the session
@@ -104,7 +106,7 @@ def after_login():
         account_info_json = account_info.json()
         session['logged_in'] = True
         email = account_info_json.get("email")
-        
+
         if is_user_new(email):
             # Save minimal info and redirect to location capture page
             save_user_session_data(account_info_json)  # Save or update session data
@@ -114,8 +116,6 @@ def after_login():
             save_user_session_data(account_info_json)
             return redirect(url_for("home"))
     return "Failed to fetch user info"
-
-
 
 
 @app.route("/login")
@@ -134,13 +134,11 @@ def profile():
     return render_template("profile.html", user_info=user_info, profile_picture=profile_picture)
 
 
-
 @app.route("/logout")
 def logout():
     # Clear the user's session
     session.clear()
     return redirect(url_for("home"))
-
 
 
 @app.route("/")
@@ -182,16 +180,17 @@ def checkout(event_id):
     authorized = session.get("logged_in", False) and google.authorized
     return render_template("checkout.html", event_id=event_id, authorized=authorized)
 
+
 @app.route("/register_location", methods=["GET", "POST"])
 def register_location():
     if request.method == "POST":
         location = request.form["location"]
         # Instead of calling an undefined function, save the location directly to the session
         session['user_location'] = location
-        
+
         # After saving the location in the session, redirect the user to the home page or another appropriate page
         return redirect(url_for("home"))
-    
+
     # Render a simple form to input the location for GET requests
     return '''
         <form method="post">
@@ -199,8 +198,6 @@ def register_location():
             <input type="submit" value="Submit">
         </form>
     '''
-
-
 
 
 @app.route("/manage/<event_id>", methods=["GET", "POST"])
