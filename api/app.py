@@ -3,7 +3,7 @@ from flask_dance.contrib.google import make_google_blueprint, google
 import os
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
-
+from .auth import make_authorized_request
 
 example_events = [
     {
@@ -108,12 +108,13 @@ def after_login():
         if is_user_new(email):
             # Save minimal info and redirect to location capture page
             save_user_session_data(account_info_json)  # Save or update session data
-            return redirect(url_for("register_location"))
+            return redirect(url_for("set_profile"))
         else:
             # User exists, proceed to save or update session data and redirect home
             save_user_session_data(account_info_json)
             return redirect(url_for("home"))
     return "Failed to fetch user info"
+
 
 @app.route("/login")
 def login():
@@ -128,12 +129,12 @@ def login():
 def profile():
     user_info = session.get("user_info", {})
     profile_picture = session.get("profile_picture", "")
+
     return render_template("profile.html", user_info=user_info, profile_picture=profile_picture)
 
 
 @app.route("/logout")
 def logout():
-    # Clear the user's session
     session.clear()
     return redirect(url_for("home"))
 
@@ -178,23 +179,42 @@ def checkout(event_id):
     return render_template("checkout.html", event_id=event_id, authorized=authorized)
 
 
-@app.route("/register_location", methods=["GET", "POST"])
-def register_location():
+@app.route("/set_profile", methods=["GET", "POST"])
+def set_profile():
     if request.method == "POST":
-        location = request.form["location"]
-        # Instead of calling an undefined function, save the location directly to the session
-        session['user_location'] = location
-
-        # After saving the location in the session, redirect the user to the home page or another appropriate page
+        user_type = request.form.get("user_type")
+        session["user_type"] = user_type
+        account_info_json = google.get("/oauth2/v2/userinfo").json()
+        print(account_info_json)
+        identifier = account_info_json.get('id')
+        print(identifier)
+        create_request = {
+            "function": "create",
+            "object_type": user_type,
+            "identifier": identifier,
+            "attributes": {
+                "user_id": identifier,
+                "email": request.form.get("email"),
+                "street_address": request.form.get("street_address"),
+                "city": request.form.get("city"),
+                "postcode": request.form.get("postcode")
+            }
+        }
+        if user_type == "venue":
+            create_request["attributes"]["venue_name"] = request.form.get("venue_name")
+        elif user_type == "artist":
+            create_request["attributes"]["artist_name"] = request.form.get("artist_name")
+            create_request["attributes"]["genres"] = request.form.get("genres")
+            create_request["attributes"]["spotify_artist_id"] = request.form.get("spotify_artist_id")
+        else:
+            create_request["attributes"]["first_name"] = request.form.get("user_name")
+            create_request["attributes"]["last_name"] = request.form.get("last_name")
+        response = make_authorized_request("/create_account", create_request)
+        print(response)
         return redirect(url_for("home"))
 
     # Render a simple form to input the location for GET requests
-    return '''
-        <form method="post">
-            Location: <input type="text" name="location"><br>
-            <input type="submit" value="Submit">
-        </form>
-    '''
+    return render_template("set_profile.html")
 
 
 @app.route("/manage/<event_id>", methods=["GET", "POST"])

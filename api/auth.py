@@ -41,17 +41,21 @@ def make_authorized_request(endpoint_path, request):
 
 if __name__ == "__main__":
     endpoint_path = "/create_account"
+    identifier = "127409124712490421790"
     request = {
         "function": "create",
         "object_type": "artist",
-        "identifier": "testartist21@example.com",
+        "identifier": identifier,
         "attributes": {
-            "user_id": "12345",
-            # "artist_name": "Test Artist 21",
+            "user_id": identifier,
+            "artist_name": "Test Artist 21",
             "email": "testartist21@example.com",
             # "username": "test21artist",
             "genres": "Jazz",
-            # "spotify_artist_id": "12345",
+            "spotify_artist_id": "12345acbabssadl",
+            "street_address": "1234 Main St",
+            "city": "San Francisco",
+            "postcode": "94111",
         },
     }
     result = make_authorized_request(endpoint_path, request)

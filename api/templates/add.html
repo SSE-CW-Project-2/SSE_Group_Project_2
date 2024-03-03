@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Add Event{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Add a New Event</h2>
+    <form action="/events" method="post" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="eventName">Event Name:</label>
+            <input type="text" class="form-control" id="eventName" name="eventName" required>
+        </div>
+        <div class="form-group">
+            <label for="eventDate">Event Date:</label>
+            <input type="date" class="form-control" id="eventDate" name="eventDate" required>
+        </div>
+        <div class="form-group">
+            <label for="eventLocation">Event Location:</label>
+            <input type="text" class="form-control" id="eventLocation" name="eventLocation" required>
+        </div>
+        <div class="form-group">
+            <label for="eventDescription">Event Description:</label>
+            <textarea class="form-control" id="eventDescription" name="eventDescription" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="eventImage">Event Image:</label>
+            <input type="file" class="form-control-file" id="eventImage" name="eventImage">
+        </div>
+        <div class="form-group">
+            <label for="eventGenre">Event Genre:</label>
+            <select class="form-control" id="eventGenre" name="eventGenre">
+                <option>Rock</option>
+                <option>Pop</option>
+                <option>Jazz</option>
+                <option>Classical</option>
+                <option>Electronic</option>
+                <!-- Add more options as needed -->
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+</div>
+{% endblock %}
