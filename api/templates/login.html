@@ -1,26 +1,29 @@
-{% extends "base.html" %}
+<!-- {% extends "base.html" %}
 
 {% block title %}Login{% endblock %}
 
 {% block content %}
-<h2>Login</h2>
-<form action="/login" method="POST">
-    <div>
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" placeholder="'venue' or 'customer'" required>
-    </div>
-    <div>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" placeholder="'password'" required>
-    </div>
-    <button type="submit">Login</button>
-    {% if error %}
-        <p>Invalid username or password. Please try again.</p>
-    {% endif %}
-</form>
+<div class="container mt-4">
+    <h2 class="mb-3">Login</h2>
+    <form action="/login" method="POST" class="mb-3">
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="'venue' or 'customer'" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="'password'" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+        {% if error %}
+            <div class="alert alert-danger mt-2" role="alert">
+                Invalid username or password. Please try again.
+            </div>
+        {% endif %}
+    </form>
 
-<!-- Google Sign-In button -->
-<div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+</div>
 
 <script>
   function onSignIn(googleUser) {
@@ -34,16 +37,13 @@
     }).then(response => response.json())
       .then(data => {
         console.log(data);
-        // Handle the response from your server, like redirecting to another page
-        // For example, if login is successful, redirect to the home page
-        if (data && !data.error) {
-          window.location.href = '/'; // Adjust the URL as needed
+        if (data.success) {
+          window.location.href = '/';
         } else {
           console.error('Failed to log in with Google');
-          // Optionally, display an error message to the user
         }
       }).catch(error => console.error(error));
   }
 </script>
 
-{% endblock %}
+{% endblock %} -->
