@@ -92,13 +92,11 @@ def after_login():
     if account_info.ok:
         account_info_json = account_info.json()
         session["user_info"] = account_info_json
-        if False:  # IF USER CAN BE FOUND IN DATABASE
-            pass
-        if True:  # IF USER CAN'T BE FOUND IN DATABASE
-            pass
+        session["profile_picture"] = account_info_json.get("picture", "")  # Store profile picture URL in session
         session['logged_in'] = True
         return redirect(url_for("home"))
     return "Failed to fetch user info"
+
 
 
 @app.route("/login")
@@ -112,7 +110,10 @@ def login():
 @app.route("/profile")
 @login_required
 def profile():
-    return render_template("profile.html")
+    user_info = session.get("user_info", {})
+    profile_picture = session.get("profile_picture", "")
+    return render_template("profile.html", user_info=user_info, profile_picture=profile_picture)
+
 
 
 @app.route("/logout")

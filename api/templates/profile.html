@@ -5,9 +5,20 @@
 {% block content %}
 <div class="container mt-5">
     <div class="jumbotron">
-        <h2 class="display-4">Welcome to the Profile Page, {{ session['username'] }}!</h2>
-        <p class="lead">You are logged in as a(n) {{ session['user_type'] }}.</p>
+        <!-- Display the user's profile picture if it exists -->
+        {% if profile_picture %}
+        <img src="{{ profile_picture }}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 150px; height: 150px;">
+        {% endif %}
+        
+        <!-- Display the user's name if available, otherwise use a placeholder -->
+        <h2 class="display-4">Welcome to the Profile Page, {{ user_info.get('name', 'User') }}!</h2>
+        
+        <p class="lead">You are logged in with the email {{ user_info.get('email', 'no email provided') }}.</p>
         <hr class="my-4">
+        
+        <!-- Additional user information -->
+        <p>You are logged in as a(n) {{ session['user_type'] }}.</p>
+        
         <p>Use the button below to log out of your session.</p>
         <a class="btn btn-danger btn-lg" href="{{ url_for('logout') }}" role="button">Logout</a>
     </div>
