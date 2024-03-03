@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Register Location{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Welcome! Please Enter Your Location</h3>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">To enhance your experience, we require your current location. Please enter it below:</p>
+                    <form method="post">
+                        <div class="form-group">
+                            <label for="location">Location:</label>
+                            <input type="text" class="form-control" id="location" name="location" placeholder="City, Country" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
