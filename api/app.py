@@ -1,6 +1,4 @@
 from flask import Flask, request, session, redirect, url_for, render_template
-# from google.oauth2 import id_token
-# from google.auth.transport import requests as google_requests
 from flask_dance.contrib.google import make_google_blueprint, google
 import os
 from functools import wraps
@@ -98,7 +96,6 @@ def after_login():
     return "Failed to fetch user info"
 
 
-
 @app.route("/login")
 def login():
     authorized = session.get("logged_in", False) and google.authorized
@@ -113,7 +110,6 @@ def profile():
     user_info = session.get("user_info", {})
     profile_picture = session.get("profile_picture", "")
     return render_template("profile.html", user_info=user_info, profile_picture=profile_picture)
-
 
 
 @app.route("/logout")

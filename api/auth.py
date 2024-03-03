@@ -1,4 +1,3 @@
-import time
 import requests
 from google.oauth2 import service_account
 from google.auth.transport.requests import Request
@@ -19,6 +18,7 @@ def get_token():
     credentials.refresh(Request())
     return credentials.token
 
+
 def make_jwt_request(signed_jwt, endpoint_path, request):
     host = os.environ.get('GATEWAY_HOST')
     """Makes an authorized request to the endpoint"""
@@ -33,9 +33,11 @@ def make_jwt_request(signed_jwt, endpoint_path, request):
     response.raise_for_status()
     return response.json()
 
+
 def make_authorized_request(endpoint_path, request):
     token = get_token()
     return make_jwt_request(token, endpoint_path, request)
+
 
 if __name__ == "__main__":
     endpoint_path = "/create_account"
