@@ -8,7 +8,7 @@
     <form action="/set_profile" method="post" enctype="multipart/form-data">
         <div class="form-group">
             <label for="userType">User Type:</label>
-            <select class="form-control" id="userType" name="user_type" onchange="toggleFields()">
+            <select class="form-control" id="userType" name="user_type" onchange="toggleFields()" required>
                 <option value="customer">Customer</option>
                 <option value="venue">Venue</option>
                 <option value="artist">Artist</option>
@@ -55,9 +55,25 @@
 <script>
 function toggleFields() {
     var userType = document.getElementById("userType").value;
-    document.getElementById("venueNameGroup").style.display = userType == "venue" ? "block" : "none";
-    document.getElementById("artistNameGroup").style.display = userType == "artist" ? "block" : "none";
-    document.getElementById("customerNameGroup").style.display = userType == "customer" ? "block" : "none";
-}
-</script>
-{% endblock %}
+    var venueFields = document.getElementById("venueNameGroup").querySelectorAll("input");
+    var artistFields = document.getElementById("artistNameGroup").querySelectorAll("input");
+    var customerFields = document.getElementById("customerNameGroup").querySelectorAll("input");
+
+    // Hide all groups
+    document.getElementById("venueNameGroup").style.display = "none";
+    document.getElementById("artistNameGroup").style.display = "none";
+    document.getElementById("customerNameGroup").style.display = "none";
+
+    // Remove required attribute from all fields
+    [...venueFields, ...artistFields, ...customerFields].forEach(field => field.removeAttribute("required"));
+
+    // Show and set required attributes based on user type
+    if (userType == "venue") {
+        document.getElementById("venueNameGroup").style.display = "block";
+        venueFields.forEach(field => field.setAttribute("required", ""));
+    } else if (userType == "artist") {
+        document.getElementById("artistNameGroup").style.display = "block";
+        artistFields.forEach(field => field.setAttribute("required", ""));
+    } else if (userType == "customer") {
+        document.getElementById("customerNameGroup").style.display = "block";
+    }

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Update Profile{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h2>Update Profile</h2>
+    <form action="/update_account" method="post" enctype="multipart/form-data">
+        <!-- User Type Selector -->
+        <!-- Fields for Venue -->
+        {% if user_type == 'venue' %}
+        <div class="form-group" id="venueNameGroup" style="display: none;">
+            <label for="venueName">Venue Name:</label>
+            <input type="text" class="form-control" id="venueName" name="venue_name">
+        </div>
+        <!-- Fields for Artist -->
+        {% elif user_type == 'artist' %}
+        <div class="form-group" id="artistNameGroup" style="display: none;">
+            <label for="artistName">Artist Name:</label>
+            <input type="text" class="form-control" id="artistName" name="artist_name">
+            <!-- Additional artist fields as required -->
+        </div>
+        <!-- Fields for Customer -->
+        {% else %}
+        <!-- Fields for Customer -->
+        <div class="form-group" id="customerNameGroup" style="display: none;">
+            <label for="userName">First Name:</label>
+            <input type="text" class="form-control" id="userName" name="user_name">
+            <!-- Additional customer fields as required -->
+        </div>
+        {% endif %}
+        <!-- Common Fields -->
+        <!-- Populate these fields with existing data as placeholders or values -->
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" class="form-control" id="email" name="email">
+        </div>
+        <!-- Additional common fields as required -->
+        <button type="submit" class="btn btn-primary">Update</button>
+    </form>
+</div>
+
+<script>
+    function toggleFields() {
+        var userType = document.getElementById("userType").value;
+        // Logic to show/hide fields based on userType
+        // Similar to your existing script
+    }
+    // Additional JavaScript to preload user data and set the user type dropdown correctly
+</script>
+{% endblock %}
