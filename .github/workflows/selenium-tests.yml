@@ -28,11 +28,10 @@ jobs:
     - name: Start XVFB
       run: Xvfb :99 &
     
-    - name: Start Application
-      run: |
-        python api/app.py &
-        
     - name: Run tests
-      run: pipenv run python api/ui_test.py -v 2
+      run: |
+        cd api
+        flask run &
+        pipenv run python api/ui_test.py -v 2
       env:
         DISPLAY: :99
