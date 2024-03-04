@@ -108,29 +108,24 @@ def after_login():
     if account_info.ok:
         account_info_json = account_info.json()
         session['logged_in'] = True
-        email = account_info_json.get("email")
+        id_ = account_info_json.get("id")
         headers = {
-            "email": email,
+            "id": id_,
         }
         response = make_authorized_request("/check_email_in_use", request=headers)
-        if response.status_code == 404:
-            print(response.json())
+        status_code, resp_content = response
+        if status_code == 404:
+            print(response)
             # Save minimal info and redirect to location capture page
             save_user_session_data(account_info_json)  # Save or update session data
             return redirect(url_for("set_profile"))
-        elif response.status_code == 200:
-            session["user_type"] = response.json()["object_type"]
+        elif status_code == 200:
+            session["user_type"] = resp_content["account_type"]
             # User exists, proceed to save or update session data and redirect home
-            save_user_session_data(account_info_json)
-            headers = {
-                "identifier": session.get("user_id"),
-                "attributes": {
-                    "object_type": True,
-                }
-            }
+            save_user_session_data(resp_content)
             return redirect(url_for("home"))
         else:
-            print(response.json())
+            print(response)
             return "Failed to create account. Please try again later."
     return "Failed to fetch user info"
 
@@ -185,14 +180,14 @@ def set_profile(function="create"):
         elif user_type == "customer":
             create_request["attributes"]["first_name"] = request.form.get("user_name")
             create_request["attributes"]["last_name"] = request.form.get("last_name")
-        response = make_authorized_request("/create_account", create_request)
-        if response.status_code == 200:
+        status_code, resp_content = make_authorized_request("/create_account", create_request)
+        if status_code == 200:
             session["user_id"] = identifier
             flash("Account created", "success")
             return redirect(url_for("home"))
         else:
             flash("Failed to create account", "error")
-            print(response.json())
+            print(status_code, resp_content)
             return redirect(url_for("set_profile"))
     return render_template("set_profile.html")
 
@@ -206,14 +201,14 @@ def delete_account():
             "object_type": session.get("user_type"),
             "identifier": session.get("user_id")
         }
-        response = make_authorized_request("/delete_account", delete_request, "DELETE")
-        if response.status_code == 200:
+        status_code, resp_content = make_authorized_request("/delete_account", delete_request)
+        if status_code == 200:
             session.clear()
             flash("Account deleted", "success")
             return redirect(url_for("home"))
         else:
             flash("Failed to delete account", "error")
-            print(response.json())
+            print(status_code, resp_content)
             return redirect(url_for("delete_account"))
     return render_template("delete_account.html")
 

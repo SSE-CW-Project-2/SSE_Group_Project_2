@@ -38,9 +38,8 @@ def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST"):
         response = requests.delete(url, headers=headers, json=request)
     else:
         raise ValueError(f"Unsupported request_type: {request_type}")
-    print(response.status_code, response.content)
     response.raise_for_status()
-    return response.json()
+    return response.status_code, response.json()
 
 
 def make_authorized_request(endpoint_path, request, request_type="POST"):
