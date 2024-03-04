@@ -8,7 +8,8 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
     
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -18,15 +19,19 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        pip install -r requirements.txt
         pip install selenium
         
-    - name: Set up Chromedriver
-      uses: nanasess/setup-chromedriver@v1
+    - uses: nanasess/setup-chromedriver@v2
       with:
-        chromedriver-version: 'latest'
-        
-    - name: Run Selenium Test
+        chromedriver-version: 'latest' 
+
+    - name: Setup Xvfb
       run: |
         sudo apt-get update
-        sudo apt-get install -y libxi6 libgconf-2-4
-        python api/ui_test.py
+        sudo apt-get install -y xvfb libxi6 libgconf-2-4
+        sudo Xvfb :99 -ac -screen 0 1280x1024x24 &
+        export DISPLAY=:99
+
+    - name: Run Selenium Test
+      run: python api/ui_test.py
