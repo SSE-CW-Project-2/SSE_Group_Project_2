@@ -24,6 +24,9 @@ jobs:
     
     - name: Prepare Selenium
       uses: nanasess/setup-chromedriver@master
+    
+    - name: Start XVFB
+      run: Xvfb :99 &
         
     - name: Run tests
       run: pipenv run python api/ui_test.py -v 2
