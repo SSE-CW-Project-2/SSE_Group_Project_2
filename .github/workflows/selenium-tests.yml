@@ -8,8 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
     
     - name: Set up Python
       uses: actions/setup-python@v2
@@ -20,23 +19,28 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        # No need to install selenium here if it's already listed in requirements.txt
         
-    - name: Set up Chrome
-      uses: browser-actions/setup-chrome@v1
-      with:
-        chrome-version: 'latest' # Ensures the latest version of Chrome is used
-    - run: chrome --version # This line checks the installed Chrome version, it should be part of a step.
-      
+    - name: Install Google Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo apt install -y ./google-chrome-stable_current_amd64.deb
+        
     - name: Install ChromeDriver
-      uses: nanasess/setup-chromedriver@v2
-      with:
-        chromedriver-version: 'latest' # Ensures compatibility with the installed Chrome version
+      run: |
+        CHROME_VERSION=$(google-chrome --version | grep -oE "[0-9.]{2,20}." | cut -d'.' -f1)
+        CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
+        wget -N "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" -P ~/
+        unzip ~/chromedriver_linux64.zip -d ~/
+        sudo mv -f ~/chromedriver /usr/local/bin/chromedriver
+        sudo chown root:root /usr/local/bin/chromedriver
+        sudo chmod 0755 /usr/local/bin/chromedriver
+        chromedriver --version
 
     - name: Setup Xvfb
       run: |
-        sudo apt-get update
-        sudo apt-get install -y xvfb libxi6 libgconf-2-4
+        sudo apt-get install -y xvfb
         sudo Xvfb :99 -ac -screen 0 1280x1024x24 &
         export DISPLAY=:99
 
