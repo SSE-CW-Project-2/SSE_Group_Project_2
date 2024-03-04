@@ -18,7 +18,7 @@ try:
     driver.implicitly_wait(10)
 
     # Check the title of the page
-    assert "Home" in driver.title
+    assert "Hello" in driver.title
 
     # Perform additional tests, such as finding elements or interacting with the page
     # For example, to find an element by its ID and enter text:
