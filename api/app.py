@@ -1,11 +1,11 @@
-from flask import Flask, request, session, redirect, url_for, render_template
+from flask import Flask, request, session, redirect, url_for, render_template, flash
 from flask_dance.contrib.google import make_google_blueprint, google
 import os
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 from .auth import make_authorized_request
 
-################### FLASK SETUP ####################
+# FLASK SETUP #
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "your_default_secret_key")
 app.config['SESSION_COOKIE_SECURE'] = True
@@ -13,7 +13,7 @@ app.config['PREFERRED_URL_SCHEME'] = 'https'
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)  # type: ignore
 
 
-################### GOOGLE AUTH SETUP ####################
+# GOOGLE AUTH SETUP #
 GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
 
@@ -30,7 +30,8 @@ google_blueprint = make_google_blueprint(
 
 app.register_blueprint(google_blueprint, url_prefix="/login")
 
-################### DECORATORS ####################
+
+# DECORATORS #
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -54,7 +55,7 @@ def one_user_type_allowed(user_type):
     return decorator
 
 
-################### HELPER FUNCTIONS ####################
+# HELPER FUNCTIONS #
 def is_user_new(email):
     # Hardcoded list of existing user emails
     existing_users = ['juliusgasson@gmail.com']
@@ -69,9 +70,9 @@ def save_user_session_data(account_info_json):
     session['user_id'] = account_info_json.get('id', '')
 
 
-################### ROUTES ####################
+# ROUTES #
 
-############## GENERAL ROUTES #################
+# GENERAL ROUTES #
 @app.route("/")
 def home():
     authorized = session.get("logged_in", False) and google.authorized
@@ -92,7 +93,7 @@ def events():
     return render_template("events.html", user_type, events=event_data.json())
 
 
-########### ACCOUNT MANAGEMENT ####################
+# ACCOUNT MANAGEMENT #
 @app.route("/login")
 def login():
     authorized = session.get("logged_in", False) and google.authorized
@@ -143,7 +144,10 @@ def profile():
         session["user_info"] = user_info
     profile_picture = session.get("profile_picture", "")
     account_info = session["user_info"]
-    return render_template("profile.html", user_info=user_info, profile_picture=profile_picture, account_info=account_info)
+    return render_template("profile.html",
+                           user_info=user_info,
+                           profile_picture=profile_picture,
+                           account_info=account_info)
 
 
 @app.route("/logout")
@@ -182,7 +186,14 @@ def set_profile(function="create"):
             create_request["attributes"]["first_name"] = request.form.get("user_name")
             create_request["attributes"]["last_name"] = request.form.get("last_name")
         response = make_authorized_request("/create_account", create_request)
-        return redirect(url_for("home"))
+        if response.status_code == 200:
+            session["user_id"] = identifier
+            flash("Account created", "success")
+            return redirect(url_for("home"))
+        else:
+            flash("Failed to create account", "error")
+            print(response.json())
+            return redirect(url_for("set_profile"))
     return render_template("set_profile.html")
 
 
@@ -196,9 +207,14 @@ def delete_account():
             "identifier": session.get("user_id")
         }
         response = make_authorized_request("/delete_account", delete_request, "DELETE")
-        session.clear()
-        flash("Account deleted", "success")
-        return redirect(url_for("home"))
+        if response.status_code == 200:
+            session.clear()
+            flash("Account deleted", "success")
+            return redirect(url_for("home"))
+        else:
+            flash("Failed to delete account", "error")
+            print(response.json())
+            return redirect(url_for("delete_account"))
     return render_template("delete_account.html")
 
 
@@ -216,12 +232,13 @@ def update_account():
         make_authorized_request("/update_account", request=headers)
     return render_template("update_account.html", user_type=session.get("user_type"))
 
-################### CUSTOMER SPECIFIC ROUTES ####################
+
+# CUSTOMER SPECIFIC ROUTES #
 @one_user_type_allowed("customer")
 @app.route("/buy/<id>", methods=["GET", "POST"])
 def buy_event(id):
     # TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
-    event_data = make_authorized_request("/get_event_info", {"event_id": event_id})
+    event_data = make_authorized_request("/get_event_info", {"event_id": id})
     session["event_info"] = event_data.json()
     return render_template("buy.html", event=event_data.json())
 
@@ -250,8 +267,13 @@ def purchase_ticket(event_id):
             }
         }
         response = make_authorized_request("/purchase_ticket", ticket_request)
-        flash("Ticket(s) purchased", "success")
-        return redirect(url_for("events"))
+        if response.status_code == 200:
+            flash("Ticket(s) purchased", "success")
+            return redirect(url_for("events"))
+        else:
+            flash("Failed to purchase ticket", "error")
+            print(response.json())
+            return redirect(url_for("buy_event", id=event_id))
     if session.get("event_info") and session.get("event_info").get("event_id") == event_id:
         event = session.get("event_info")
     else:
@@ -259,7 +281,7 @@ def purchase_ticket(event_id):
     return render_template("purchase_ticket.html", event=event)
 
 
-################### VENUE SPECIFIC ROUTES ####################
+# VENUE SPECIFIC ROUTES #
 @one_user_type_allowed("venue")
 @app.route("/manage/<event_id>", methods=["GET", "POST"])
 def manage_event(event_id):
@@ -306,7 +328,13 @@ def create_event():
             }
         }
         response = make_authorized_request("/create_event", create_request)
-        return redirect(url_for("events"))
+        if response.status_code == 200:
+            flash("Event created", "success")
+            return redirect(url_for("events"))
+        else:
+            flash("Failed to create event", "error")
+            print(response.json())
+            return redirect(url_for("create_event"))
     return render_template("create_event.html")
 
 
