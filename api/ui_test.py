@@ -11,7 +11,7 @@ import os
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=options)
 
-homepage = os.environ.get("STAGING_URL")
+homepage = str(os.environ.get("STAGING_URL", "default_url"))
 
 try:
     # Navigate to the web application
