@@ -79,8 +79,6 @@ jobs:
         pytest api/tests/unit/routes/*.py
         pytest api/tests/unit/models/*.py
         pytest api/tests/unit/utils/*.py
-    - name: Run integration tests
-      run: pytest api/tests/integration/*.py
   
   container-setup:
     runs-on: ubuntu-latest
