@@ -2,6 +2,7 @@ from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 import sys
+import os
 
 # Path to your WebDriver executable (change the path as needed)
 # If the WebDriver executable is in your PATH, you can omit this.
@@ -10,7 +11,7 @@ import sys
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=options)
 
-homepage = "http://127.0.0.1:5000/"
+homepage = os.environ.get("STAGING_URL")
 
 try:
     # Navigate to the web application
