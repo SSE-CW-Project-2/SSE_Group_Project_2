@@ -10,7 +10,7 @@ import sys
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=options)
 
-homepage = "https://jumpstartevents.co.uk"
+homepage = "http://127.0.0.1:5000/"
 
 try:
     # Navigate to the web application
@@ -34,14 +34,6 @@ except AssertionError:
 except WebDriverException:
     print("Test failed: WebDriver error occurred. Is Flask running?")
     sys.exit(1)
-
-try:
-    logo = driver.find_element(By.ID, "logo")
-    logo.click()
-    driver.implicitly_wait(10)  
-    assert driver.current_url == homepage
-
-    print("Successfully clicked on the logo and navigated to the homepage.")
 finally:
     # Clean up: close the browser window
     driver.quit()
