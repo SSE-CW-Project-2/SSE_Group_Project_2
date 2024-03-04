@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
+import sys
 
 # Path to your WebDriver executable (change the path as needed)
 # If the WebDriver executable is in your PATH, you can omit this.
@@ -10,7 +11,8 @@ driver = webdriver.Chrome(options=options)
 
 try:
     # Navigate to the web application
-    driver.get("http://localhost:5000")
+    driver.get("https://jumpstartevents.co.uk")
+    print("Here")
     # Optionally, wait for the page to load or for specific elements to become available
     # This example waits up to 10 seconds for the page title to be available
     driver.implicitly_wait(10)
@@ -26,8 +28,10 @@ try:
     print("Test passed: Page title is as expected.")
 except AssertionError:
     print("Test failed: Page title is not as expected.")
+    sys.exit(1)
 except WebDriverException:
     print("Test failed: WebDriver error occurred. Is Flask running?")
+    sys.exit(1)
 finally:
     # Close the browser window
     driver.quit()
