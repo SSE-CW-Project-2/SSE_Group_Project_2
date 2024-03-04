@@ -29,6 +29,6 @@ jobs:
       run: Xvfb :99 &
         
     - name: Run tests
-      run: pipenv run pytest api/ui_test.py -v 2
+      run: pipenv run python api/ui_test.py -v 2
       env:
         DISPLAY: :99

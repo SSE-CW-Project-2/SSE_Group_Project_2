@@ -1,20 +1,37 @@
 from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-import pytest
+from selenium.common.exceptions import WebDriverException
+import sys
 
-@pytest.fixture(scope="function")
-def driver():
-    options = Options()
-    # Configure any desired options here, e.g., options.headless = True for headless mode
-    driver = webdriver.Chrome(options=options)
-    driver.implicitly_wait(10)
-    yield driver
-    driver.quit()
+# Path to your WebDriver executable (change the path as needed)
+# If the WebDriver executable is in your PATH, you can omit this.
 
-def test_home_page_title(driver):
+# Initialize the WebDriver (this example uses Chrome)
+options = webdriver.ChromeOptions()
+driver = webdriver.Chrome(options=options)
+
+try:
     # Navigate to the web application
     driver.get("https://jumpstartevents.co.uk")
-    
+    print("Here")
+    # Optionally, wait for the page to load or for specific elements to become available
+    # This example waits up to 10 seconds for the page title to be available
+    driver.implicitly_wait(10)
+
     # Check the title of the page
-    assert "Home" in driver.title, "Test failed: Page title is not as expected."
+    assert "Home" in driver.title
+
+    # Perform additional tests, such as finding elements or interacting with the page
+    # For example, to find an element by its ID and enter text:
+    # element = driver.find_element(By.ID, "yourElementId")
+    # element.send_keys("some text")
+
+    print("Test passed: Page title is as expected.")
+except AssertionError:
+    print("Test failed: Page title is not as expected.")
+    sys.exit(1)
+except WebDriverException:
+    print("Test failed: WebDriver error occurred. Is Flask running?")
+    sys.exit(1)
+finally:
+    # Close the browser window
+    driver.quit()
