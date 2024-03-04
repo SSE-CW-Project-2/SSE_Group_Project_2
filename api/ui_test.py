@@ -12,13 +12,13 @@ driver = webdriver.Chrome(options=options)
 try:
     # Navigate to the web application
     driver.get("https://jumpstartevents.co.uk")
-    print("Here")
     # Optionally, wait for the page to load or for specific elements to become available
     # This example waits up to 10 seconds for the page title to be available
     driver.implicitly_wait(10)
 
     # Check the title of the page
     assert "Home" in driver.title
+    assert "Login" in driver.title
 
     # Perform additional tests, such as finding elements or interacting with the page
     # For example, to find an element by its ID and enter text:
