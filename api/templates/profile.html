@@ -11,9 +11,8 @@
         {% endif %}
         
         <!-- Display the user's name if available, otherwise use a placeholder -->
-        <h2 class="display-4">Welcome to the Profile Page, {{ user_info.get('name', 'User') }}!</h2>
+        <h2 class="display-4">Welcome to the Profile Page, {{ session['name'] }}!</h2>
         
-        <p class="lead">You are logged in with the email {{ user_info.get('email', 'no email provided') }}.</p>
         <hr class="my-4">
         
         <!-- Additional user information -->
@@ -21,6 +20,70 @@
         
         <p>Use the button below to log out of your session.</p>
         <a class="btn btn-danger btn-lg" href="{{ url_for('logout') }}" role="button">Logout</a>
+
+        <!-- Button to update account info -->
+        <a class="btn btn-primary btn-lg" href="{{ url_for('update_account') }}" role="button">Update Account Info</a>
+
+        <!-- Button to delete account -->
+        <a class="btn btn-danger btn-lg" href="{{ url_for('delete_account') }}" role="button">Delete Account</a>
     </div>
 </div>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Field</th>
+            <th scope="col">Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- User Type Specific Row -->
+        <tr>
+            <td>User Type</td>
+            <td id="userTypeValue">{{ session['user_type'] }}</td>
+        </tr>
+        <!-- Conditional Fields based on User Type -->
+        <!-- Venue Name -->
+        {% if user_type == 'venue' %}
+        <tr id="venueNameRow">
+            <td>Venue Name</td>
+            <td id="venueNameValue">{{ session['name'] }}</td>
+        </tr>
+        <!-- Artist Name -->
+        {% elif user_type == 'artist' %}
+        <tr id="artistNameRow">
+            <td>Artist Name</td>
+            <td id="artistNameValue">{{ session['name'] }}</td>
+        </tr>
+        {% elif user_type == 'attendee' %}
+        <!-- Attendee Name -->
+        <tr id="attendeeFirstNameRow">
+            <td>First Name</td>
+            <td id="attendeeFirstNameValue">{{ session['first_name'] }}</td>
+        </tr>
+        <tr id="attendeeLastNameRow">
+            <td>Last Name</td>
+            <td id="attendeeLastNameValue">{{ session['last_name'] }}</td>
+        </tr>
+        {% endif %}
+        <!-- Common Fields -->
+        <tr>
+            <td>Email</td>
+            <td id="emailValue">{{ session['email'] }}</td>
+        </tr>
+        <tr>
+            <td>Street Address</td>
+            <td id="streetAddressValue">{{ session['street_address'] }}</td>
+        </tr>
+        <tr>
+            <td>City</td>
+            <td id="cityValue">{{ session['city'] }}</td>
+        </tr>
+        <tr>
+            <td>Postcode</td>
+            <td id="postcodeValue">{{ session['postcode'] }}</td>
+        </tr>
+        <!-- Additional Fields as required -->
+    </tbody>
+</table>
+
 {% endblock %}

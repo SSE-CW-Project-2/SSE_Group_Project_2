@@ -19,7 +19,7 @@ def get_token():
     return credentials.token
 
 
-def make_jwt_request(signed_jwt, endpoint_path, request):
+def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST"):
     host = os.environ.get('GATEWAY_HOST')
     """Makes an authorized request to the endpoint"""
 
@@ -28,15 +28,23 @@ def make_jwt_request(signed_jwt, endpoint_path, request):
         "content-type": "application/json",
     }
     url = f"{host}{endpoint_path}"
-    response = requests.post(url, headers=headers, json=request)
-    print(response.status_code, response.content)
+    if request_type == "GET":
+        response = requests.get(url, headers=headers, params=request)
+    elif request_type == "POST":
+        response = requests.post(url, headers=headers, json=request)
+    elif request_type == "PUT":
+        response = requests.put(url, headers=headers, json=request)
+    elif request_type == "DELETE":
+        response = requests.delete(url, headers=headers, json=request)
+    else:
+        raise ValueError(f"Unsupported request_type: {request_type}")
     response.raise_for_status()
-    return response.json()
+    return response.status_code, response.json()
 
 
-def make_authorized_request(endpoint_path, request):
+def make_authorized_request(endpoint_path, request, request_type="POST"):
     token = get_token()
-    return make_jwt_request(token, endpoint_path, request)
+    return make_jwt_request(token, endpoint_path, request, request_type)
 
 
 if __name__ == "__main__":

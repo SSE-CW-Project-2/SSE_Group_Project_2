@@ -6,11 +6,7 @@
     <h2>Welcome to the Home Page</h2>
     {% if authorized %}
         <div class="alert alert-success" role="alert">
-            {% if session.get('user_type') == 'artist' %}
-                You are logged in as an artist.
-            {% else %}
-            You are logged in as a {{ session.get('user_type') }}.
-            {% endif %}
+            You are logged in as a(n) {{ session.get('user_type') }}.
             {% if session.get('location') %}
                 in {{ session.get('location') }}.
             {% endif %}
