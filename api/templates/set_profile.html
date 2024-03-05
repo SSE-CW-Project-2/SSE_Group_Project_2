@@ -8,8 +8,8 @@
     <form action="/set_profile" method="post" enctype="multipart/form-data">
         <div class="form-group">
             <label for="userType">User Type:</label>
-            <select class="form-control" id="userType" name="user_type" onchange="toggleFields()" required>
-                <option value="customer">Customer</option>
+            <select class="form-control" id="userType" name="user_type" onchange="toggleFields()">
+                <option value="attendee" selected>Attendee</option>
                 <option value="venue">Venue</option>
                 <option value="artist">Artist</option>
             </select>
@@ -26,7 +26,7 @@
             <label for="spotifyArtistId">Spotify Artist ID:</label>
             <input type="text" class="form-control" id="spotifyArtistId" name="spotify_artist_id">
         </div>
-        <div class="form-group" id="customerNameGroup" style="display: none;">
+        <div class="form-group" id="attendeeNameGroup" style="display: none;">
             <label for="userName">First Name:</label>
             <input type="text" class="form-control" id="userName" name="user_name">
             <label for="lastName">Last Name:</label>
@@ -48,6 +48,10 @@
             <label for="postcode">Postcode:</label>
             <input type="text" class="form-control" id="postcode" name="postcode" required>
         </div>
+        <div class="form-group">
+            <label for="bio">Bio:</label>
+            <input type="text" class="form-control" id="bio" name="bio" required>
+        </div>
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
@@ -55,25 +59,24 @@
 <script>
 function toggleFields() {
     var userType = document.getElementById("userType").value;
-    var venueFields = document.getElementById("venueNameGroup").querySelectorAll("input");
-    var artistFields = document.getElementById("artistNameGroup").querySelectorAll("input");
-    var customerFields = document.getElementById("customerNameGroup").querySelectorAll("input");
+    document.getElementById("venueNameGroup").style.display = userType == "venue" ? "block" : "none";
+    document.getElementById("venueName").required = userType == "venue";
+    
+    document.getElementById("artistNameGroup").style.display = userType == "artist" ? "block" : "none";
+    // Set required for all inputs in artistNameGroup if userType is "artist"
+    var artistInputs = document.getElementById("artistNameGroup").querySelectorAll("input");
+    artistInputs.forEach(function(input) {
+        input.required = userType == "artist";
+    });
+    
+    document.getElementById("attendeeNameGroup").style.display = userType == "attendee" ? "block" : "none";
+    document.getElementById("userName").required = userType == "attendee";
+    document.getElementById("lastName").required = userType == "attendee";
+}
 
-    // Hide all groups
-    document.getElementById("venueNameGroup").style.display = "none";
-    document.getElementById("artistNameGroup").style.display = "none";
-    document.getElementById("customerNameGroup").style.display = "none";
-
-    // Remove required attribute from all fields
-    [...venueFields, ...artistFields, ...customerFields].forEach(field => field.removeAttribute("required"));
-
-    // Show and set required attributes based on user type
-    if (userType == "venue") {
-        document.getElementById("venueNameGroup").style.display = "block";
-        venueFields.forEach(field => field.setAttribute("required", ""));
-    } else if (userType == "artist") {
-        document.getElementById("artistNameGroup").style.display = "block";
-        artistFields.forEach(field => field.setAttribute("required", ""));
-    } else if (userType == "customer") {
-        document.getElementById("customerNameGroup").style.display = "block";
-    }
+// Call toggleFields on page load to apply the correct display and required settings
+document.addEventListener('DOMContentLoaded', function() {
+    toggleFields();
+}, false);
+</script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Profile{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="jumbotron">
+        <!-- Display the user's profile picture if it exists -->
+        {% if profile_picture %}
+        <img src="{{ profile_picture }}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 150px; height: 150px;">
+        {% endif %}
+        {% if user_info.bio %}
+            <p class="lead mt-3">{{ user_info.bio }}</p>
+        {% endif %}
+        {% if user_info.user_type == 'venue' %}
+            <p class="lead">Venue Name: {{ user_info.venue_name }}</p>
+        {% endif %}
+        {% if user_info.user_type == 'artist' %}
+            <p class="lead">Artist Name: {{ user_info.artist_name }}</p>
+            <p class="lead">Genres: {{ user_info.genres }}</p>
+            <p class="lead">Spotify Artist ID: {{ user_info.spotify_artist_id }}</p>
+        {% endif %}
+        {% if user_info.user_type == 'attendee' %}
+            <p class="lead">First Name: {{ user_info.user_name }}</p>
+            <p class="lead">Last Name: {{ user_info.last_name }}</p>
+        {% endif %}
+</div>
+{% endblock %}

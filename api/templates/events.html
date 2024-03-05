@@ -2,8 +2,26 @@
 {% block title %}Events{% endblock %}
 
 {% block content %}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
 <div class="container mt-5">
     <h2>Events</h2>
+    {% if session['user_type'] == 'attendee' %}
+    <form action="/events" method="post">
+        <div class="form-group">
+            <label for="citySelect">City:</label>
+            <select class="form-control" id="citySelect" name="city">
+                {% for city in cities %}
+                <option value="{{ city }}">{{ city }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+    {% endif %}
+    {% if not events %}
+    <p>No events found</p>
+    {% else %}
     <div class="table-responsive">
         <table class="table table-hover">
             <thead class="thead-dark">
@@ -26,7 +44,7 @@
                         <td>{{ event.location }}</td>
                         <td>{{ event.capacity }}</td>
                         <td>${{ event.price }}</td>
-                        {% if session['user_type'] == 'customer' %}
+                        {% if session['user_type'] == 'attendee' %}
                             <td><a href="/buy/{{ event.event_id }}" class="btn btn-primary">Buy Now</a></td>
                         {% elif session['user_type'] == 'venue' %}
                             <td><a href="/manage/{{ event.event_id }}" class="btn btn-secondary">Manage event</a></td>
@@ -36,5 +54,15 @@
             </tbody>
         </table>
     </div>
+    {% endif %}
 </div>
+<script>
+    $(document).ready(function() {
+        $('#citySelect').select2({
+            placeholder: "Select a city",
+            allowClear: true
+        });
+    });
+</script>
+    
 {% endblock %}

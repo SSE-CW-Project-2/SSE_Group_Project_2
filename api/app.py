@@ -4,6 +4,7 @@ import os
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 from .auth import make_authorized_request
+import pandas as pd
 
 # FLASK SETUP #
 app = Flask(__name__)
@@ -76,21 +77,43 @@ def save_user_session_data(account_info_json):
 @app.route("/")
 def home():
     authorized = session.get("logged_in", False) and google.authorized
+    if authorized:
+        user_id = session["user_id"]
+        print(user_id)
     return render_template("index.html", authorized=authorized)
 
 
 @app.route("/events")
 @login_required
-def events():
+def events(methods=["GET", "POST"]):
     user_type = session.get("user_type")
-    id_ = session.get("user_id")
+    id_ = session.get("user_id", None)
+    print(id_)
+    req = {
+        "function": "get",
+        "identifier": id_,
+        "object_type": "event"
+    }
+    cities = []
     if user_type == "venue":
-        event_data = make_authorized_request("/get_events_for_venue", {"venue_id": id_}, "GET")
+        status_code, event_data = make_authorized_request("/get_events_for_venue", req, "GET")
     elif user_type == "artist":
-        event_data = make_authorized_request("/get_events_for_artist", {"artist_id": id_}, "GET")
-    else:
-        event_data = make_authorized_request("/get_events_for_attendee", {"attendee_id": id_}, "GET")
-    return render_template("events.html", user_type, events=event_data.json())
+        status_code, event_data = make_authorized_request("/get_events_for_artist", req, "GET")
+    elif user_type == "attendee":
+        df = pd.read_csv("cities.csv")
+        cities = df["name"].tolist()
+        print(cities[:10])
+        if request.method == "POST":
+            city = request.form.get("city")
+            req["identifier"] = city
+            status_code, event_data = make_authorized_request("/get_events_for_city", req, "GET")
+        else:
+            return render_template("events.html", user_type=user_type, cities=cities)
+    if status_code != 200:
+        print(status_code, event_data)
+        return "Failed to fetch events"
+    data = event_data.get("message").get("data")
+    return render_template("events.html", user_type=user_type, events=data, cities=cities)
 
 
 # ACCOUNT MANAGEMENT #
@@ -112,15 +135,24 @@ def after_login():
         headers = {
             "id": id_,
         }
+        session["user_id"] = id_
         response = make_authorized_request("/check_email_in_use", request=headers)
         status_code, resp_content = response
-        if status_code == 404:
-            print(response)
-            # Save minimal info and redirect to location capture page
-            save_user_session_data(account_info_json)  # Save or update session data
-            return redirect(url_for("set_profile"))
-        elif status_code == 200:
-            session["user_type"] = resp_content["account_type"]
+        if status_code == 200:
+            if resp_content.get("message") == "Account does not exist.":
+                # Save minimal info and redirect to location capture page
+                save_user_session_data(account_info_json)  # Save or update session data
+                return redirect(url_for("set_profile"))
+            session.update(resp_content)
+            user_type = resp_content["account_type"]
+            session["user_type"] = user_type
+            session["user_id"] = resp_content["user_id"]
+            if resp_content.get("user_type") == "venue":
+                session["name"] = resp_content["venue_name"]
+            elif resp_content.get("user_type") == "artist":
+                session["name"] = resp_content["artist_name"]
+            elif resp_content.get("user_type") == "attendee":
+                session["name"] = resp_content["first_name"]
             # User exists, proceed to save or update session data and redirect home
             save_user_session_data(resp_content)
             return redirect(url_for("home"))
@@ -130,19 +162,37 @@ def after_login():
     return "Failed to fetch user info"
 
 
-@app.route("/profile")
+@app.route("/profile/<user_id>")
 @login_required
-def profile():
+def profile(user_id, account_type="venue"):
     user_info = session.get("user_info", {})
-    if not user_info:
+    user_info["user_type"] = session.get("user_type")
+    if not session.get("user_info"):
         user_info = google.get("/oauth2/v2/userinfo").json()
         session["user_info"] = user_info
+    if session["user_id"] != user_id:
+        req = {
+            "function": "get",
+            "object_type": account_type,
+            "identifier": user_id
+        }
+        status_code, resp_content = make_authorized_request("/get_account_info", req, "GET")
+        if status_code != 200:
+            print(status_code, resp_content)
+            return "Failed to fetch user info"
+        else:
+            profile_picture = resp_content.get("profile_picture", "")
+            return render_template("other_profile.html",
+                                   user_info=resp_content,
+                                   profile_picture=profile_picture)
+
     profile_picture = session.get("profile_picture", "")
     account_info = session["user_info"]
     return render_template("profile.html",
-                           user_info=user_info,
-                           profile_picture=profile_picture,
-                           account_info=account_info)
+                        user_info=user_info,
+                        profile_picture=profile_picture,
+                        account_info=account_info,
+                        )
 
 
 @app.route("/logout")
@@ -168,7 +218,8 @@ def set_profile(function="create"):
                 "email": request.form.get("email"),
                 "street_address": request.form.get("street_address"),
                 "city": request.form.get("city"),
-                "postcode": request.form.get("postcode")
+                "postcode": request.form.get("postcode"),
+                "bio": request.form.get("bio"),
             }
         }
         if user_type == "venue":
@@ -177,7 +228,7 @@ def set_profile(function="create"):
             create_request["attributes"]["artist_name"] = request.form.get("artist_name")
             create_request["attributes"]["genres"] = request.form.get("genres")
             create_request["attributes"]["spotify_artist_id"] = request.form.get("spotify_artist_id")
-        elif user_type == "customer":
+        elif user_type == "attendee":
             create_request["attributes"]["first_name"] = request.form.get("user_name")
             create_request["attributes"]["last_name"] = request.form.get("last_name")
         status_code, resp_content = make_authorized_request("/create_account", create_request)
@@ -199,8 +250,9 @@ def delete_account():
         delete_request = {
             "function": "delete",
             "object_type": session.get("user_type"),
-            "identifier": session.get("user_id")
+            "identifier": session.get("user_id"),
         }
+        print(delete_request)
         status_code, resp_content = make_authorized_request("/delete_account", delete_request)
         if status_code == 200:
             session.clear()
@@ -217,7 +269,7 @@ def delete_account():
 @app.route("/update_account", methods=["GET", "POST"])
 def update_account():
     if request.method == "POST":
-        update_attrs = {k: v for k, v in request.form.to_dict().items() if v != ""}
+        update_attrs = request.form.to_dict()
         headers = {
             "function": "update",
             "object_type": session.get("user_type"),
@@ -225,31 +277,33 @@ def update_account():
             "attributes": update_attrs,
         }
         make_authorized_request("/update_account", request=headers)
-    return render_template("update_account.html", user_type=session.get("user_type"))
+        return redirect(url_for("profile", user_id=session.get("user_id")))
+    print(session.get("user_type"))
+    return render_template("update_account.html", user_type=session["user_type"])
 
 
-# CUSTOMER SPECIFIC ROUTES #
-@one_user_type_allowed("customer")
+# ATTENDEE SPECIFIC ROUTES #
+@one_user_type_allowed("attendee")
 @app.route("/buy/<id>", methods=["GET", "POST"])
 def buy_event(id):
     # TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
     event_data = make_authorized_request("/get_event_info", {"event_id": id})
-    session["event_info"] = event_data.json()
-    return render_template("buy.html", event=event_data.json())
+    session["event_info"] = event_data
+    return render_template("buy.html", event=event_data)
 
 
-@one_user_type_allowed("customer")
+@one_user_type_allowed("attendee")
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
     if session.get("event_info") and session.get("event_info").get("event_id") == event_id:
         event = session.get("event_info")
     else:
-        event = make_authorized_request("/get_event_info", {"event_id": event_id}).json()
+        event = make_authorized_request("/get_event_info", {"event_id": event_id})
         session["event_info"] = event
     return render_template("checkout.html", event=event)
 
 
-@one_user_type_allowed("customer")
+@one_user_type_allowed("attendee")
 @app.route("/purchase_ticket/<event_id>", methods=["GET", "POST"])
 def purchase_ticket(event_id):
     if request.method == "POST":
@@ -272,7 +326,7 @@ def purchase_ticket(event_id):
     if session.get("event_info") and session.get("event_info").get("event_id") == event_id:
         event = session.get("event_info")
     else:
-        event = make_authorized_request("/get_event_info", {"event_id": event_id}, "GET").json()
+        event = make_authorized_request("/get_event_info", {"event_id": event_id}, "GET")
     return render_template("purchase_ticket.html", event=event)
 
 
@@ -283,9 +337,12 @@ def manage_event(event_id):
     if event_id not in session.get("user_events"):
         flash("You are not authorized to delete this event", "error")
         return redirect(url_for("events"))
-    event_data = make_authorized_request("/get_event_info", {"event_id": event_id}, "GET").json()
+    event_data = make_authorized_request("/get_event_info",
+                                         {"event_id": event_id},
+                                         request_type="GET")
     session["event_info"] = event_data
     return render_template("manage.html", event=event_data)
+    
 
 
 @one_user_type_allowed("venue")

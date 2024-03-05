@@ -29,7 +29,7 @@ def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST"):
     }
     url = f"{host}{endpoint_path}"
     if request_type == "GET":
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, params=request)
     elif request_type == "POST":
         response = requests.post(url, headers=headers, json=request)
     elif request_type == "PUT":
