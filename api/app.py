@@ -346,12 +346,8 @@ def checkout(event_id):
 def purchase_ticket(event_id):
     if request.method == "POST":
         ticket_request = {
-            "function": "create",
-            "object_type": "ticket",
-            "attributes": {
-                "event_id": event_id,
-                "attendee_id": session.get("user_id"),
-            }
+            "event_id": event_id,
+            "attendee_id": session.get("user_id"),
         }
         response = make_authorized_request("/purchase_ticket", ticket_request)
         if response.status_code == 200:
