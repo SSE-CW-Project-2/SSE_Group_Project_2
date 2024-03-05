@@ -9,26 +9,6 @@
         <!-- User Type Selector -->
         <!-- Fields for Venue -->
         {% if user_type == 'venue' %}
-<<<<<<< HEAD
-        <div class="form-group" id="venueNameGroup" style="display: none;">
-            <label for="venueName">Venue Name:</label>
-            <input type="text" class="form-control" id="venueName" name="venue_name">
-        </div>
-        <!-- Fields for Artist -->
-        {% elif user_type == 'artist' %}
-        <div class="form-group" id="artistNameGroup" style="display: none;">
-            <label for="artistName">Artist Name:</label>
-            <input type="text" class="form-control" id="artistName" name="artist_name">
-            <!-- Additional artist fields as required -->
-        </div>
-        <!-- Fields for Customer -->
-        {% else %}
-        <!-- Fields for Customer -->
-        <div class="form-group" id="customerNameGroup" style="display: none;">
-            <label for="userName">First Name:</label>
-            <input type="text" class="form-control" id="userName" name="user_name">
-            <!-- Additional customer fields as required -->
-=======
         <div class="form-group" id="venueNameGroup">
             <label for="venueName">Venue Name:</label>
             <input type="text" class="form-control" id="venueName" name="venue_name" value="{{ session.get('name', '') }}">
@@ -52,16 +32,12 @@
             <label for="userName">Last Name:</label>
             <input type="text" class="form-control" id="lastName" name="last_name" value="{{ session.get('last_name', '') }}">
             <!-- Additional attendee fields as required -->
->>>>>>> origin/new-branch-name
         </div>
         {% endif %}
         <!-- Common Fields -->
         <!-- Populate these fields with existing data as placeholders or values -->
         <div class="form-group">
             <label for="email">Email:</label>
-<<<<<<< HEAD
-            <input type="email" class="form-control" id="email" name="email">
-=======
             <input type="email" class="form-control" id="email" name="email" value="{{ session.get('email', '') }}">
         </div>
         <div class="form-group">
@@ -75,22 +51,9 @@
         <div class="form-group">
             <label for="postcode">Postcode:</label>
             <input type="text" class="form-control" id="postcode" name="postcode" value="{{ session.get('postcode', '') }}">
->>>>>>> origin/new-branch-name
         </div>
         <!-- Additional common fields as required -->
         <button type="submit" class="btn btn-primary">Update</button>
     </form>
 </div>
-<<<<<<< HEAD
-
-<script>
-    function toggleFields() {
-        var userType = document.getElementById("userType").value;
-        // Logic to show/hide fields based on userType
-        // Similar to your existing script
-    }
-    // Additional JavaScript to preload user data and set the user type dropdown correctly
-</script>
-=======
->>>>>>> origin/new-branch-name
 {% endblock %}

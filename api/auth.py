@@ -67,4 +67,3 @@ if __name__ == "__main__":
         },
     }
     result = make_authorized_request(endpoint_path, request)
-    print(result)

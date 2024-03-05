@@ -43,7 +43,7 @@
             <div class="navbar-nav">
                 <a class="nav-item nav-link" href="/">Home</a>
                 {% if authorized %}
-                    <a class="nav-item nav-link" href="/profile/{{ session.get('user_id') }}">Profile</a>
+                    <a class="nav-item nav-link" href="/profile/{{ session['user_id'] }}">Profile</a>
                     <a class="nav-item nav-link" href="/events">Explore Events</a>
                 {% else %}
                     <a class="nav-item nav-link" href="/login">Login</a>
