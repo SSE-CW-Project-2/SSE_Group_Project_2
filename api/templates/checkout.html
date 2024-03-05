@@ -5,28 +5,7 @@
 <div class="container mt-5">
     <h2>Checkout</h2>
     {% if event %}
-    <div class="row">
-        <div class="col-md-8">
-            <h3>{{ event.name }}</h3>
-            <p>Date: {{ event.date }}</p>
-            <p>Location: {{ event.location }}</p>
-            <p>Description: {{ event.description }}</p>
-            <p>Price: £{{ event.price }}</p>
-            <form action="{{ url_for('checkout', event_id=event.id) }}" method="POST">
-                <label for="ticket_quantity">Quantity:</label>
-                <input type="number" id="ticket_quantity" name="quantity" 
-                       value="{{ request.form.quantity if request.method == 'POST' else 1 }}" 
-                       min="1" max="{{ event.remaining_tickets }}" onchange="this.form.submit()">
-                <p><strong>Total:</strong> £{{ total_price }}</p>
-                
-                <input type="hidden" name="event_id" value="{{ event.id }}">
-                <input type="hidden" name="name" value="{{ request.form.name }}">
-                <input type="hidden" name="email" value="{{ request.form.email }}">
-                <button type="submit" class="btn btn-primary">Update Total</button>
-            </form>
-        </div>
-    </div>
-    <form action="{{ url_for('purchase_ticket', event_id=event.id) }}" method="POST">
+    <form action="/purchase_ticket/{{ event_id }}" method="POST">
         <div class="form-group">
             <label for="name">Name:</label>
             <input type="text" class="form-control" id="name" name="name" 

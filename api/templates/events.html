@@ -48,7 +48,7 @@
                             {% for key, value in event.items() %}
                             <input type="hidden" name="event_{{ key }}" value="{{ value }}">
                             {% endfor %}
-                            <button type="submit" class="btn btn-info">Save Event</button>
+                            <button type="submit" class="btn btn-info">Buy</button>
                         </form>
                         </td>
                         {% elif session['user_type'] == 'venue' %}

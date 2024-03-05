@@ -338,7 +338,7 @@ def checkout(event_id):
                                         "object_type": "event"
                                         })
         session["event_info"] = event
-    return render_template("checkout.html", event=event)
+    return render_template("checkout.html", event=event, event_id=event_id)
 
 
 @one_user_type_allowed("attendee")
@@ -369,7 +369,7 @@ def purchase_ticket(event_id):
                                             "function": "get",
                                             "object_type": "event"
                                             })
-    return render_template("purchase_ticket.html", event=event)
+    return render_template("purchase_ticket.html", event=event, event_id=event_id)
 
 
 # VENUE SPECIFIC ROUTES #

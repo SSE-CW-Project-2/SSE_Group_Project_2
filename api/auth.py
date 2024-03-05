@@ -14,7 +14,7 @@ def get_token():
         service_account_info,
         target_audience=os.environ.get('GATEWAY_HOST'),
     )
-
+    print(os.environ.get('GATEWAY_HOST'))
     credentials.refresh(Request())
     return credentials.token
 
