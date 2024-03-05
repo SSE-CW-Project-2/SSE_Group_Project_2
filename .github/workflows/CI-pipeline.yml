@@ -138,8 +138,8 @@ jobs:
             --platform managed \
             --region europe-west2 \
             --port 5000 \
-            --set-env-vars |
-            SERVICE_ACCOUNT_JSON=${{ secrets.SERVICE_ACCOUNT_JSON }}
+            --set-env-vars SERVICE_ACCOUNT_JSON="${{ secrets.SERVICE_ACCOUNT_JSON }}" \
+
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
