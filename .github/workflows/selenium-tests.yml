@@ -32,6 +32,6 @@ jobs:
       run: |
         cd api
         flask run &
-        pipenv run python ui_test.py -v 2
+        pipenv run python tests/integration/ui_test.py -v 2
       env:
         DISPLAY: :99

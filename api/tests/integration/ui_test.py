@@ -7,6 +7,7 @@ import os
 # If the WebDriver executable is in your PATH, you can omit this.
 
 # Initialize the WebDriver (this example uses Chrome)
+chrome_driver_path = r"C:\Users\ad051\Downloads\chromedriver_win32\chromedriver.exe"
 options = webdriver.ChromeOptions()
 driver = webdriver.Chrome(options=options)
 

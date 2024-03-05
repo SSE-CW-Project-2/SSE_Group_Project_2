@@ -145,7 +145,7 @@ jobs:
 
   optional-integration-testing:
     runs-on: ubuntu-latest
-    environment: Production
+    environment: Integration_test
     needs: deploy-to-staging 
     steps:
     - uses: actions/checkout@v3
@@ -170,7 +170,7 @@ jobs:
     
     - name: Run tests
       run: |
-        pipenv run python api/ui_test.py -v 2
+        pipenv run python api/tests/integration/ui_test.py -v 2
       env:
         DISPLAY: :99
 
