@@ -139,7 +139,7 @@ jobs:
             --region europe-west2 \
             --port 5000 \
             --set-env-vars PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}" \
-            --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}"
+            --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
