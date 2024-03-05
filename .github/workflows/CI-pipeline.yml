@@ -138,7 +138,12 @@ jobs:
             --platform managed \
             --region europe-west2 \
             --port 5000 \
+            --set-env-vars GCP_PROJECT_ID=${{ secrets.GCP_PROJECT_ID }} \
+            --set-env-vars PRIVATE_KEY_ID=${{ secrets.PRIVATE_KEY_ID }} \
             --set-env-vars PRIVATE_KEY="${{ secrets.PRIVATE_KEY }}" \
+            --set-env-vars CLIENT_EMAIL=${{ secrets.CLIENT_EMAIL }} \
+            --set-env-vars CLIENT_ID=${{ secrets.CLIENT_ID }} \
+            --set-env-vars CLIENT_X509_CERT_URL=${{ secrets.CLIENT_X509_CERT_URL }} \
             --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
