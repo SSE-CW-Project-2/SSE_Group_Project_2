@@ -173,6 +173,7 @@ jobs:
         pipenv run python api/tests/integration/ui_test.py -v 2
       env:
         DISPLAY: :99
+        STAGING_URL: ${{ secrets.STAGING_URL }}
 
   deploy-to-production:
     runs-on: ubuntu-latest
