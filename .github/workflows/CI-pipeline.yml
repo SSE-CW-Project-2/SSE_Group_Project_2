@@ -139,7 +139,10 @@ jobs:
             --region europe-west2 \
             --port 5000 \
             --set-env-vars "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
-            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
+            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+            --set-env-vars "GATEWAY_HOST=${{ secrets.GATEWAY_HOST }}" \
+            --set-env-vars "SERVICE_ACCOUNT_JSON=${{ secrets.SERVICE_ACCOUNT_JSON }}" \
+            --set-env-vars "FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}"
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
@@ -207,8 +210,10 @@ jobs:
             --region europe-west2 \
             --port 5000 \
             --set-env-vars "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
-            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
-            --set-env-vars "GATEWAY_HOST=${{ secrets.GATEWAY_HOST }}"
+            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+            --set-env-vars "GATEWAY_HOST=${{ secrets.GATEWAY_HOST }}" \
+            --set-env-vars "SERVICE_ACCOUNT_JSON=${{ secrets.SERVICE_ACCOUNT_JSON }}" \
+            --set-env-vars "FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}"
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
