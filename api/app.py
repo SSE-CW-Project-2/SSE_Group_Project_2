@@ -413,7 +413,6 @@ def create_event():
             "attributes": {
                 "event_name": event_name,
                 "event_date": event_date,
-                # "event_location": event_location,
                 "event_description": event_description,
                 "event_capacity": event_capacity,
                 "event_price": event_price,

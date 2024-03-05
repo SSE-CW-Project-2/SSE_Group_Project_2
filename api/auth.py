@@ -10,7 +10,7 @@ def get_token():
     if service_account_json_string is None:
         service_account_dict = {
             "type": "service_account",
-            "project_id": os.environ.get('GCP_PROJECT_ID'),
+            "project_id": os.environ.get('PROJECT_ID'),
             "private_key_id": os.environ.get('PRIVATE_KEY_ID'),
             "private_key": os.environ.get('PRIVATE_KEY'),
             "client_email": os.environ.get('CLIENT_EMAIL'),
@@ -23,6 +23,7 @@ def get_token():
         }
         service_account_json_string = json.dumps(service_account_dict)
     service_account_info = json.loads(service_account_json_string)
+    print(service_account_info)
     credentials = service_account.IDTokenCredentials.from_service_account_info(
         service_account_info,
         target_audience=os.environ.get('GATEWAY_HOST'),
