@@ -8,7 +8,6 @@ import json
 def get_token():
     service_account_json_string = os.environ.get('SERVICE_ACCOUNT_JSON', None)
     if service_account_json_string is None:
-        raise ValueError("SERVICE_ACCOUNT_JSON environment variable is not set")
         service_account_dict = {
             "type": "service_account",
             "project_id": os.environ.get('GCP_PROJECT_ID'),
