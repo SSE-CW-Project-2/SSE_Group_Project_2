@@ -419,30 +419,28 @@ def delete_event(event_id):
 @app.route("/create_event", methods=["GET", "POST"])
 def create_event():
     if request.method == "POST":
-        event_name = bleach.clean(request.form.get("event_name"))
         event_date = bleach.clean(request.form.get("event_date"))
-        # event_address = session.get("street_address")
-        # event_postcode = session.get("postcode")
-        # event_city = session.get("city")
-        event_description = bleach.clean(request.form.get("event_description"))
-        event_capacity = bleach.clean(request.form.get("event_capacity"))
+        event_time = bleach.clean(request.form.get("event_time"))
+        date_and_time = f"{event_date} {event_time}:00"
+        event_name = bleach.clean(request.form.get("event_name"))
         event_price = bleach.clean(request.form.get("event_price"))
+        print(event_price)
+        event_capacity = bleach.clean(request.form.get("event_capacity"))
         create_request = {
             "function": "create",
             "object_type": "event",
             "attributes": {
                 "event_name": event_name,
-                "event_date": event_date,
-                # "event_location": event_location,
-                "event_description": event_description,
-                "event_capacity": event_capacity,
-                "event_price": event_price,
-                "venue_id": session.get("user_id"),
+                "date_time": date_and_time,
+                "total_tickets": event_capacity,
+                "sold_tickets": 0,
+                "venue_id": session.get("user_id", None),
             },
         }
-        response = make_authorized_request("/create_event", create_request)
-        if response.status_code == 200:
+        status_code, response = make_authorized_request("/create_event", create_request)
+        if status_code == 200:
             flash("Event created", "success")
+
             return redirect(url_for("events"))
         else:
             flash("Failed to create event", "error")

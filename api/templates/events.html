@@ -30,7 +30,7 @@
                 {% for event in events %}
                     <tr>
                         <td>{{ event['event_name'] }}</td>
-                        <td><a href="/profile/{{ 'venue_id' }}" class="btn btn-primary">View Venue</a></td>
+                        <td><a href="/profile/{{ event['venue_id'] }}" class="btn btn-primary">View Venue</a></td>
                         <td>{{ event['date'] }}</td>
                         <td>{{ event['time'] }}</td>
                         <td>{{ event['location'] }}</td>

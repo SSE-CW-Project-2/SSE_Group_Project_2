@@ -3,24 +3,21 @@
 
 {% block content %}
 <form action="/create_event" method="POST">
-    <label for="event_name">Event Name:</label><br>
-    <input type="text" id="event_name" name="event_name"><br>
-    
-    <label for="event_date">Event Date:</label><br>
-    <input type="date" id="event_date" name="event_date"><br>
-    
-    <label for="event_location">Event Location:</label><br>
-    <input type="text" id="event_location" name="event_location"><br>
-    
-    <label for="event_description">Event Description:</label><br>
-    <textarea id="event_description" name="event_description"></textarea><br>
-    
-    <label for="event_capacity">Event Capacity:</label><br>
-    <input type="number" id="event_capacity" name="event_capacity"><br>
-    
-    <label for="event_price">Event Price:</label><br>
-    <input type="number" id="event_price" name="event_price"><br>
-    
-    <input type="submit" value="Create Event">
+   <label for="event_name">Event Name:</label><br>
+   <input type="text" id="event_name" name="event_name" placeholder="Enter event name here"><br>
+   
+   <label for="event_date">Event Date:</label><br>
+   <input type="date" id="event_date" name="event_date"><br>
+
+   <label for="event_time">Event Time:</label><br>
+   <input type="time" id="event_time" name="event_time"><br>
+   
+   <label for="event_capacity">Event Capacity:</label><br>
+   <input type="number" id="event_capacity" name="event_capacity" min = 1 value="1"><br>
+   
+   <label for="event_price">Event Price:</label><br>
+   <input type="number" id="event_price" name="event_price" min = 0 value="0"><br>
+   
+   <input type="submit" value="Create Event">
 </form>
 {% endblock %}
