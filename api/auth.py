@@ -19,6 +19,7 @@ service_account_dict = {
     "universe_domain": "googleapis.com"
 }
 
+
 def get_token():
     service_account_json_string = os.environ.get('SERVICE_ACCOUNT_JSON', None)
     if service_account_json_string is None:
