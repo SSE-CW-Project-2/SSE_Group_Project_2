@@ -165,7 +165,8 @@ def after_login():
             "id": id_,
         }
         session["user_id"] = id_
-        return make_authorized_request("/check_email_in_use", request=headers)
+        status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
+        return resp_content
         if status_code == 200:
             if resp_content.get("message") == "Account does not exist.":
                 # Save minimal info and redirect to location capture page
