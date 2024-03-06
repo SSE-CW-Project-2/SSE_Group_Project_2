@@ -57,8 +57,7 @@ def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST"):
 
 def make_authorized_request(endpoint_path, request, request_type="POST"):
     token = get_token()
-    # return make_jwt_request(token, endpoint_path, request, request_type)
-    return 200, service_account_dict
+    return make_jwt_request(token, endpoint_path, request, request_type)
 
 
 if __name__ == "__main__":
