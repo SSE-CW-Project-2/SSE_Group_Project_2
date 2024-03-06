@@ -165,7 +165,10 @@ def after_login():
             "id": id_,
         }
         session["user_id"] = id_
-        status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
+        try:
+            status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
+        except Exception as e:
+            return e
         if status_code == 200:
             if resp_content.get("message") == "Account does not exist.":
                 # Save minimal info and redirect to location capture page
@@ -336,7 +339,7 @@ def checkout(event_id):
                                         "identifier": event_id,
                                         "function": "get",
                                         "object_type": "event"
-                                        })
+                                        })after_login
         session["event_info"] = event
     return render_template("checkout.html", event=event, event_id=event_id)
 
