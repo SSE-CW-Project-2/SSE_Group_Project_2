@@ -7,8 +7,9 @@
 <div class="container mt-5">
     <h2>Events</h2>
     {% if session['user_type'] == 'attendee' %}
-    <p>Showing all events in {{ session['event_city']}}</p>
-    <button action="/search" method="get" class="btn btn-primary">Change city</button>
+    <p>Showing all events in {{ session['city']}}</p>
+    <!-- <button action="/search" method="post" class="btn btn-primary">Change city</button> -->
+    <a href="/search" class="btn btn-primary">Change city</a>
     {% endif %}
     {% if not events %}
     <p>No events found</p>

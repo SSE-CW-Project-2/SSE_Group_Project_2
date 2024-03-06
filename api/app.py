@@ -64,7 +64,6 @@ def one_user_type_allowed(user_type):
 def save_user_session_data(account_info_json):
     session["profile_picture"] = account_info_json.get("picture", "")
 
-
 # ROUTES #
 
 
@@ -77,13 +76,16 @@ def home():
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
+    print("here")
     if request.method == "GET":
+        print("Here")
         return render_template("search.html", cities=[], countries=countries)
     elif request.method == "POST":
         form_city = request.form.get("city")
         if form_city:
             form_city = bleach.clean(form_city)
             city = form_city
+            session["city"] = city
             req = {"function": "get", "object_type": "event", "identifier": city}
             status_code, resp_content = make_authorized_request(
                 "/get_events_in_city", req
@@ -109,12 +111,13 @@ def search():
                 print(status_code, resp_content)
                 return "Failed to fetch cities"
             cities = resp_content.get("message").get("data")
-        return render_template("search.html", cities=cities, countries=[])
+        return render_template("search.html", cities=cities, countries=countries)
 
 
 @app.route("/events", methods=["GET", "POST"])
 @login_required
 def events():
+    print(session.items())
     user_type = session.get("user_type")
     id_ = session.get("user_id", None)
     req = {
@@ -128,6 +131,24 @@ def events():
     elif user_type == "artist":
         status_code, event_data = make_authorized_request("/get_events_for_artist", req)
     elif user_type == "attendee":
+        city = session.get("city")
+        if city:
+
+            req = {"function": "get", "object_type": "event", "identifier": city}
+            status_code, resp_content = make_authorized_request(
+                "/get_events_in_city", req
+            )
+            if status_code != 200:
+                return "Failed to fetch events"
+            events = resp_content.get("message").get("data")
+            for event in events:
+                timestamp = event["date_time"]
+                dt_object = datetime.fromisoformat(timestamp)
+                date = dt_object.date()
+                time = dt_object.strftime("%H:%M")
+                event["date"] = date
+                event["time"] = time
+            return render_template("events.html", events=events)
         return redirect(url_for("search"))
     if status_code != 200:
         print(status_code, event_data)
@@ -377,9 +398,11 @@ def purchase_ticket(event_id):
             "attributes": {
                 "event_id": event_id,
                 "attendee_id": session.get("user_id"),
+                "n_tickets": bleach.clean(request.form.get("quantity")),
             },
         }
-        response = make_authorized_request("/purchase_ticket", ticket_request)
+        print(ticket_request)
+        response = make_authorized_request("/purchase_tickets", ticket_request)
         if response.status_code == 200:
             flash("Ticket(s) purchased", "success")
             return redirect(url_for("events"))

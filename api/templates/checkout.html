@@ -6,16 +6,6 @@
     <h2>Checkout</h2>
     {% if event %}
     <form action="/purchase_ticket/{{ event_id }}" method="POST">
-        <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" class="form-control" id="name" name="name" 
-                   placeholder="Enter your name" value="{{ request.form.name }}" required>
-        </div>
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="email" class="form-control" id="email" name="email" 
-                   placeholder="Enter your email" value="{{ request.form.email }}" required>
-        </div>
         <input type="hidden" name="event_id" value="{{ event.id }}">
         <input type="hidden" id="form_quantity" name="quantity" value="{{ request.form.quantity if request.method == 'POST' else 1 }}">
         <input type="hidden" id="form_total" name="total" value="{{ total_price }}">
