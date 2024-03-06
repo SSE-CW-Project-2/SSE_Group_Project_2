@@ -6,6 +6,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from .auth import make_authorized_request
 from .countries import countries_list as countries
 from datetime import datetime
+import bleach
 
 # FLASK SETUP #
 app = Flask(__name__)
@@ -75,8 +76,9 @@ def search():
     if request.method == "GET":
         return render_template("search.html", cities=[], countries=countries)
     elif request.method == "POST":
-        if request.form.get("city"):
-            city = request.form.get("city")
+        form_city = bleach.clean(request.form.get("city"))
+        if form_city:
+            city = form_city
             req = {
                 "function": "get",
                 "object_type": "event",
@@ -94,7 +96,7 @@ def search():
                 event["date"] = date
                 event["time"] = time
             return render_template("events.html", events=events)
-        country = request.form.get("country")
+        country = bleach.clean(request.form.get("country"))
         req = {
             "function": "get",
             "object_type": "city",
@@ -201,22 +203,12 @@ def profile(user_id, account_type="venue"):
             "object_type": account_type,
             "identifier": user_id
         }
+        print(req)
         status_code, resp_content = make_authorized_request("/get_account_info", req)
         if status_code != 200:
             print(status_code, resp_content)
             return "Failed to fetch user info"
-        else:
-            profile_picture = resp_content.get("profile_picture", "")
-            return render_template("other_profile.html",
-                                   user_info=resp_content,
-                                   profile_picture=profile_picture,
-                                   user_type=session["user_type"])
-
-    profile_picture = session.get("profile_picture", "")
-    account_info = session["user_info"]
-    return render_template("profile.html",
-                           user_info=user_info,
-                           profile_picture=profile_picture,
+        else:leach.clean(ure,
                            account_info=account_info,
                            user_type=session["user_type"])
 
@@ -231,7 +223,7 @@ def logout():
 @login_required
 def set_profile(function="create"):
     if request.method == "POST":
-        user_type = request.form.get("user_type")
+        user_type = bleach.clean(request.form.get("user_type"))
         session["user_type"] = user_type
         account_info_json = google.get("/oauth2/v2/userinfo").json()
         identifier = account_info_json.get('id')
@@ -241,23 +233,23 @@ def set_profile(function="create"):
             "identifier": identifier,
             "attributes": {
                 "user_id": identifier,
-                "email": request.form.get("email"),
-                "street_address": request.form.get("street_address"),
-                "city": request.form.get("city"),
-                "postcode": request.form.get("postcode"),
-                "bio": request.form.get("bio"),
+                "email": bleach.clean(request.form.get("email")),
+                "street_address": bleach.clean(request.form.get("street_address")),
+                "city": bleach.clean(request.form.get("city")),
+                "postcode": bleach.clean(request.form.get("postcode")),
+                "bio": bleach.clean(request.form.get("bio")),
             }
         }
 
         if user_type == "venue":
-            create_request["attributes"]["venue_name"] = request.form.get("venue_name")
+            create_request["attributes"]["venue_name"] = bleach.clean(request.form.get("venue_name"))
         elif user_type == "artist":
-            create_request["attributes"]["artist_name"] = request.form.get("artist_name")
-            create_request["attributes"]["genres"] = request.form.get("genres")
-            create_request["attributes"]["spotify_artist_id"] = request.form.get("spotify_artist_id")
+            create_request["attributes"]["artist_name"] = bleach.clean(request.form.get("artist_name"))
+            create_request["attributes"]["genres"] = bleach.clean(request.form.get("genres"))
+            create_request["attributes"]["spotify_artist_id"] = bleach.clean(request.form.get("spotify_artist_id"))
         elif user_type == "attendee":
-            create_request["attributes"]["first_name"] = request.form.get("user_name")
-            create_request["attributes"]["last_name"] = request.form.get("last_name")
+            create_request["attributes"]["first_name"] = bleach.clean(request.form.get("user_name"))
+            create_request["attributes"]["last_name"] = bleach.clean(request.form.get("last_name"))
         print(create_request)
         status_code, resp_content = make_authorized_request("/create_account", create_request)
         session.update(create_request["attributes"])
@@ -298,14 +290,15 @@ def delete_account():
 def update_account():
     if request.method == "POST":
         update_attrs = request.form.to_dict()
+        sanitised_attrs = {key: bleach.clean(value) for key, value in update_attrs.items()}
         headers = {
             "function": "update",
             "object_type": session.get("user_type"),
             "identifier": session.get("user_id"),
-            "attributes": update_attrs,
+            "attributes": sanitised_attrs,
         }
         make_authorized_request("/update_account", request=headers)
-        session.update(update_attrs)
+        session.update(sanitised_attrs)
         return redirect(url_for("profile", user_id=session.get("user_id")))
     return render_template("update_account.html", user_type=session["user_type"])
 
@@ -315,7 +308,9 @@ def update_account():
 @app.route("/buy/<event_id>", methods=["POST"])
 def buy_event(event_id):
     event_data = {}
-    event_data.update(request.form.to_dict())
+    update_attrs = request.form.to_dict()
+    sanitised_attrs = {key: bleach.clean(value) for key, value in update_attrs.items()}
+    event_data.update(sanitised_attrs)
     session["event_info"] = event_data
     print(session.get("event_info"))
     return render_template("buy.html", event=event_data, event_id=event_id)
@@ -397,14 +392,14 @@ def delete_event(event_id):
 @app.route("/create_event", methods=["GET", "POST"])
 def create_event():
     if request.method == "POST":
-        event_name = request.form.get("event_name")
-        event_date = request.form.get("event_date")
+        event_name = bleach.clean(request.form.get("event_name"))
+        event_date = bleach.clean(request.form.get("event_date"))
         # event_address = session.get("street_address")
         # event_postcode = session.get("postcode")
         # event_city = session.get("city")
-        event_description = request.form.get("event_description")
-        event_capacity = request.form.get("event_capacity")
-        event_price = request.form.get("event_price")
+        event_description = bleach.clean(equest.form.get("event_description"))
+        event_capacity = bleach.clean(request.form.get("event_capacity"))
+        event_price = bleach.clean(request.form.get("event_price"))
         create_request = {
             "function": "create",
             "object_type": "event",
@@ -437,7 +432,8 @@ def update_event(event_id):
         return redirect(url_for("events"))
     if request.method == "POST":
         update_attrs = request.form.to_dict()
-        make_authorized_request("/update_event", {"event_id": event_id, "update_attrs": update_attrs})
+        sanitised_attrs = {key: bleach.clean(value) for key, value in update_attrs.items()}
+        make_authorized_request("/update_event", {"event_id": event_id, "update_attrs": sanitised_attrss})
     flash("Event updated", "success")
     return redirect(url_for("manage_event", event_id=event_id))
 
