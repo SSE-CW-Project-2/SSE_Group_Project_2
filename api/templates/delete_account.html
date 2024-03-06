@@ -8,7 +8,7 @@
     <p>This action cannot be undone. All your data will be permanently deleted.</p>
     <form action="/delete_account" method="post">
         <button type="submit" class="btn btn-danger">Delete My Account</button>
-        <a href="{{ url_for('profile') }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
 {% endblock %}
