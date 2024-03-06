@@ -339,7 +339,7 @@ def checkout(event_id):
                                         "identifier": event_id,
                                         "function": "get",
                                         "object_type": "event"
-                                        })after_login
+                                        })
         session["event_info"] = event
     return render_template("checkout.html", event=event, event_id=event_id)
 
