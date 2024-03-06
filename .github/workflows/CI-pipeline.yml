@@ -144,9 +144,9 @@ jobs:
             --set-env-vars CLIENT_EMAIL=${{ secrets.CLIENT_EMAIL }} \
             --set-env-vars CLIENT_ID=${{ secrets.CLIENT_ID }} \
             --set-env-vars CLIENT_X509_CERT_URL=${{ secrets.CLIENT_X509_CERT_URL }} \
-            --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}
-            --set-env-vars GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            --set-env-vars GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }} \
+            --set-env-vars GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+            --set-env-vars GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
             --set-env-vars GATEWAY_HOST=${{ secrets.GATEWAY_HOST }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
@@ -220,9 +220,9 @@ jobs:
             --set-env-vars CLIENT_EMAIL=${{ secrets.CLIENT_EMAIL }} \
             --set-env-vars CLIENT_ID=${{ secrets.CLIENT_ID }} \
             --set-env-vars CLIENT_X509_CERT_URL=${{ secrets.CLIENT_X509_CERT_URL }} \
-            --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}
-            --set-env-vars GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-            --set-env-vars GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }} \
+            --set-env-vars GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }} \
+            --set-env-vars GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }} \
             --set-env-vars GATEWAY_HOST=${{ secrets.GATEWAY_HOST }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
