@@ -73,12 +73,14 @@ def home():
 @app.route("/search", methods=["GET", "POST"])
 def search():
     if request.method == "GET":
+        return "Get"
         countries = []
         with open('countries.txt', 'r') as file:
             for line in file:
                 countries.append(line.strip())
         return render_template("search.html", cities=[], countries=countries)
-    if request.method == "POST":
+    elif request.method == "POST":
+        return "Post"
         if request.form.get("city"):
             city = request.form.get("city")
             req = {
@@ -110,7 +112,6 @@ def search():
             return "Failed to fetch cities"
         cities = resp_content.get("message").get("data")
         return render_template("search.html", cities=cities, countries=[])
-    return render_template("search.html")
 
 
 @app.route("/events", methods=["GET", "POST"])
