@@ -80,8 +80,9 @@ def search():
     if request.method == "GET":
         return render_template("search.html", cities=[], countries=countries)
     elif request.method == "POST":
-        form_city = bleach.clean(request.form.get("city"))
+        form_city = request.form.get("city")
         if form_city:
+            form_city = bleach.clean(form_city)
             city = form_city
             req = {"function": "get", "object_type": "event", "identifier": city}
             status_code, resp_content = make_authorized_request(
@@ -98,15 +99,16 @@ def search():
                 event["date"] = date
                 event["time"] = time
             return render_template("events.html", events=events)
-        country = bleach.clean(request.form.get("country"))
-        req = {"function": "get", "object_type": "city", "identifier": country}
-        status_code, resp_content = make_authorized_request(
-            "/get_cities_by_country", req
-        )
-        if status_code != 200:
-            print(status_code, resp_content)
-            return "Failed to fetch cities"
-        cities = resp_content.get("message").get("data")
+        else:
+            country = bleach.clean(request.form.get("country"))
+            req = {"function": "get", "object_type": "city", "identifier": country}
+            status_code, resp_content = make_authorized_request(
+                "/get_cities_by_country", req
+            )
+            if status_code != 200:
+                print(status_code, resp_content)
+                return "Failed to fetch cities"
+            cities = resp_content.get("message").get("data")
         return render_template("search.html", cities=cities, countries=[])
 
 
@@ -444,7 +446,6 @@ def create_event():
         date_and_time = f"{event_date} {event_time}:00"
         event_name = bleach.clean(request.form.get("event_name"))
         event_price = bleach.clean(request.form.get("event_price"))
-        print(event_price)
         event_capacity = bleach.clean(request.form.get("event_capacity"))
         create_request = {
             "function": "create",
