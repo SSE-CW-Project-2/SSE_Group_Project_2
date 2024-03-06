@@ -156,30 +156,41 @@ def login():
 
 @app.route("/after_login")
 def after_login():
-    account_info = google.get("/oauth2/v2/userinfo")
+    try:
+        account_info = google.get("/oauth2/v2/userinfo")
+    except Exception as e:
+        return e + "160"
     if account_info.ok:
         try:
+            line = 162
             account_info_json = account_info.json()
+            line = 164
             session['logged_in'] = True
+            line = 166
             id_ = account_info_json.get("id")
+            line = 168
             headers = {
                 "id": id_,
             }
+            line = 172
             session["user_id"] = id_
         except Exception as e:
-            return e + account_info_json + 169
+            return e + account_info_json + line
         try:
             status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
         except Exception as e:
-            return e + resp_content + 171
+            return e + resp_content + 179
         if status_code == 200:
-            if resp_content.get("message") == "Account does not exist.":
-                # Save minimal info and redirect to location capture page
-                save_user_session_data(account_info_json)  # Save or update session data
-                return redirect(url_for("set_profile"))
-            session.update(resp_content)
-            user_type = resp_content["account_type"]
-            session["user_type"] = user_type
+            try:
+                if resp_content.get("message") == "Account does not exist.":
+                    # Save minimal info and redirect to location capture page
+                    save_user_session_data(account_info_json)  # Save or update session data
+                    return redirect(url_for("set_profile"))
+                session.update(resp_content)
+                user_type = resp_content["account_type"]
+                session["user_type"] = user_type
+            except Exception as e:
+                return e + resp_content + 190
             if user_type == "venue":
                 session["name"] = resp_content["venue_name"]
             elif user_type == "artist":
@@ -189,7 +200,10 @@ def after_login():
             else:
                 print("User type not recognized")
             # User exists, proceed to save or update session data and redirect home
-            save_user_session_data(resp_content)
+            try:
+                save_user_session_data(resp_content)
+            except Exception as e:
+                return e + resp_content + 202
             return redirect(url_for("home"))
         else:
             print(resp_content)
