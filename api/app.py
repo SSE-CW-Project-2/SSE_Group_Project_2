@@ -145,21 +145,6 @@ def events():
     return render_template("events.html", user_type=user_type, events=data)
 
 
-service_account_dict = {
-    "type": "service_account",
-    "project_id": os.environ.get('PROJECT_ID'),
-    "private_key_id": os.environ.get('PRIVATE_KEY_ID'),
-    "private_key": os.environ.get('PRIVATE_KEY'),
-    "client_email": os.environ.get('CLIENT_EMAIL'),
-    "client_id": os.environ.get('CLIENT_ID'),
-    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-    "token_uri": "https://oauth2.googleapis.com/token",
-    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-    "client_x509_cert_url": os.environ.get('CLIENT_X509_CERT_URL'),
-    "universe_domain": "googleapis.com"
-}
-
-
 # ACCOUNT MANAGEMENT #
 @app.route("/login")
 def login():
@@ -171,7 +156,6 @@ def login():
 
 @app.route("/after_login")
 def after_login():
-    return service_account_dict
     account_info = google.get("/oauth2/v2/userinfo")
     if account_info.ok:
         account_info_json = account_info.json()
@@ -362,8 +346,12 @@ def checkout(event_id):
 def purchase_ticket(event_id):
     if request.method == "POST":
         ticket_request = {
-            "event_id": event_id,
-            "attendee_id": session.get("user_id"),
+            "function": "create",
+            "object_type": "ticket",
+            "attributes": {
+                "event_id": event_id,
+                "attendee_id": session.get("user_id"),
+            }
         }
         response = make_authorized_request("/purchase_ticket", ticket_request)
         if response.status_code == 200:
@@ -429,6 +417,7 @@ def create_event():
             "attributes": {
                 "event_name": event_name,
                 "event_date": event_date,
+                # "event_location": event_location,
                 "event_description": event_description,
                 "event_capacity": event_capacity,
                 "event_price": event_price,
