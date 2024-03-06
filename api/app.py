@@ -76,42 +76,46 @@ def home():
 
 @app.route("/search", methods=["GET", "POST"])
 def search():
-    print("here")
-    if request.method == "GET":
-        print("Here")
-        return render_template("search.html", cities=[], countries=countries)
-    elif request.method == "POST":
-        form_city = request.form.get("city")
-        if form_city:
-            form_city = bleach.clean(form_city)
-            city = form_city
+    if request.method == "POST":
+        country = request.form.get("country")
+        city = request.form.get("city")
+
+        if city:
+            # Clean the city input and store it in the session
+            city = bleach.clean(city)
             session["city"] = city
+
+            # Logic to handle fetching events based on the city
             req = {"function": "get", "object_type": "event", "identifier": city}
-            status_code, resp_content = make_authorized_request(
-                "/get_events_in_city", req
-            )
+            status_code, resp_content = make_authorized_request("/get_events_in_city", req)
             if status_code != 200:
-                return "Failed to fetch events"
+                return "Failed to fetch events", status_code
             events = resp_content.get("message").get("data")
+
+            # Convert timestamps to date and time
             for event in events:
-                timestamp = event["date_time"]
-                dt_object = datetime.fromisoformat(timestamp)
-                date = dt_object.date()
-                time = dt_object.strftime("%H:%M")
-                event["date"] = date
-                event["time"] = time
+                dt_object = datetime.fromisoformat(event["date_time"])
+                event["date"] = dt_object.date()
+                event["time"] = dt_object.strftime("%H:%M")
             return render_template("events.html", events=events)
-        else:
-            country = bleach.clean(request.form.get("country"))
+        elif country:
+            # Clean the country input and store it in the session
+            country = bleach.clean(country)
+            session["country"] = country
+
+            # Logic to handle fetching cities based on the country
             req = {"function": "get", "object_type": "city", "identifier": country}
-            status_code, resp_content = make_authorized_request(
-                "/get_cities_by_country", req
-            )
+            status_code, resp_content = make_authorized_request("/get_cities_by_country", req)
             if status_code != 200:
-                print(status_code, resp_content)
-                return "Failed to fetch cities"
+                return "Failed to fetch cities", status_code
             cities = resp_content.get("message").get("data")
-        return render_template("search.html", cities=cities, countries=countries)
+
+            # Render the search template with the list of cities and the selected country
+            return render_template("search.html", cities=cities, countries=countries, selected_country=country)
+
+    # For a GET request or if no country is selected yet, show the initial country selection form
+    selected_country = session.get('country', '')
+    return render_template("search.html", countries=countries, selected_country=selected_country, cities=[])
 
 
 @app.route("/events", methods=["GET", "POST"])
