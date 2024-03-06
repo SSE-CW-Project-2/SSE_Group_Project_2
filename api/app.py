@@ -158,17 +158,20 @@ def login():
 def after_login():
     account_info = google.get("/oauth2/v2/userinfo")
     if account_info.ok:
-        account_info_json = account_info.json()
-        session['logged_in'] = True
-        id_ = account_info_json.get("id")
-        headers = {
-            "id": id_,
-        }
-        session["user_id"] = id_
+        try:
+            account_info_json = account_info.json()
+            session['logged_in'] = True
+            id_ = account_info_json.get("id")
+            headers = {
+                "id": id_,
+            }
+            session["user_id"] = id_
+        except Exception as e:
+            return e + account_info_json + 169
         try:
             status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
         except Exception as e:
-            return e
+            return e + resp_content + 171
         if status_code == 200:
             if resp_content.get("message") == "Account does not exist.":
                 # Save minimal info and redirect to location capture page

@@ -23,12 +23,10 @@ def get_token():
         }
         service_account_json_string = json.dumps(service_account_dict)
     service_account_info = json.loads(service_account_json_string)
-    print(service_account_info)
     credentials = service_account.IDTokenCredentials.from_service_account_info(
         service_account_info,
         target_audience=os.environ.get('GATEWAY_HOST'),
     )
-    print(os.environ.get('GATEWAY_HOST'))
     credentials.refresh(Request())
     return credentials.token
 
