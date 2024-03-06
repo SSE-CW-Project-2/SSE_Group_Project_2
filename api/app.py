@@ -60,6 +60,7 @@ def one_user_type_allowed(user_type):
 
     return decorator
 
+
 def save_user_session_data(account_info_json):
     session["profile_picture"] = account_info_json.get("picture", "")
 
@@ -207,10 +208,12 @@ def profile(user_id, account_type="venue"):
             return "Failed to fetch user info"
         else:
             profile_picture = resp_content.get("profile_picture", "")
-            return render_template("other_profile.html",
-                                   user_info=resp_content,
-                                   profile_picture=profile_picture,
-                                   user_type=session["user_type"])
+            return render_template(
+                "other_profile.html",
+                user_info=resp_content,
+                profile_picture=profile_picture,
+                user_type=session["user_type"],
+            )
 
 
 @app.route("/logout")
