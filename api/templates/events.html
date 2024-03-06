@@ -7,17 +7,8 @@
 <div class="container mt-5">
     <h2>Events</h2>
     {% if session['user_type'] == 'attendee' %}
-    <form action="/events" method="post">
-        <div class="form-group">
-            <label for="citySelect">City:</label>
-            <select class="form-control" id="citySelect" name="city">
-                {% for city in cities %}
-                <option value="{{ city }}">{{ city }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+    <p>Showing all events in {{ session['event_city']}}</p>
+    <button action="/search" method="get" class="btn btn-primary">Change city</button>
     {% endif %}
     {% if not events %}
     <p>No events found</p>
@@ -27,11 +18,11 @@
             <thead class="thead-dark">
                 <tr>
                     <th>Name</th>
-                    <th>Description</th>
+                    <th>Venue</th>
                     <th>Date</th>
+                    <th>Time</th>
                     <th>Location</th>
                     <th>Capacity</th>
-                    <th>Price</th>
                     <th>Action</th> <!-- Add a new column for the action -->
                 </tr>
             </thead>
@@ -39,10 +30,12 @@
                 {% for event in events %}
                     <tr>
                         <td>{{ event['event_name'] }}</td>
+                        <td><a href="/profile/{{ 'venue_id' }}" class="btn btn-primary">View Venue</a></td>
                         <td>{{ event['date'] }}</td>
                         <td>{{ event['time'] }}</td>
-                        <td>{{ event.location }}</td>
+                        <td>{{ event['location'] }}</td>
                         <td>{{ event['total_tickets'] }}</td>
+                        <td>
                         {% if session['user_type'] == 'attendee' %}
                         <form action="/buy/{{ event['event_id'] }}" method="post">
                             {% for key, value in event.items() %}
@@ -52,9 +45,8 @@
                         </form>
                         </td>
                         {% elif session['user_type'] == 'venue' %}
-                            <td><a href="/manage/{{ event['event_id'] }}" class="btn btn-secondary">Manage event</a></td>
+                        <td><a href="/manage/{{ event['event_id'] }}" class="btn btn-secondary">Manage event</a></td>
                         {% endif %}
-                        <td><a href="/profile/{{ 'venue_id' }}" class="btn btn-primary">View Venue</a></td>
                     </tr>
                 {% endfor %}
             </tbody>
