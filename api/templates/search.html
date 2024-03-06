@@ -1,18 +1,20 @@
 {% extends "base.html" %}
 
 {% block title %}
-Search
+Search Events
 {% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center mb-5">
-        <div class="col-md-6">
-            <h2 class="text-center mb-3">Select a Country</h2>
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-4">
+                <h1>Select a Country</h1>
+            </div>
             <form action="/search" method="post" id="countryForm">
                 <div class="form-group">
                     <select name="country" class="form-control" required onchange="document.getElementById('countryForm').submit();">
-                        <option value="" disabled>Choose a country...</option>
+                        <option value="" disabled selected>Choose a country...</option>
                         {% for country in countries %}
                         <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>
                             {{ country }}
@@ -20,18 +22,19 @@ Search
                         {% endfor %}
                     </select>
                 </div>
-                <!-- No need for a button here as the form will auto-submit on country change -->
             </form>
         </div>
     </div>
     {% if cities %}
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <h2 class="text-center mb-3">Select a City</h2>
+    <div class="row mb-5">
+        <div class="col-lg-8 mx-auto">
+            <div class="text-center mb-4">
+                <h1>Select a City</h1>
+            </div>
             <form action="/search" method="post" id="cityForm">
                 <div class="form-group">
                     <select name="city" class="form-control" required>
-                        <option value="" disabled>Choose a city...</option>
+                        <option value="" disabled selected>Choose a city...</option>
                         {% for city in cities %}
                         <option value="{{ city }}">
                             {{ city }}
@@ -39,7 +42,7 @@ Search
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-secondary btn-block">Search Events</button>
+                <button type="submit" class="btn btn-primary btn-block">Search Events</button>
             </form>
         </div>
     </div>
