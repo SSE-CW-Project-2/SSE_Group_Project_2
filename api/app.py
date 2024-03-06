@@ -199,6 +199,7 @@ def profile(user_id, account_type="venue"):
     if not session.get("user_info"):
         user_info = google.get("/oauth2/v2/userinfo").json()
         session["user_info"] = user_info
+
     if session["user_id"] != user_id:
         req = {"function": "get", "object_type": account_type, "identifier": user_id}
         print(req)
@@ -214,6 +215,16 @@ def profile(user_id, account_type="venue"):
                 profile_picture=profile_picture,
                 user_type=session["user_type"],
             )
+
+    profile_picture = session.get("profile_picture", "")
+    account_info = session["user_info"]
+    return render_template(
+        "profile.html",
+        user_info=user_info,
+        profile_picture=profile_picture,
+        account_info=account_info,
+        user_type=session["user_type"],
+    )
 
 
 @app.route("/logout")
