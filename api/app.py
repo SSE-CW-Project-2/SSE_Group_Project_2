@@ -156,6 +156,7 @@ def login():
 
 @app.route("/after_login")
 def after_login():
+    return "Hello, world!"
     account_info = google.get("/oauth2/v2/userinfo")
     if account_info.ok:
         account_info_json = account_info.json()
@@ -165,8 +166,7 @@ def after_login():
             "id": id_,
         }
         session["user_id"] = id_
-        # status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
-        return make_authorized_request("/check_email_in_use", request=headers)
+        status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
         if status_code == 200:
             if resp_content.get("message") == "Account does not exist.":
                 # Save minimal info and redirect to location capture page
