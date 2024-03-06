@@ -4,6 +4,7 @@ import os
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 from .auth import make_authorized_request
+from .countries import countries_list as countries
 from datetime import datetime
 
 # FLASK SETUP #
@@ -73,14 +74,8 @@ def home():
 @app.route("/search", methods=["GET", "POST"])
 def search():
     if request.method == "GET":
-        return "Get"
-        countries = []
-        with open('countries.txt', 'r') as file:
-            for line in file:
-                countries.append(line.strip())
         return render_template("search.html", cities=[], countries=countries)
     elif request.method == "POST":
-        return "Post"
         if request.form.get("city"):
             city = request.form.get("city")
             req = {
@@ -272,10 +267,6 @@ def set_profile(function="create"):
             flash("Failed to create account", "error")
             print(status_code, resp_content)
             return redirect(url_for("set_profile"))
-    countries = []
-    with open('countries.txt', 'r') as file:
-        for line in file:
-            countries.append(line.strip())
     return render_template("set_profile.html", countries=countries)
 
 
