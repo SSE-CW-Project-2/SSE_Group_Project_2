@@ -4,7 +4,10 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Buy tickets for {{ event.name }}</h2>
+    <h2 class="mb-4">Buy tickets for {{ session['event_event_name'] | default('Our Event', true) }}</h2>
+    <div class="alert alert-success" role="alert">
+        <strong>Event Details:</strong> You are about to purchase tickets for <strong>{{ session['event_event_name'] | default('our special event', true) }}</strong>, taking place on <strong>{{ session['event_date'] | default('a certain date', true) }}</strong> at <strong>{{ session['event_time'] | default('a certain time', true) }}</strong>. Currently, <strong>{{ session['event_sold_tickets'] | default('0', true) }}</strong> out of <strong>{{ session['event_total_tickets'] | default('0', true) }}</strong> tickets have been sold.
+    </div>
     <div class="table-responsive">
         <table class="table table-bordered">
             <thead class="thead-light">
@@ -19,34 +22,41 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{{ event.name }}</td>
-                    <td>{{ event.description }}</td>
-                    <td>{{ event.date }}</td>
-                    <td>{{ event.location }}</td>
-                    <td>{{ event.capacity }}</td>
-                    <td>${{ event.price }}</td>
+                    <td>{{ session['event_event_name'] | default('Event Name', true) }}</td>
+                    <td>Join us for a memorable experience!</td>
+                    <td>{{ session['event_date'] | default('Event Date', true) }}</td>
+                    <td>Online</td>
+                    <td>{{ session['event_total_tickets'] | default('Event Capacity', true) }}</td>
+                    <td>$50</td>
                 </tr>
             </tbody>
         </table>
     </div>
-    <form action="/checkout/{{ event_id }}" method="POST" class="needs-validation" novalidate>
+    <form action="/checkout/{{ session['event_event_id'] }}" method="POST" class="needs-validation" novalidate>
         <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+            <label for="first_name">First Name:</label>
+            <input type="text" class="form-control" id="first_name" name="first_name" placeholder="Enter your first name" value="{{ session['first_name'] | default('', true) }}" required>
             <div class="invalid-feedback">
-                Please enter your name.
+                Please enter your first name.
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="last_name">Last Name:</label>
+            <input type="text" class="form-control" id="last_name" name="last_name" placeholder="Enter your last name" value="{{ session['last_name'] | default('', true) }}" required>
+            <div class="invalid-feedback">
+                Please enter your last name.
             </div>
         </div>
         <div class="form-group">
             <label for="email">Email:</label>
-            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" value="{{ session['email'] | default('', true) }}" required>
             <div class="invalid-feedback">
                 Please enter a valid email address.
             </div>
         </div>
         <div class="form-group">
             <label for="quantity">Quantity:</label>
-            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter the quantity" required min="1">
+            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter the quantity" required min="1" max="{{ (session['event_total_tickets'] | default(10, true)) | int - (session['event_sold_tickets'] | default(0, true)) | int }}">
             <div class="invalid-feedback">
                 Please enter a valid quantity.
             </div>
