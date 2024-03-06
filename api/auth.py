@@ -1,6 +1,6 @@
 import requests
-from google.oauth2 import service_account
-from google.auth.transport.requests import Request
+from google.oauth2 import service_account  # type: ignore
+from google.auth.transport.requests import Request  # type: ignore
 import os
 import json
 

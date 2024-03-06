@@ -1,5 +1,5 @@
 from flask import Flask, request, session, redirect, url_for, render_template, flash
-from flask_dance.contrib.google import make_google_blueprint, google
+from flask_dance.contrib.google import make_google_blueprint, google  # type: ignore
 import os
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "klasdnaslkdalaklsdnasfjao")
 app.config["SESSION_COOKIE_SECURE"] = True
 app.config["PREFERRED_URL_SCHEME"] = "https"
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)  # type: ignore
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1) # type: ignore
 
 
 # GOOGLE AUTH SETUP #
@@ -58,7 +58,7 @@ def one_user_type_allowed(user_type):
 
         return decorated_function
 
-    return decorator
+    return decorator# type: ignore
 
 
 def save_user_session_data(account_info_json):
