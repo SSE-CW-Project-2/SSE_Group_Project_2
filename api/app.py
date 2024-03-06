@@ -122,6 +122,7 @@ def events():
     }
     if user_type == "venue":
         status_code, event_data = make_authorized_request("/get_events_for_venue", req)
+        session["user_events"] = event_data.get("message").get("data")
     elif user_type == "artist":
         status_code, event_data = make_authorized_request("/get_events_for_artist", req)
     elif user_type == "attendee":
@@ -401,26 +402,34 @@ def purchase_ticket(event_id):
 @one_user_type_allowed("venue")
 @app.route("/manage/<event_id>", methods=["GET", "POST"])
 def manage_event(event_id):
-    if event_id not in session.get("user_events"):
-        flash("You are not authorized to delete this event", "error")
+    user_events = session.get("user_events", [])
+    this_event = None
+    for event in user_events:
+        if event.get("event_id") == event_id:
+            this_event = event
+            break
+    if this_event is None:
+        flash("You are not authorized to manage this event", "error")
         return redirect(url_for("events"))
-    event_data = make_authorized_request(
-        "/get_event_info",
-        {"identifier": event_id, "function": "get", "object_type": "event"},
-    )
-    session["event_info"] = event_data
-    return render_template("manage.html", event=event_data)
+    session["event_info"] = this_event
+    return render_template("manage.html", event=this_event)
 
 
 @one_user_type_allowed("venue")
-@app.route("/delete/<event_id>")
+@app.route("/delete/<event_id>", methods=["POST"])
 def delete_event(event_id):
-    if event_id not in session.get("user_events"):
+    user_events = session.get("user_events", [])
+    this_event = None
+    for event in user_events:
+        if event.get("event_id") == event_id:
+            this_event = event
+            break
+    if this_event is None:
         flash("You are not authorized to delete this event", "error")
         return redirect(url_for("events"))
     make_authorized_request(
         "/delete_event",
-        {"identifier": event_id, "function": "get", "object_type": "event"},
+        {"identifier": event_id, "function": "delete", "object_type": "event", "attributes": {}}
     )
     flash("Event deleted", "success")
     return redirect(url_for("events"))
@@ -463,8 +472,14 @@ def create_event():
 @one_user_type_allowed("venue")
 @app.route("/update/<event_id>", methods=["GET", "POST"])
 def update_event(event_id):
-    if event_id not in session.get("user_events"):
-        flash("You are not authorized to update this event", "error")
+    user_events = session.get("user_events", [])
+    this_event = None
+    for event in user_events:
+        if event.get("event_id") == event_id:
+            this_event = event
+            break
+    if this_event is None:
+        flash("You are not authorized to delete this event", "error")
         return redirect(url_for("events"))
     if request.method == "POST":
         update_attrs = request.form.to_dict()
@@ -472,10 +487,16 @@ def update_event(event_id):
             key: bleach.clean(value) for key, value in update_attrs.items()
         }
         make_authorized_request(
-            "/update_event", {"event_id": event_id, "update_attrs": sanitised_attrs}
+            "/update_event", {"event_id": this_event['event_id'], "update_attrs": sanitised_attrs}
         )
-    flash("Event updated", "success")
-    return redirect(url_for("manage_event", event_id=event_id))
+        flash("Event updated", "success")
+        return redirect(url_for("manage_event", event_id=this_event['event_id']))
+    else:
+        date_format = "%a, %d %b %Y %H:%M:%S %Z"
+        date_obj = datetime.strptime(this_event["date"], date_format)
+        event_date = date_obj.strftime("%Y-%m-%d")
+        event_time = date_obj.strftime("%H:%M")
+        return render_template("update_event.html", event=this_event, date=event_date, time=event_time)
 
 
 if __name__ == "__main__":

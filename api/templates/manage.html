@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-{% block title %}Manage{{ event.name }}{% endblock %}
+{% block title %}Manage {{ event['event_name'] }}{% endblock %}
 
 {% block content %}
-<h2>Manage {{ event.name }}</h2>
+<h2>Manage {{ event['event_name'] }}</h2>
 <table>
     <thead>
         <tr>
@@ -26,10 +26,10 @@
     </tbody>
 </table>
 
-<form action="/delete/{{ event.id }}" method="POST">
+<form action="/delete/{{ event['event_id'] }}" method="POST">
     <button type="submit">Delete event</button>
 </form>
-<form action="/update/{{ event.id }}" method="POST">
+<form action="/update/{{ event['event_id'] }}" method="POST">
     <button type="submit">Update event</button>
 </form>
 {% endblock %}
