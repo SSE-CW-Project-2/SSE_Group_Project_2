@@ -150,53 +150,47 @@ def events():
 def login():
     authorized = session.get("logged_in", False) and google.authorized
     if not authorized:
-        try:
-            redirect(url_for("google.login"))
-        except Exception as e:
-            return str(e)
         return redirect(url_for("google.login"))
     return redirect(url_for("home"))
 
 
 @app.route("/after_login")
 def after_login():
-    try:
-        account_info = google.get("/oauth2/v2/userinfo")
-        if account_info.ok:
-            account_info_json = account_info.json()
-            session['logged_in'] = True
-            id_ = account_info_json.get("id")
-            headers = {
-                "id": id_,
-            }
-            session["user_id"] = id_
-            status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
-            if status_code == 200:
-                if resp_content.get("message") == "Account does not exist.":
-                    # Save minimal info and redirect to location capture page
-                    save_user_session_data(account_info_json)  # Save or update session data
-                    return redirect(url_for("set_profile"))
-                session.update(resp_content)
-                user_type = resp_content["account_type"]
-                session["user_type"] = user_type
-                if user_type == "venue":
-                    session["name"] = resp_content["venue_name"]
-                elif user_type == "artist":
-                    session["name"] = resp_content["artist_name"]
-                elif user_type == "attendee":
-                    session["name"] = resp_content["first_name"]
-                else:
-                    print("User type not recognized")
-                # User exists, proceed to save or update session data and redirect home
-                    save_user_session_data(resp_content)
-                return redirect(url_for("home"))
+    account_info = google.get("/oauth2/v2/userinfo")
+    if account_info.ok:
+        account_info_json = account_info.json()
+        session['logged_in'] = True
+        id_ = account_info_json.get("id")
+        headers = {
+            "id": id_,
+        }
+        session["user_id"] = id_
+        # status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
+        return make_authorized_request("/check_email_in_use", request=headers)
+        if status_code == 200:
+            if resp_content.get("message") == "Account does not exist.":
+                # Save minimal info and redirect to location capture page
+                save_user_session_data(account_info_json)  # Save or update session data
+                return redirect(url_for("set_profile"))
+            session.update(resp_content)
+            user_type = resp_content["account_type"]
+            session["user_type"] = user_type
+            if user_type == "venue":
+                session["name"] = resp_content["venue_name"]
+            elif user_type == "artist":
+                session["name"] = resp_content["artist_name"]
+            elif user_type == "attendee":
+                session["name"] = resp_content["first_name"]
             else:
-                print(resp_content)
-                flash("Failed to create account. Please try again later.", "error")
-                return redirect(url_for("home"))
-        return "Failed to fetch user info"
-    except Exception as e:
-        return e
+                print("User type not recognized")
+            # User exists, proceed to save or update session data and redirect home
+            save_user_session_data(resp_content)
+            return redirect(url_for("home"))
+        else:
+            print(resp_content)
+            flash("Failed to create account. Please try again later.", "error")
+            return redirect(url_for("home"))
+    return "Failed to fetch user info"
 
 
 @app.route("/profile/<user_id>")
