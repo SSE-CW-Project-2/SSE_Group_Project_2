@@ -4,9 +4,9 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Buy tickets for {{ session['event_event_name'] | default('Our Event', true) }}</h2>
+    <h2 class="mb-4">Buy tickets for {{ session['event_info']['event_event_name'] | default('Our Event', true) }}</h2>
     <div class="alert alert-success" role="alert">
-        <strong>Event Details:</strong> You are about to purchase tickets for <strong>{{ session['event_event_name'] | default('our special event', true) }}</strong>, taking place on <strong>{{ session['event_date'] | default('a certain date', true) }}</strong> at <strong>{{ session['event_time'] | default('a certain time', true) }}</strong>. Currently, <strong>{{ session['event_sold_tickets'] | default('0', true) }}</strong> out of <strong>{{ session['event_total_tickets'] | default('0', true) }}</strong> tickets have been sold.
+        <strong>Event Details:</strong> You are about to purchase tickets for <strong>{{ session['event_info']['event_event_name'] | default('our special event', true) }}</strong>, taking place on <strong>{{ session['event_info']['event_date'] | default('a certain date', true) }}</strong> at <strong>{{ session['event_info']['event_time'] | default('a certain time', true) }}</strong>. Currently, <strong>{{ session['event_info']['event_sold_tickets'] | default('0', true) }}</strong> out of <strong>{{ session['event_info']['event_total_tickets'] | default('0', true) }}</strong> tickets have been sold.
     </div>
     <div class="table-responsive">
         <table class="table table-bordered">
@@ -22,11 +22,11 @@
             </thead>
             <tbody>
                 <tr>
-                    <td>{{ session['event_event_name'] | default('Event Name', true) }}</td>
+                    <td>{{ session['event_info']['event_event_name'] | default('Event Name', true) }}</td>
                     <td>Join us for a memorable experience!</td>
-                    <td>{{ session['event_date'] | default('Event Date', true) }}</td>
+                    <td>{{ session['event_info']['event_date'] | default('Event Date', true) }}</td>
                     <td>Online</td>
-                    <td>{{ session['event_total_tickets'] | default('Event Capacity', true) }}</td>
+                    <td>{{ session['event_info']['event_total_tickets'] | default('Event Capacity', true) }}</td>
                     <td>$50</td>
                 </tr>
             </tbody>
@@ -56,7 +56,7 @@
         </div>
         <div class="form-group">
             <label for="quantity">Quantity:</label>
-            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter the quantity" required min="1" max="{{ (session['event_total_tickets'] | default(10, true)) | int - (session['event_sold_tickets'] | default(0, true)) | int }}">
+            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter the quantity" required min="1" max="{{ (session['event_info']['event_total_tickets'] | default(10, true)) | int - (session['event_info']['event_sold_tickets'] | default(0, true)) | int }}">
             <div class="invalid-feedback">
                 Please enter a valid quantity.
             </div>
