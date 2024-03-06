@@ -144,6 +144,7 @@ def events():
         event.pop("date_time")
     return render_template("events.html", user_type=user_type, events=data)
 
+
 service_account_dict = {
     "type": "service_account",
     "project_id": os.environ.get('PROJECT_ID'),
