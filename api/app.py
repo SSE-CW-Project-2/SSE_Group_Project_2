@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "klasdnaslkdalaklsdnasfjao")
 app.config["SESSION_COOKIE_SECURE"] = True
 app.config["PREFERRED_URL_SCHEME"] = "https"
-app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1) # type: ignore
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)  # type: ignore
 
 
 # GOOGLE AUTH SETUP #
@@ -58,8 +58,7 @@ def one_user_type_allowed(user_type):
 
         return decorated_function
 
-    return decorator# type: ignore
-
+    return decorator
 
 def save_user_session_data(account_info_json):
     session["profile_picture"] = account_info_json.get("picture", "")
