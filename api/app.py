@@ -9,7 +9,7 @@ from datetime import datetime
 
 # FLASK SETUP #
 app = Flask(__name__)
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "klasdnaslkdalaklsdnasfjao")
 app.config['SESSION_COOKIE_SECURE'] = True
 app.config['PREFERRED_URL_SCHEME'] = 'https'
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1)  # type: ignore
@@ -58,7 +58,6 @@ def one_user_type_allowed(user_type):
 
 
 def save_user_session_data(account_info_json):
-    # Save necessary user info in the session
     session['profile_picture'] = account_info_json.get('picture', '')
 
 
@@ -167,6 +166,7 @@ def after_login():
                 save_user_session_data(account_info_json)  # Save or update session data
                 return redirect(url_for("set_profile"))
             session.update(resp_content)
+            print(resp_content)
             user_type = resp_content["account_type"]
             session["user_type"] = user_type
             if user_type == "venue":
@@ -258,7 +258,9 @@ def set_profile(function="create"):
         elif user_type == "attendee":
             create_request["attributes"]["first_name"] = request.form.get("user_name")
             create_request["attributes"]["last_name"] = request.form.get("last_name")
+        print(create_request)
         status_code, resp_content = make_authorized_request("/create_account", create_request)
+        session.update(create_request["attributes"])
         if status_code == 200:
             session["user_id"] = identifier
             flash("Account created", "success")
@@ -303,6 +305,7 @@ def update_account():
             "attributes": update_attrs,
         }
         make_authorized_request("/update_account", request=headers)
+        session.update(update_attrs)
         return redirect(url_for("profile", user_id=session.get("user_id")))
     return render_template("update_account.html", user_type=session["user_type"])
 
