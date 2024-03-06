@@ -175,11 +175,11 @@ def after_login():
             line = 172
             session["user_id"] = id_
         except Exception as e:
-            return e + account_info_json + line
+            return e + account_info_json + str(line)
         try:
             status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
         except Exception as e:
-            return e + resp_content + 179
+            return e + resp_content + "179"
         if status_code == 200:
             try:
                 if resp_content.get("message") == "Account does not exist.":
@@ -190,7 +190,7 @@ def after_login():
                 user_type = resp_content["account_type"]
                 session["user_type"] = user_type
             except Exception as e:
-                return e + resp_content + 190
+                return e + resp_content + "190"
             if user_type == "venue":
                 session["name"] = resp_content["venue_name"]
             elif user_type == "artist":
@@ -203,7 +203,7 @@ def after_login():
             try:
                 save_user_session_data(resp_content)
             except Exception as e:
-                return e + resp_content + 202
+                return e + resp_content + "202"
             return redirect(url_for("home"))
         else:
             print(resp_content)
