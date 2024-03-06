@@ -158,30 +158,16 @@ def login():
 def after_login():
     try:
         account_info = google.get("/oauth2/v2/userinfo")
-    except Exception as e:
-        return e + "160"
-    if account_info.ok:
-        try:
-            line = 162
+        if account_info.ok:
             account_info_json = account_info.json()
-            line = 164
             session['logged_in'] = True
-            line = 166
             id_ = account_info_json.get("id")
-            line = 168
             headers = {
                 "id": id_,
             }
-            line = 172
             session["user_id"] = id_
-        except Exception as e:
-            return e + account_info_json + str(line)
-        try:
             status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
-        except Exception as e:
-            return e + resp_content + "179"
-        if status_code == 200:
-            try:
+            if status_code == 200:
                 if resp_content.get("message") == "Account does not exist.":
                     # Save minimal info and redirect to location capture page
                     save_user_session_data(account_info_json)  # Save or update session data
@@ -189,28 +175,24 @@ def after_login():
                 session.update(resp_content)
                 user_type = resp_content["account_type"]
                 session["user_type"] = user_type
-            except Exception as e:
-                return e + resp_content + "190"
-            if user_type == "venue":
-                session["name"] = resp_content["venue_name"]
-            elif user_type == "artist":
-                session["name"] = resp_content["artist_name"]
-            elif user_type == "attendee":
-                session["name"] = resp_content["first_name"]
+                if user_type == "venue":
+                    session["name"] = resp_content["venue_name"]
+                elif user_type == "artist":
+                    session["name"] = resp_content["artist_name"]
+                elif user_type == "attendee":
+                    session["name"] = resp_content["first_name"]
+                else:
+                    print("User type not recognized")
+                # User exists, proceed to save or update session data and redirect home
+                    save_user_session_data(resp_content)
+                return redirect(url_for("home"))
             else:
-                print("User type not recognized")
-            # User exists, proceed to save or update session data and redirect home
-            try:
-                save_user_session_data(resp_content)
-            except Exception as e:
-                return e + resp_content + "202"
-            return redirect(url_for("home"))
-        else:
-            print(resp_content)
-            flash("Failed to create account. Please try again later.", "error")
-            return redirect(url_for("home"))
-    return "Failed to fetch user info"
-
+                print(resp_content)
+                flash("Failed to create account. Please try again later.", "error")
+                return redirect(url_for("home"))
+        return "Failed to fetch user info"
+    except Exception as e:
+        return e
 
 @app.route("/profile/<user_id>")
 @login_required
