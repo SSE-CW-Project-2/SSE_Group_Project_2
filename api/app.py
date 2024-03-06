@@ -378,53 +378,54 @@ def buy_event(event_id):
 
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
-    if (
-        session.get("event_info")
-        and session.get("event_info").get("event_event_id") == event_id
-    ):
-        event = session.get("event_info")
-    else:
-        event = make_authorized_request(
-            "/get_event_info",
-            {"identifier": event_id, "function": "get", "object_type": "event"},
-        )
-        session["event_info"] = event
+    reserve_request = {
+        "identifier": event_id,
+        "n_tickets": request.form.get("quantity")
+    }
+    print(reserve_request)
+    status_code, resp_content = make_authorized_request("/reserve_tickets", reserve_request)
+    print(status_code, resp_content)
+    ticket_ids = resp_content.get("message")[3]
+    session["ticket_ids"] = ticket_ids
     return render_template("checkout.html", event=event, event_id=event_id)
 
 
 @one_user_type_allowed("attendee")
-@app.route("/purchase_ticket/<event_id>", methods=["GET", "POST"])
+@app.route("/purchase_ticket/<event_id>", methods=["POST"])
 def purchase_ticket(event_id):
+    if (
+        session.get("event_info") is None 
+        or session.get("event_info").get("event_id") != event_id 
+        or not session.get("ticket_ids")
+    ):
+        print(session.items())
+        flash("You are not authorized to purchase tickets for this event", "error")
+        return redirect(url_for("events"))
     if request.method == "POST":
         ticket_request = {
             "function": "create",
             "object_type": "ticket",
-            "attributes": {
-                "event_id": event_id,
-                "attendee_id": session.get("user_id"),
-                "n_tickets": bleach.clean(request.form.get("quantity")),
-            },
+            "identifier": event_id,
+            "ticket_ids": session.get("ticket_ids")
         }
         print(ticket_request)
-        response = make_authorized_request("/purchase_tickets", ticket_request)
-        if response.status_code == 200:
-            flash("Ticket(s) purchased", "success")
+        status_code, resp_content = make_authorized_request("/purchase_tickets", ticket_request)
+        if status_code == 200:
+            flash("Ticket(s) purchased! You should receive the tickets in your email.", "success")
             return redirect(url_for("events"))
         else:
             flash("Failed to purchase ticket", "error")
             print(response.json())
             return redirect(url_for("buy_event", id=event_id))
-    if (
-        session.get("event_info")
-        and session.get("event_info").get("event_id") == event_id
-    ):
+
         event = session.get("event_info")
     else:
         event = make_authorized_request(
             "/get_event_info",
             {"identifier": event_id, "function": "get", "object_type": "event"},
         )
-    return render_template("purchase_ticket.html", event=event, event_id=event_id)
+    
+    return redirect(url_for("events"))
 
 
 # VENUE SPECIFIC ROUTES #

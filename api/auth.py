@@ -35,7 +35,7 @@ def get_token():
     return credentials.token
 
 
-def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST"):
+def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST", raise_for_status=False):
     host = os.environ.get("GATEWAY_HOST")
     """Makes an authorized request to the endpoint"""
 
@@ -54,7 +54,8 @@ def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST"):
         response = requests.delete(url, headers=headers, json=request)
     else:
         raise ValueError(f"Unsupported request_type: {request_type}")
-    response.raise_for_status()
+    if raise_for_status:
+        response.raise_for_status()
     return response.status_code, response.json()
 
 
