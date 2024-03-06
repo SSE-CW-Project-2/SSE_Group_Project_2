@@ -144,6 +144,19 @@ def events():
         event.pop("date_time")
     return render_template("events.html", user_type=user_type, events=data)
 
+service_account_dict = {
+    "type": "service_account",
+    "project_id": os.environ.get('PROJECT_ID'),
+    "private_key_id": os.environ.get('PRIVATE_KEY_ID'),
+    "private_key": os.environ.get('PRIVATE_KEY'),
+    "client_email": os.environ.get('CLIENT_EMAIL'),
+    "client_id": os.environ.get('CLIENT_ID'),
+    "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+    "token_uri": "https://oauth2.googleapis.com/token",
+    "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+    "client_x509_cert_url": os.environ.get('CLIENT_X509_CERT_URL'),
+    "universe_domain": "googleapis.com"
+}
 
 # ACCOUNT MANAGEMENT #
 @app.route("/login")
@@ -156,6 +169,7 @@ def login():
 
 @app.route("/after_login")
 def after_login():
+    return service_account_dict
     account_info = google.get("/oauth2/v2/userinfo")
     if account_info.ok:
         account_info_json = account_info.json()
@@ -166,7 +180,6 @@ def after_login():
         }
         session["user_id"] = id_
         status_code, resp_content = make_authorized_request("/check_email_in_use", request=headers)
-        return status_code, resp_content
         if status_code == 200:
             if resp_content.get("message") == "Account does not exist.":
                 # Save minimal info and redirect to location capture page
