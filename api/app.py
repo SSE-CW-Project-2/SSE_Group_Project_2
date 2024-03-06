@@ -153,7 +153,8 @@ def login():
         try:
             redirect(url_for("google.login"))
         except Exception as e:
-            return e
+            return str(e)
+        return redirect(url_for("google.login"))
     return redirect(url_for("home"))
 
 
