@@ -25,12 +25,12 @@ def get_token():
         private_key = private_key.replace("\\n", "\n")
         sa_dict["private_key"] = private_key
         service_account_json_string = json.dumps(sa_dict)
+        print(sa_dict)
     service_account_info = json.loads(service_account_json_string)
     credentials = service_account.IDTokenCredentials.from_service_account_info(
         service_account_info,
         target_audience=os.environ.get('GATEWAY_HOST'),
     )
-    print(os.environ.get('GATEWAY_HOST'))
     credentials.refresh(Request())
     return credentials.token
 

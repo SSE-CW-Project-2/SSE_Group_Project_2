@@ -88,7 +88,6 @@ def search():
             }
             status_code, resp_content = make_authorized_request("/get_events_in_city", req)
             if status_code != 200:
-                print(status_code, resp_content)
                 return "Failed to fetch events"
             events = resp_content.get("message").get("data")
             for event in events:
