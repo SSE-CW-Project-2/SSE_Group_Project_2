@@ -194,6 +194,7 @@ def after_login():
     except Exception as e:
         return e
 
+
 @app.route("/profile/<user_id>")
 @login_required
 def profile(user_id, account_type="venue"):
