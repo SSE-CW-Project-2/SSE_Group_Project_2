@@ -150,7 +150,10 @@ def events():
 def login():
     authorized = session.get("logged_in", False) and google.authorized
     if not authorized:
-        return redirect(url_for("google.login"))
+        try:
+            redirect(url_for("google.login"))
+        except Exception as e:
+            return e
     return redirect(url_for("home"))
 
 
