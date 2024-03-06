@@ -6,15 +6,29 @@ import json
 
 
 def get_token():
-    service_account_json_string = os.environ.get('SERVICE_ACCOUNT_JSON')
+    service_account_json_string = os.environ.get('SERVICE_ACCOUNT_JSON', None)
     if service_account_json_string is None:
-        raise ValueError("SERVICE_ACCOUNT_JSON environment variable is not set")
+        service_account_dict = {
+            "type": "service_account",
+            "project_id": os.environ.get('PROJECT_ID'),
+            "private_key_id": os.environ.get('PRIVATE_KEY_ID'),
+            "private_key": os.environ.get('PRIVATE_KEY'),
+            "client_email": os.environ.get('CLIENT_EMAIL'),
+            "client_id": os.environ.get('CLIENT_ID'),
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": os.environ.get('CLIENT_X509_CERT_URL'),
+            "universe_domain": "googleapis.com"
+        }
+        service_account_json_string = json.dumps(service_account_dict)
     service_account_info = json.loads(service_account_json_string)
+    print(service_account_info)
     credentials = service_account.IDTokenCredentials.from_service_account_info(
         service_account_info,
         target_audience=os.environ.get('GATEWAY_HOST'),
     )
-
+    print(os.environ.get('GATEWAY_HOST'))
     credentials.refresh(Request())
     return credentials.token
 

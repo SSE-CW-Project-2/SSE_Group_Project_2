@@ -4,6 +4,7 @@ import os
 from functools import wraps
 from werkzeug.middleware.proxy_fix import ProxyFix
 from .auth import make_authorized_request
+from datetime import datetime
 
 # FLASK SETUP #
 app = Flask(__name__)
@@ -55,13 +56,6 @@ def one_user_type_allowed(user_type):
     return decorator
 
 
-# HELPER FUNCTIONS #
-def is_user_new(email):
-    # Hardcoded list of existing user emails
-    existing_users = ['juliusgasson@gmail.com']
-    return email not in existing_users
-
-
 def save_user_session_data(account_info_json):
     # Save necessary user info in the session
     session['profile_picture'] = account_info_json.get('picture', '')
@@ -97,14 +91,21 @@ def search():
                 print(status_code, resp_content)
                 return "Failed to fetch events"
             events = resp_content.get("message").get("data")
+            for event in events:
+                timestamp = event["date_time"]
+                dt_object = datetime.fromisoformat(timestamp)
+                date = dt_object.date()
+                time = dt_object.strftime("%H:%M")
+                event["date"] = date
+                event["time"] = time
             return render_template("events.html", events=events)
         country = request.form.get("country")
         req = {
             "function": "get",
             "object_type": "city",
-            "country": country
+            "identifier": country
         }
-        status_code, resp_content = make_authorized_request("/get_cities_by_country", req, "GET")
+        status_code, resp_content = make_authorized_request("/get_cities_by_country", req)
         if status_code != 200:
             print(status_code, resp_content)
             return "Failed to fetch cities"
@@ -124,15 +125,23 @@ def events():
         "identifier": id_,
     }
     if user_type == "venue":
-        status_code, event_data = make_authorized_request("/get_events_for_venue", req, "GET")
+        status_code, event_data = make_authorized_request("/get_events_for_venue", req)
     elif user_type == "artist":
-        status_code, event_data = make_authorized_request("/get_events_for_artist", req, "GET")
+        status_code, event_data = make_authorized_request("/get_events_for_artist", req)
     elif user_type == "attendee":
         return redirect(url_for("search"))
     if status_code != 200:
         print(status_code, event_data)
         return "Failed to fetch events"
     data = event_data.get("message").get("data")
+    for event in data:
+        timestamp = event["date_time"]
+        dt_object = datetime.fromisoformat(timestamp)
+        date = dt_object.date()
+        time = dt_object.strftime("%H:%M")
+        event["date"] = date
+        event["time"] = time
+        event.pop("date_time")
     return render_template("events.html", user_type=user_type, events=data)
 
 
@@ -197,7 +206,7 @@ def profile(user_id, account_type="venue"):
             "object_type": account_type,
             "identifier": user_id
         }
-        status_code, resp_content = make_authorized_request("/get_account_info", req, "GET")
+        status_code, resp_content = make_authorized_request("/get_account_info", req)
         if status_code != 200:
             print(status_code, resp_content)
             return "Failed to fetch user info"
@@ -244,6 +253,7 @@ def set_profile(function="create"):
                 "bio": request.form.get("bio"),
             }
         }
+
         if user_type == "venue":
             create_request["attributes"]["venue_name"] = request.form.get("venue_name")
         elif user_type == "artist":
@@ -262,7 +272,11 @@ def set_profile(function="create"):
             flash("Failed to create account", "error")
             print(status_code, resp_content)
             return redirect(url_for("set_profile"))
-    return render_template("set_profile.html")
+    countries = []
+    with open('countries.txt', 'r') as file:
+        for line in file:
+            countries.append(line.strip())
+    return render_template("set_profile.html", countries=countries)
 
 
 @login_required
@@ -304,23 +318,27 @@ def update_account():
 
 # ATTENDEE SPECIFIC ROUTES #
 @one_user_type_allowed("attendee")
-@app.route("/buy/<id>", methods=["GET", "POST"])
-def buy_event(id):
-    # TODO: CALL TO DATABASE TO GET EVENT DETAILS ###
-    event_data = make_authorized_request("/get_event_info", {"event_id": id})
+@app.route("/buy/<event_id>", methods=["POST"])
+def buy_event(event_id):
+    event_data = {}
+    event_data.update(request.form.to_dict())
     session["event_info"] = event_data
-    return render_template("buy.html", event=event_data)
+    print(session.get("event_info"))
+    return render_template("buy.html", event=event_data, event_id=event_id)
 
 
-@one_user_type_allowed("attendee")
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
-    if session.get("event_info") and session.get("event_info").get("event_id") == event_id:
+    if session.get("event_info") and session.get("event_info").get("event_event_id") == event_id:
         event = session.get("event_info")
     else:
-        event = make_authorized_request("/get_event_info", {"event_id": event_id})
+        event = make_authorized_request("/get_event_info", {
+                                        "identifier": event_id,
+                                        "function": "get",
+                                        "object_type": "event"
+                                        })
         session["event_info"] = event
-    return render_template("checkout.html", event=event)
+    return render_template("checkout.html", event=event, event_id=event_id)
 
 
 @one_user_type_allowed("attendee")
@@ -328,12 +346,8 @@ def checkout(event_id):
 def purchase_ticket(event_id):
     if request.method == "POST":
         ticket_request = {
-            "function": "create",
-            "object_type": "ticket",
-            "attributes": {
-                "event_id": event_id,
-                "attendee_id": session.get("user_id"),
-            }
+            "event_id": event_id,
+            "attendee_id": session.get("user_id"),
         }
         response = make_authorized_request("/purchase_ticket", ticket_request)
         if response.status_code == 200:
@@ -346,8 +360,12 @@ def purchase_ticket(event_id):
     if session.get("event_info") and session.get("event_info").get("event_id") == event_id:
         event = session.get("event_info")
     else:
-        event = make_authorized_request("/get_event_info", {"event_id": event_id}, "GET")
-    return render_template("purchase_ticket.html", event=event)
+        event = make_authorized_request("/get_event_info", {
+                                            "identifier": event_id,
+                                            "function": "get",
+                                            "object_type": "event"
+                                            })
+    return render_template("purchase_ticket.html", event=event, event_id=event_id)
 
 
 # VENUE SPECIFIC ROUTES #
@@ -357,9 +375,11 @@ def manage_event(event_id):
     if event_id not in session.get("user_events"):
         flash("You are not authorized to delete this event", "error")
         return redirect(url_for("events"))
-    event_data = make_authorized_request("/get_event_info",
-                                         {"event_id": event_id},
-                                         request_type="GET")
+    event_data = make_authorized_request("/get_event_info", {
+                                            "identifier": event_id,
+                                            "function": "get",
+                                            "object_type": "event"
+                                         })
     session["event_info"] = event_data
     return render_template("manage.html", event=event_data)
 
@@ -370,7 +390,7 @@ def delete_event(event_id):
     if event_id not in session.get("user_events"):
         flash("You are not authorized to delete this event", "error")
         return redirect(url_for("events"))
-    make_authorized_request("/delete_event", {"event_id": event_id}, "DELETE")
+    make_authorized_request("/delete_event", {"identifier": event_id, "function": "get", "object_type": "event"})
     flash("Event deleted", "success")
     return redirect(url_for("events"))
 
@@ -381,7 +401,9 @@ def create_event():
     if request.method == "POST":
         event_name = request.form.get("event_name")
         event_date = request.form.get("event_date")
-        event_location = request.form.get("event_location")
+        # event_address = session.get("street_address")
+        # event_postcode = session.get("postcode")
+        # event_city = session.get("city")
         event_description = request.form.get("event_description")
         event_capacity = request.form.get("event_capacity")
         event_price = request.form.get("event_price")
@@ -391,7 +413,6 @@ def create_event():
             "attributes": {
                 "event_name": event_name,
                 "event_date": event_date,
-                "event_location": event_location,
                 "event_description": event_description,
                 "event_capacity": event_capacity,
                 "event_price": event_price,

@@ -138,14 +138,22 @@ jobs:
             --platform managed \
             --region europe-west2 \
             --port 5000 \
-            --set-env-vars "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
-            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
+            --set-env-vars PROJECT_ID=${{ secrets.PROJECT_ID }} \
+            --set-env-vars PRIVATE_KEY_ID=${{ secrets.PRIVATE_KEY_ID }} \
+            --set-env-vars PRIVATE_KEY=${{ secrets.PRIVATE_KEY }} \
+            --set-env-vars CLIENT_EMAIL=${{ secrets.CLIENT_EMAIL }} \
+            --set-env-vars CLIENT_ID=${{ secrets.CLIENT_ID }} \
+            --set-env-vars CLIENT_X509_CERT_URL=${{ secrets.CLIENT_X509_CERT_URL }} \
+            --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}
+            --set-env-vars GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            --set-env-vars GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            --set-env-vars GATEWAY_HOST=${{ secrets.GATEWAY_HOST }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
   optional-integration-testing:
     runs-on: ubuntu-latest
-    environment: Production
+    environment: Integration_test
     needs: deploy-to-staging 
     steps:
     - uses: actions/checkout@v3
@@ -170,9 +178,10 @@ jobs:
     
     - name: Run tests
       run: |
-        pipenv run python api/ui_test.py -v 2
+        pipenv run python api/tests/integration/ui_test.py -v 2
       env:
         DISPLAY: :99
+        STAGING_URL: ${{ secrets.STAGING_URL }}
 
   deploy-to-production:
     runs-on: ubuntu-latest
@@ -205,8 +214,16 @@ jobs:
             --platform managed \
             --region europe-west2 \
             --port 5000 \
-            --set-env-vars "GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}" \
-            --set-env-vars "GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}"
+            --set-env-vars PROJECT_ID=${{ secrets.PROJECT_ID }} \
+            --set-env-vars PRIVATE_KEY_ID=${{ secrets.PRIVATE_KEY_ID }} \
+            --set-env-vars PRIVATE_KEY=${{ secrets.PRIVATE_KEY }} \
+            --set-env-vars CLIENT_EMAIL=${{ secrets.CLIENT_EMAIL }} \
+            --set-env-vars CLIENT_ID=${{ secrets.CLIENT_ID }} \
+            --set-env-vars CLIENT_X509_CERT_URL=${{ secrets.CLIENT_X509_CERT_URL }} \
+            --set-env-vars FLASK_SECRET_KEY=${{ secrets.FLASK_SECRET_KEY }}
+            --set-env-vars GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+            --set-env-vars GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+            --set-env-vars GATEWAY_HOST=${{ secrets.GATEWAY_HOST }}
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 

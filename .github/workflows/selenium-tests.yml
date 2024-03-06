@@ -6,6 +6,7 @@ on:
 jobs:
   Integration-Testing:
     runs-on: ubuntu-latest
+    environment: Integration_test
     
     steps:
     - uses: actions/checkout@v3
@@ -30,8 +31,7 @@ jobs:
     
     - name: Run tests
       run: |
-        cd api
-        flask run &
-        pipenv run python ui_test.py -v 2
+        pipenv run python api/tests/integration/ui_test.py -v 2
       env:
         DISPLAY: :99
+        STAGING_URL: ${{ secrets.STAGING_URL }}
