@@ -1,29 +1,22 @@
 {% extends "base.html" %}
+
 {% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2>Welcome to the Home Page</h2>
-    {% if authorized %}
-        <div class="alert alert-success" role="alert">
-            You are logged in as a(n) {{ session.get('user_type') }}.
-            {% if session.get('location') %}
-                in {{ session.get('location') }}.
-            {% endif %}
-        </div>
-        <p>
-            <a href="{{ url_for('logout') }}" class="btn btn-primary">Logout</a>
-        </p>
-        <p>
-            <a href="{{ url_for('events') }}" class="btn btn-success">Events</a>
-        </p>
-    {% else %}
-        <div class="alert alert-warning" role="alert">
-            You are not logged in.
-        </div>
-        <p>
-            <a href="{{ url_for('login') }}" class="btn btn-primary">Login/register</a>
-        </p>
-    {% endif %}
+<!-- Hero Section for the homepage -->
+<div class="bg-primary text-white text-center d-flex align-items-center justify-content-center" style="height: 100vh;">
+    <div>
+        <h1 class="display-4">Welcome to Jumpstart Events</h1>
+        <p class="lead">Discover and book tickets for the most exciting events around you.</p>
+        {% if not authorized %}
+            <a href="{{ url_for('login') }}" class="btn btn-light btn-lg">Get Started</a>
+        {% else %}
+            <a href="{{ url_for('events') }}" class="btn btn-light btn-lg">Find Events</a>
+        {% endif %}
+    </div>
 </div>
 {% endblock %}
+
+
+
+

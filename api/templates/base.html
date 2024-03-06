@@ -3,52 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}Jumpstart Events{% endblock %}</title>
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css')}}" />
     <!-- Google Identity Services (GIS) library -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-      function handleCredentialResponse(response) {
-        console.log("Encoded JWT ID token: " + response.credential);
-        // Here you should send the `response.credential` (JWT ID token) to your backend for verification
-      }
-      
-      function initGoogleSignIn() {
-        google.accounts.id.initialize({
-          client_id: "YOUR_CLIENT_ID", // Use your actual Google Client ID
-          callback: handleCredentialResponse
-        });
-        google.accounts.id.renderButton(
-          document.getElementById("googleSignInButton"), // Adjusted for Bootstrap-styled button placement
-          { theme: "outline", size: "large" }
-        );
-        google.accounts.id.prompt(); // Prompt the user to sign in if necessary
-      }
-
-      window.onload = function() {
-        initGoogleSignIn();
-      };
-    </script>
 </head>
 <body>
     <!-- Bootstrap Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" id="logo" href="/">Jumpstart Events</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-            <div class="navbar-nav">
-                <a class="nav-item nav-link" href="/">Home</a>
-                {% if authorized %}
-                    <a class="nav-item nav-link" href="/profile/{{ session['user_id'] }}">Profile</a>
-                    <a class="nav-item nav-link" href="/events">Explore Events</a>
-                {% else %}
-                    <a class="nav-item nav-link" href="/login">Login</a>
-                {% endif %}
-                <!-- Placeholder for the Google Sign-In button, adjusted to fit within the Bootstrap Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">Jumpstart Events</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+                <div class="navbar-nav ml-auto">
+                    <a class="nav-item nav-link" href="/">Home</a>
+                    {% if authorized %}
+                        <a class="nav-item nav-link" href="/profile/{{ session['user_id'] }}">Profile</a>
+                        <a class="nav-item nav-link" href="/events">Explore Events</a>
+                    {% else %}
+                        <a class="nav-item nav-link" href="/login">Login</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>
@@ -56,8 +35,8 @@
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div class="container">
-                <div class="alert alert-info" role="alert">
+            <div class="container mt-4">
+                <div class="alert alert-info">
                     {% for message in messages %}
                         {{ message }}<br>
                     {% endfor %}
@@ -76,5 +55,19 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // Initialize Google Sign-In
+        window.onload = function() {
+            google.accounts.id.initialize({
+                client_id: "YOUR_CLIENT_ID",
+                callback: handleCredentialResponse
+            });
+            google.accounts.id.renderButton(
+                document.getElementById("signInDiv"),
+                { theme: "outline", size: "large" }  // Adjusted for your Bootstrap button styling
+            );
+            google.accounts.id.prompt(); // Display the One Tap sign-in dialog
+        };
+    </script>
 </body>
 </html>
