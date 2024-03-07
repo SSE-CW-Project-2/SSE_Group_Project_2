@@ -50,7 +50,10 @@
                                         <button type="submit" class="btn btn-info btn-sm">Buy</button>
                                     </form>
                                 {% elif session['user_type'] == 'venue' %}
-                                    <a href="/manage/{{ event['event_id'] }}" class="btn btn-secondary btn-sm">Manage event</a>
+                                    <!-- Link for managing event -->
+                                    <div style="text-align: center;">
+                                        <a href="/manage/{{ event['event_id'] }}" class="btn btn-secondary btn-sm">Manage event</a>
+                                    </div>
                                 {% endif %}
                             </td>
                         </tr>

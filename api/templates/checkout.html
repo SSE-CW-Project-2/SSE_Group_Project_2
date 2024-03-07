@@ -4,11 +4,10 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Checkout</h2>
-    {% if event %}
+    {% if event_id %}
     <form action="/purchase_ticket/{{ event_id }}" method="POST">
-        <input type="hidden" name="event_id" value="{{ event.id }}">
+        <input type="hidden" name="event_id" value="{{ event_id }}">
         <input type="hidden" id="form_quantity" name="quantity" value="{{ request.form.quantity if request.method == 'POST' else 1 }}">
-        <input type="hidden" id="form_total" name="total" value="{{ total_price }}">
         <button type="submit" class="btn btn-primary">Purchase Tickets</button>
     </form>
     {% else %}

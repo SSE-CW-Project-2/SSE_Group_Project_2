@@ -7,6 +7,7 @@ from .auth import make_authorized_request
 from .countries import countries_list as countries
 from datetime import datetime
 import bleach
+import json
 
 # FLASK SETUP #
 app = Flask(__name__)
@@ -79,7 +80,6 @@ def search():
     if request.method == "POST":
         country = request.form.get("country")
         city = request.form.get("city")
-
         if city:
             # Clean the city input and store it in the session
             city = bleach.clean(city)
@@ -121,7 +121,6 @@ def search():
 @app.route("/events", methods=["GET", "POST"])
 @login_required
 def events():
-    print(session.items())
     user_type = session.get("user_type")
     id_ = session.get("user_id", None)
     req = {
@@ -154,6 +153,10 @@ def events():
                 event["time"] = time
             return render_template("events.html", events=events)
         return redirect(url_for("search"))
+    else:
+        session.clear()
+        flash("You are not logged in", "error")
+        return redirect(url_for("home"))
     if status_code != 200:
         print(status_code, event_data)
         return "Failed to fetch events"
@@ -308,8 +311,16 @@ def set_profile(function="create"):
         status_code, resp_content = make_authorized_request(
             "/create_account", create_request
         )
-        session.update(create_request["attributes"])
+        if status_code == 400:
+            error = json.loads(resp_content)
+            print(error)
+            make_authorized_request("/delete_account", {"identifier": identifier})
+            flash("Failed to create account", "error")
+            session.clear()
+            return redirect(url_for("login"))
+            return redirect(url_for("set_profile"))
         if status_code == 200:
+            session.update(create_request["attributes"])
             session["user_id"] = identifier
             flash("Account created", "success")
             return redirect(url_for("home"))
@@ -329,6 +340,7 @@ def delete_account():
             "object_type": session.get("user_type"),
             "identifier": session.get("user_id"),
         }
+        print(delete_request)
         status_code, resp_content = make_authorized_request(
             "/delete_account", delete_request
         )
@@ -376,7 +388,6 @@ def buy_event(event_id):
     return render_template("buy.html", event=event_data, event_id=event_id)
 
 
-@one_user_type_allowed("attendee")
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
     reserve_request = {
@@ -384,13 +395,17 @@ def checkout(event_id):
         "n_tickets": request.form.get("quantity")
     }
     status_code, resp_content = make_authorized_request("/reserve_tickets", reserve_request)
-    print("###", status_code, resp_content)
-    if status_code == 200:
-        ticket_ids = resp_content.get("message")[3]
-        session["ticket_ids"] = ticket_ids
-        return render_template("checkout.html", event=event, event_id=event_id)
-    else:
-        pass
+    if status_code == 400:
+        print(resp_content)
+        flash("Tickets are sold out", "error")
+        return redirect(url_for("events", id=event_id))
+    elif status_code != 200:
+        print(resp_content)
+        flash("Failed to reserve tickets", "error")
+        return redirect(url_for("events", id=event_id))
+    ticket_ids = resp_content["data"]
+    session["ticket_ids"] = ticket_ids
+    return render_template("checkout.html", event_id=event_id)
 
 
 @one_user_type_allowed("attendee")
@@ -398,36 +413,30 @@ def checkout(event_id):
 def purchase_ticket(event_id):
     if (
         session.get("event_info") is None 
-        or session.get("event_info").get("event_id") != event_id 
+        or session.get("event_info").get("event_event_id") != event_id 
         or not session.get("ticket_ids")
     ):
-        print(session.items())
         flash("You are not authorized to purchase tickets for this event", "error")
         return redirect(url_for("events"))
-    if request.method == "POST":
-        ticket_request = {
-            "function": "create",
-            "object_type": "ticket",
-            "identifier": event_id,
-            "ticket_ids": session.get("ticket_ids")
-        }
-        print(ticket_request)
-        status_code, resp_content = make_authorized_request("/purchase_tickets", ticket_request)
-        if status_code == 200:
-            flash("Ticket(s) purchased! You should receive the tickets in your email.", "success")
-            return redirect(url_for("events"))
-        else:
-            flash("Failed to purchase ticket", "error")
-            print(response.json())
-            return redirect(url_for("buy_event", id=event_id))
-
-        event = session.get("event_info")
+    print(session["user_id"])
+    ticket_request = {
+        "function": "create",
+        "object_type": "ticket",
+        "identifier": session["user_id"],
+        "ticket_ids": session.get("ticket_ids"),
+    }
+    print(ticket_request)
+    status_code, resp_content = make_authorized_request("/purchase_tickets", ticket_request)
+    if status_code == 200:
+        flash("Ticket(s) purchased! You should receive the tickets in your email.", "success")
+        session.pop("ticket_ids")
+        return redirect(url_for("events"))
     else:
-        event = make_authorized_request(
-            "/get_event_info",
-            {"identifier": event_id, "function": "get", "object_type": "event"},
-        )
-    
+        flash("Failed to purchase ticket", "error")
+        print(resp_content)
+        return redirect(url_for("events"))
+
+    event = session.get("event_info")
     return redirect(url_for("events"))
 
 
@@ -485,18 +494,31 @@ def create_event():
                 "event_name": event_name,
                 "date_time": date_and_time,
                 "total_tickets": event_capacity,
-                "sold_tickets": 0,
+                "sold_tickets": 2,
                 "venue_id": session.get("user_id", None),
             },
         }
         status_code, response = make_authorized_request("/create_event", create_request)
         if status_code == 200:
-            flash("Event created", "success")
-
-            return redirect(url_for("events"))
+            event_id = response["data"]
+            ticket_request = {
+                "function": "create",
+                "object_type": "ticket",
+                "n_tickets": int(event_capacity),
+                "price": event_price,
+                "identifier": event_id,
+            }
+            status_code, response = make_authorized_request("/create_tickets", ticket_request)
+            if status_code == 200:
+                flash("Event created", "success")
+                return redirect(url_for("events"))
+            else:
+                print(response)
+                flash("Failed to create tickets", "error")
+                return redirect(url_for("create_event"))
         else:
             flash("Failed to create event", "error")
-            print(response.json())
+            print(response)
             return redirect(url_for("create_event"))
     return render_template("create_event.html")
 
@@ -511,16 +533,20 @@ def update_event(event_id):
             this_event = event
             break
     if this_event is None:
-        flash("You are not authorized to delete this event", "error")
+        flash("You are not authorized to update this event", "error")
         return redirect(url_for("events"))
     if request.method == "POST":
         update_attrs = request.form.to_dict()
         sanitised_attrs = {
             key: bleach.clean(value) for key, value in update_attrs.items()
         }
-        make_authorized_request(
+        status_code, resp_content = make_authorized_request(
             "/update_event", {"event_id": this_event['event_id'], "update_attrs": sanitised_attrs}
         )
+        if status_code != 200:
+            flash("Failed to update event", "error")
+            print(resp_content)
+            return redirect(url_for("manage_event", event_id=this_event['event_id']))
         flash("Event updated", "success")
         return redirect(url_for("manage_event", event_id=this_event['event_id']))
     else:

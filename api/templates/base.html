@@ -21,9 +21,10 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ml-auto">
                     <a class="nav-item nav-link" href="/">Home</a>
-                    {% if authorized %}
+                    {% if session.get('user_id') %}
                         <a class="nav-item nav-link" href="/profile/{{ session['user_id'] }}">Profile</a>
-                        <a class="nav-item nav-link" href="/events">Explore Events</a>
+                        <a class="nav-item nav-link" href="/events">Events</a>
+                        <a class="nav-item nav-link" href="/logout">Logout</a>
                     {% else %}
                         <a class="nav-item nav-link" href="/login">Login</a>
                     {% endif %}
