@@ -7,8 +7,6 @@ from .auth import make_authorized_request
 from .countries import countries_list as countries
 from datetime import datetime
 import bleach
-import json
-from pytz import timezone
 
 # FLASK SETUP #
 app = Flask(__name__)
@@ -241,6 +239,7 @@ def after_login():
 @app.route("/deactivated")
 def deactivated():
     return render_template("deactivated.html")
+
 
 @app.route("/profile/<user_id>")
 @login_required
@@ -575,7 +574,7 @@ def update_event(event_id):
             key: bleach.clean(value) for key, value in update_attrs.items()
         }
         status_code, resp_content = make_authorized_request(
-            "/update_event",
+            "/update_event",    
             {"event_id": this_event["event_id"], "update_attrs": sanitised_attrs},
         )
         if status_code != 200:
