@@ -574,7 +574,7 @@ def update_event(event_id):
             key: bleach.clean(value) for key, value in update_attrs.items()
         }
         status_code, resp_content = make_authorized_request(
-            "/update_event",    
+            "/update_event",
             {"event_id": this_event["event_id"], "update_attrs": sanitised_attrs},
         )
         if status_code != 200:
