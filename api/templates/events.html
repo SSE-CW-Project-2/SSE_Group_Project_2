@@ -26,7 +26,6 @@
                         <th>Venue</th>
                         <th>Date</th>
                         <th>Time</th>
-                        <th>Location</th>
                         <th>Capacity</th>
                         <th>Action</th>
                     </tr>
@@ -38,7 +37,6 @@
                             <td><a href="/profile/{{ event['venue_id'] }}" class="btn btn-outline-primary btn-sm">View Venue</a></td>
                             <td>{{ event['date'] }}</td>
                             <td>{{ event['time'] }}</td>
-                            <td>{{ event['location'] }}</td>
                             <td>{{ event['total_tickets'] }}</td>
                             <td>
                                 {% if session['user_type'] == 'attendee' %}

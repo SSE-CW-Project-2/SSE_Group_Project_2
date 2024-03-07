@@ -148,11 +148,11 @@ def events():
     elif user_type == "attendee":
         city = session.get("city")
         if city:
-
             req = {"function": "get", "object_type": "event", "identifier": city}
             status_code, resp_content = make_authorized_request(
                 "/get_events_in_city", req
             )
+            print("#########", resp_content, "#########")
             if status_code != 200:
                 return "Failed to fetch events"
             events = resp_content.get("message").get("data")
@@ -251,19 +251,47 @@ def profile(user_id, account_type="venue"):
         session["user_info"] = user_info
 
     if session["user_id"] != user_id:
-        req = {"function": "get", "object_type": account_type, "identifier": user_id}
-        print(req)
+        attributes = {
+                "bio": True,
+            }
+        if account_type == "venue":
+            attributes.update({
+                "venue_name": True,
+                "street_address": True,
+                "postcode": True,
+                "city": True,
+            })
+        elif account_type == "artist":
+            attributes.update({
+                "artist_name": True,
+                "genres": True,
+                "spotify_artist_id": True,
+            })
+        elif account_type == "attendee":
+            attributes.update({
+                "first_name": True,
+                "last_name": True,
+            })
+        req = {
+            "function": "get",
+            "object_type": account_type,
+            "identifier": user_id,
+            "attributes": attributes,
+        }
         status_code, resp_content = make_authorized_request("/get_account_info", req)
+        print(resp_content['data']['venue_name'])
+        print(account_type)
         if status_code != 200:
             print(status_code, resp_content)
-            return "Failed to fetch user info"
+            flash("Failed to fetch user info")
+            return redirect(url_for("events"))
         else:
             profile_picture = resp_content.get("profile_picture", "")
             return render_template(
                 "other_profile.html",
-                user_info=resp_content,
+                user_info=resp_content['data'],
                 profile_picture=profile_picture,
-                user_type=session["user_type"],
+                account_type=account_type,
             )
 
     profile_picture = session.get("profile_picture", "")
@@ -407,6 +435,11 @@ def buy_event(event_id):
 
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
+    tickets_left = session["event_info"]["event_total_tickets"] - session["event_info"]["event_sold_tickets"]
+    if request.form.get("quantity") > tickets_left:
+        flash("Not enough tickets left", "error")
+        session.pop("event_info")
+        return redirect(url_for("events", id=event_id))
     reserve_request = {
         "identifier": event_id,
         "n_tickets": request.form.get("quantity"),
