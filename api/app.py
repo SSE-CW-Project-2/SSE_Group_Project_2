@@ -65,6 +65,7 @@ def one_user_type_allowed(user_type):
 def save_user_session_data(account_info_json):
     session["profile_picture"] = account_info_json.get("picture", "")
 
+
 # ROUTES #
 
 
@@ -87,7 +88,9 @@ def search():
 
             # Logic to handle fetching events based on the city
             req = {"function": "get", "object_type": "event", "identifier": city}
-            status_code, resp_content = make_authorized_request("/get_events_in_city", req)
+            status_code, resp_content = make_authorized_request(
+                "/get_events_in_city", req
+            )
             if status_code != 200:
                 return "Failed to fetch events", status_code
             events = resp_content.get("message").get("data")
@@ -105,17 +108,26 @@ def search():
 
             # Logic to handle fetching cities based on the country
             req = {"function": "get", "object_type": "city", "identifier": country}
-            status_code, resp_content = make_authorized_request("/get_cities_by_country", req)
+            status_code, resp_content = make_authorized_request(
+                "/get_cities_by_country", req
+            )
             if status_code != 200:
                 return "Failed to fetch cities", status_code
             cities = resp_content.get("message").get("data")
 
             # Render the search template with the list of cities and the selected country
-            return render_template("search.html", cities=cities, countries=countries, selected_country=country)
+            return render_template(
+                "search.html",
+                cities=cities,
+                countries=countries,
+                selected_country=country,
+            )
 
     # For a GET request or if no country is selected yet, show the initial country selection form
-    selected_country = session.get('country', '')
-    return render_template("search.html", countries=countries, selected_country=selected_country, cities=[])
+    selected_country = session.get("country", "")
+    return render_template(
+        "search.html", countries=countries, selected_country=selected_country, cities=[]
+    )
 
 
 @app.route("/events", methods=["GET", "POST"])
@@ -392,9 +404,11 @@ def buy_event(event_id):
 def checkout(event_id):
     reserve_request = {
         "identifier": event_id,
-        "n_tickets": request.form.get("quantity")
+        "n_tickets": request.form.get("quantity"),
     }
-    status_code, resp_content = make_authorized_request("/reserve_tickets", reserve_request)
+    status_code, resp_content = make_authorized_request(
+        "/reserve_tickets", reserve_request
+    )
     if status_code == 400:
         print(resp_content)
         flash("Tickets are sold out", "error")
@@ -412,8 +426,8 @@ def checkout(event_id):
 @app.route("/purchase_ticket/<event_id>", methods=["POST"])
 def purchase_ticket(event_id):
     if (
-        session.get("event_info") is None 
-        or session.get("event_info").get("event_event_id") != event_id 
+        session.get("event_info") is None
+        or session.get("event_info").get("event_event_id") != event_id
         or not session.get("ticket_ids")
     ):
         flash("You are not authorized to purchase tickets for this event", "error")
@@ -426,9 +440,14 @@ def purchase_ticket(event_id):
         "ticket_ids": session.get("ticket_ids"),
     }
     print(ticket_request)
-    status_code, resp_content = make_authorized_request("/purchase_tickets", ticket_request)
+    status_code, resp_content = make_authorized_request(
+        "/purchase_tickets", ticket_request
+    )
     if status_code == 200:
-        flash("Ticket(s) purchased! You should receive the tickets in your email.", "success")
+        flash(
+            "Ticket(s) purchased! You should receive the tickets in your email.",
+            "success",
+        )
         session.pop("ticket_ids")
         return redirect(url_for("events"))
     else:
@@ -437,6 +456,7 @@ def purchase_ticket(event_id):
         return redirect(url_for("events"))
 
     event = session.get("event_info")
+    print(event)
     return redirect(url_for("events"))
 
 
@@ -471,7 +491,12 @@ def delete_event(event_id):
         return redirect(url_for("events"))
     make_authorized_request(
         "/delete_event",
-        {"identifier": event_id, "function": "delete", "object_type": "event", "attributes": {}}
+        {
+            "identifier": event_id,
+            "function": "delete",
+            "object_type": "event",
+            "attributes": {},
+        },
     )
     flash("Event deleted", "success")
     return redirect(url_for("events"))
@@ -508,7 +533,9 @@ def create_event():
                 "price": event_price,
                 "identifier": event_id,
             }
-            status_code, response = make_authorized_request("/create_tickets", ticket_request)
+            status_code, response = make_authorized_request(
+                "/create_tickets", ticket_request
+            )
             if status_code == 200:
                 flash("Event created", "success")
                 return redirect(url_for("events"))
@@ -541,20 +568,23 @@ def update_event(event_id):
             key: bleach.clean(value) for key, value in update_attrs.items()
         }
         status_code, resp_content = make_authorized_request(
-            "/update_event", {"event_id": this_event['event_id'], "update_attrs": sanitised_attrs}
+            "/update_event",
+            {"event_id": this_event["event_id"], "update_attrs": sanitised_attrs},
         )
         if status_code != 200:
             flash("Failed to update event", "error")
             print(resp_content)
-            return redirect(url_for("manage_event", event_id=this_event['event_id']))
+            return redirect(url_for("manage_event", event_id=this_event["event_id"]))
         flash("Event updated", "success")
-        return redirect(url_for("manage_event", event_id=this_event['event_id']))
+        return redirect(url_for("manage_event", event_id=this_event["event_id"]))
     else:
         date_format = "%a, %d %b %Y %H:%M:%S %Z"
         date_obj = datetime.strptime(this_event["date"], date_format)
         event_date = date_obj.strftime("%Y-%m-%d")
         event_time = date_obj.strftime("%H:%M")
-        return render_template("update_event.html", event=this_event, date=event_date, time=event_time)
+        return render_template(
+            "update_event.html", event=this_event, date=event_date, time=event_time
+        )
 
 
 if __name__ == "__main__":

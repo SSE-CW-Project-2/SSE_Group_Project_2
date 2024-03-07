@@ -35,7 +35,9 @@ def get_token():
     return credentials.token
 
 
-def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST", raise_for_status=False):
+def make_jwt_request(
+    signed_jwt, endpoint_path, request, request_type="POST", raise_for_status=False
+):
     host = os.environ.get("GATEWAY_HOST")
     """Makes an authorized request to the endpoint"""
 
@@ -62,9 +64,13 @@ def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST", ra
     return response.status_code, response.json()
 
 
-def make_authorized_request(endpoint_path, request, request_type="POST", raise_for_status=False):
+def make_authorized_request(
+    endpoint_path, request, request_type="POST", raise_for_status=False
+):
     token = get_token()
-    return make_jwt_request(token, endpoint_path, request, request_type, raise_for_status=raise_for_status)
+    return make_jwt_request(
+        token, endpoint_path, request, request_type, raise_for_status=raise_for_status
+    )
 
 
 if __name__ == "__main__":

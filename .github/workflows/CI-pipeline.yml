@@ -76,9 +76,7 @@ jobs:
       run: pip install -r requirements.txt
     - name: Run unit tests
       run: | 
-        pytest api/tests/unit/routes/*.py
-        pytest api/tests/unit/models/*.py
-        pytest api/tests/unit/utils/*.py
+        pytest api/app_test.py
   
   container-setup:
     runs-on: ubuntu-latest
