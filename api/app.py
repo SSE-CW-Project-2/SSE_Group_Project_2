@@ -6,8 +6,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from .auth import make_authorized_request
 from .countries import countries_list as countries
 from datetime import datetime
-import bleach
-from datetime import datetime
+import bleach  # type: ignore
 
 # FLASK SETUP #
 app = Flask(__name__)
@@ -502,7 +501,6 @@ def purchase_ticket(event_id):
         flash("Failed to purchase ticket", "error")
         print(resp_content)
         return redirect(url_for("events"))
-
     event = session.get("event_info")
     print(event)
     return redirect(url_for("events"))
@@ -555,12 +553,6 @@ def delete_event(event_id):
         flash("Event deleted", "success")
         return redirect(url_for("events"))
 
-def make_artist_request(artist_name):
-    request = {
-        "function": "get",
-        "object_type": "artist",
-        "identifier": artist_name,
-    }
 
 @one_user_type_allowed("venue")
 @app.route("/create_event", methods=["GET", "POST"])
@@ -610,7 +602,6 @@ def create_event():
             print(response)
             return redirect(url_for("create_event"))
     return render_template("create_event.html")
-
 
 
 @one_user_type_allowed("venue")

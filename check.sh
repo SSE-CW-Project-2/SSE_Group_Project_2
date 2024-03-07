@@ -12,12 +12,4 @@ xargs -0 flake8 < python_files.tmp --extend-ignore E203  --extend-ignore E722 --
 xargs -0 -a python_files.tmp mypy --ignore-missing-imports
 rm -f python_files.tmp
 
-# TESTING
-echo -e "\033[1;34mRunning tests...\033[0m"
-cd api
-flask run &
-FLASK_PID=$!
-find tests -type f -name "*.py" -exec pytest {} +
-kill $FLASK_PID
-
-cd ..
+pytest api/app_test.py
