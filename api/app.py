@@ -7,6 +7,7 @@ from .auth import make_authorized_request
 from .countries import countries_list as countries
 from datetime import datetime
 import bleach
+from datetime import datetime
 
 # FLASK SETUP #
 app = Flask(__name__)
@@ -38,6 +39,9 @@ app.register_blueprint(google_blueprint, url_prefix="/login")
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        print(session.items())
+        if session.get("status") == "Inactive":
+            return redirect(url_for("deactivated"))
         if not google.authorized:
             # If the user is not logged in, redirect to the login page
             return redirect(url_for("login", next=request.url))
@@ -91,6 +95,7 @@ def search():
             status_code, resp_content = make_authorized_request(
                 "/get_events_in_city", req
             )
+            print("CITY: ", resp_content, "CITY")
             if status_code != 200:
                 return "Failed to fetch events", status_code
             events = resp_content.get("message").get("data")
@@ -152,7 +157,6 @@ def events():
             status_code, resp_content = make_authorized_request(
                 "/get_events_in_city", req
             )
-            print("#########", resp_content, "#########")
             if status_code != 200:
                 return "Failed to fetch events"
             events = resp_content.get("message").get("data")
@@ -207,7 +211,9 @@ def after_login():
         status_code, resp_content = make_authorized_request(
             "/check_email_in_use", request=headers
         )
-        if resp_content.get("Status") == "Inactive":
+        print(resp_content)
+        if resp_content.get("status") == "Inactive":
+            session["status"] = "Inactive"
             return redirect(url_for("deactivated"))
         if status_code == 200:
             if resp_content.get("message") == "Account does not exist.":
@@ -215,7 +221,6 @@ def after_login():
                 save_user_session_data(account_info_json)  # Save or update session data
                 return redirect(url_for("set_profile"))
             session.update(resp_content)
-            print(resp_content)
             user_type = resp_content["account_type"]
             session["user_type"] = user_type
             if user_type == "venue":
@@ -354,7 +359,6 @@ def set_profile(function="create"):
             create_request["attributes"]["last_name"] = bleach.clean(
                 request.form.get("last_name")
             )
-        print(create_request)
         status_code, resp_content = make_authorized_request(
             "/create_account", create_request
         )
@@ -391,6 +395,7 @@ def delete_account():
         )
         if status_code == 200:
             session.clear()
+            session["status"] = "Inactive"
             flash("Account deleted", "success")
             return redirect(url_for("home"))
         else:
@@ -435,8 +440,10 @@ def buy_event(event_id):
 
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
-    tickets_left = session["event_info"]["event_total_tickets"] - session["event_info"]["event_sold_tickets"]
-    if request.form.get("quantity") > tickets_left:
+    total_tickets = int(session["event_info"]["event_total_tickets"])
+    sold_tickets = int(session["event_info"]["event_sold_tickets"])
+    tickets_left = total_tickets - sold_tickets
+    if int(request.form.get("quantity")) > tickets_left:
         flash("Not enough tickets left", "error")
         session.pop("event_info")
         return redirect(url_for("events", id=event_id))
@@ -444,12 +451,15 @@ def checkout(event_id):
         "identifier": event_id,
         "n_tickets": request.form.get("quantity"),
     }
+    print(reserve_request)
     status_code, resp_content = make_authorized_request(
         "/reserve_tickets", reserve_request
     )
     if status_code == 400:
-        print(resp_content)
+        print("#############################################")
+        print(status_code, resp_content)
         flash("Tickets are sold out", "error")
+        print("#############################################")
         return redirect(url_for("events", id=event_id))
     elif status_code != 200:
         print(resp_content)
@@ -527,18 +537,30 @@ def delete_event(event_id):
     if this_event is None:
         flash("You are not authorized to delete this event", "error")
         return redirect(url_for("events"))
-    make_authorized_request(
-        "/delete_event",
-        {
-            "identifier": event_id,
-            "function": "delete",
-            "object_type": "event",
-            "attributes": {},
-        },
+    req = {
+        "identifier": event_id,
+        "function": "delete",
+        "object_type": "event",
+        "attributes": {},
+    },
+    print(req)
+    status_code, resp_content = make_authorized_request(
+        "/delete_event", req
     )
-    flash("Event deleted", "success")
-    return redirect(url_for("events"))
+    if status_code != 200:
+        flash("Failed to delete event", "error")
+        print(resp_content)
+        return redirect(url_for("events"))
+    else:
+        flash("Event deleted", "success")
+        return redirect(url_for("events"))
 
+def make_artist_request(artist_name):
+    request = {
+        "function": "get",
+        "object_type": "artist",
+        "identifier": artist_name,
+    }
 
 @one_user_type_allowed("venue")
 @app.route("/create_event", methods=["GET", "POST"])
@@ -546,8 +568,8 @@ def create_event():
     if request.method == "POST":
         event_date = bleach.clean(request.form.get("event_date"))
         event_time = bleach.clean(request.form.get("event_time"))
-        date_and_time = f"{event_date} {event_time}:00"
-        print(date_and_time)
+        event_artist = [bleach.clean(request.form.get("artist"))]
+        date_and_time = datetime.strptime(f"{event_date} {event_time}", "%Y-%m-%d %H:%M").isoformat()
         event_name = bleach.clean(request.form.get("event_name"))
         event_price = bleach.clean(request.form.get("event_price"))
         event_capacity = bleach.clean(request.form.get("event_capacity"))
@@ -560,6 +582,7 @@ def create_event():
                 "total_tickets": event_capacity,
                 "sold_tickets": 2,
                 "venue_id": session.get("user_id", None),
+                "artist_ids": event_artist,
             },
         }
         status_code, response = make_authorized_request("/create_event", create_request)
@@ -587,6 +610,7 @@ def create_event():
             print(response)
             return redirect(url_for("create_event"))
     return render_template("create_event.html")
+
 
 
 @one_user_type_allowed("venue")

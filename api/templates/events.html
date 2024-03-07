@@ -24,6 +24,7 @@
                     <tr>
                         <th>Name</th>
                         <th>Venue</th>
+                        <th>Artist(s)</th>
                         <th>Date</th>
                         <th>Time</th>
                         <th>Capacity</th>
@@ -35,6 +36,11 @@
                         <tr>
                             <td>{{ event['event_name'] }}</td>
                             <td><a href="/profile/{{ event['venue_id'] }}" class="btn btn-outline-primary btn-sm">View Venue</a></td>
+                            {% if event['artist_ids'] %}
+                            <td>{{ event['artist_ids'][0] }}</td>
+                            {% else %}
+                            <td>No artists yet</td>
+                            {% endif %}
                             <td>{{ event['date'] }}</td>
                             <td>{{ event['time'] }}</td>
                             <td>{{ event['total_tickets'] }}</td>
@@ -52,6 +58,11 @@
                                     <div style="text-align: center;">
                                         <a href="/manage/{{ event['event_id'] }}" class="btn btn-secondary btn-sm">Manage event</a>
                                     </div>
+                                {% elif session['user_type'] == 'artist' %}
+                                <!-- Link for managing event -->
+                                <div style="text-align: center;">
+                                    <a href="/apply/{{ event['event_id'] }}" class="btn btn-secondary btn-sm">Apply for event</a>
+                                </div
                                 {% endif %}
                             </td>
                         </tr>

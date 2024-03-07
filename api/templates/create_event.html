@@ -6,6 +6,9 @@
    <label for="event_name">Event Name:</label><br>
    <input type="text" id="event_name" name="event_name" placeholder="Enter event name here"><br>
    
+   <label for="artist_name">Artist:</label><br>
+   <input type="text" id="artist" name="artist" min="0" value="0"><br>
+
    <label for="event_date">Event Date:</label><br>
    <input type="date" id="event_date" name="event_date"><br>
 
@@ -13,10 +16,25 @@
    <input type="time" id="event_time" name="event_time"><br>
    
    <label for="event_capacity">Event Capacity:</label><br>
-   <input type="number" id="event_capacity" name="event_capacity" min = 1 max = 1000 value="1"><br>
-   
+   <input type="number" id="event_capacity" name="event_capacity" min="1" max="1000" value="1"><br>
+
    <label for="event_price">Event Price:</label><br>
-   <input type="number" id="event_price" name="event_price" min = 0 value="0"><br>
+   <input type="number" id="event_price" name="event_price" min="0" value="0"><br>
+
+
+   <label for="event_currency">Currency:</label><br>
+   <select id="event_currency" name="event_currency">
+      <option value="USD">USD</option>
+      <option value="EUR">EUR</option>
+      <option value="GBP">GBP</option>
+      <option value="JPY">JPY</option>
+      <option value="AUD">AUD</option>
+      <option value="CAD">CAD</option>
+      <option value="CHF">CHF</option>
+      <option value="CNY">CNY</option>
+      <option value="HKD">HKD</option>
+      <option value="INR">INR</option>
+   </select><br>
    
    <input type="submit" value="Create Event">
 </form>

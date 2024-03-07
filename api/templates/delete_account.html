@@ -1,13 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Delete Account{% endblock %}
+{% block title %}Deactivate Account{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2>Are you sure you want to delete your account?</h2>
+    <h2>Are you sure you want to deactivate your account?</h2>
     <p>This action cannot be undone. All your data will be permanently deleted and your email will be deactivated.</p>
+    <p>If you are a venue, all your events will be cancelled and your tickets refunded.</p>
     <form action="/delete_account" method="post">
-        <button type="submit" class="btn btn-danger">Delete My Account</button>
+        <button type="submit" class="btn btn-danger">Deactivate My Account</button>
         <a href="{{ url_for('home') }}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
