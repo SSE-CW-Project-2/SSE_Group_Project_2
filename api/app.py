@@ -376,18 +376,21 @@ def buy_event(event_id):
     return render_template("buy.html", event=event_data, event_id=event_id)
 
 
+@one_user_type_allowed("attendee")
 @app.route("/checkout/<event_id>", methods=["GET", "POST"])
 def checkout(event_id):
     reserve_request = {
         "identifier": event_id,
         "n_tickets": request.form.get("quantity")
     }
-    print(reserve_request)
     status_code, resp_content = make_authorized_request("/reserve_tickets", reserve_request)
-    print(status_code, resp_content)
-    ticket_ids = resp_content.get("message")[3]
-    session["ticket_ids"] = ticket_ids
-    return render_template("checkout.html", event=event, event_id=event_id)
+    print("###", status_code, resp_content)
+    if status_code == 200:
+        ticket_ids = resp_content.get("message")[3]
+        session["ticket_ids"] = ticket_ids
+        return render_template("checkout.html", event=event, event_id=event_id)
+    else:
+        pass
 
 
 @one_user_type_allowed("attendee")

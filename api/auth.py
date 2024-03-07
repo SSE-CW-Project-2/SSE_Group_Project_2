@@ -56,12 +56,15 @@ def make_jwt_request(signed_jwt, endpoint_path, request, request_type="POST", ra
         raise ValueError(f"Unsupported request_type: {request_type}")
     if raise_for_status:
         response.raise_for_status()
+    else:
+        if response.status_code != 200:
+            return response.status_code, response.text
     return response.status_code, response.json()
 
 
-def make_authorized_request(endpoint_path, request, request_type="POST"):
+def make_authorized_request(endpoint_path, request, request_type="POST", raise_for_status=False):
     token = get_token()
-    return make_jwt_request(token, endpoint_path, request, request_type)
+    return make_jwt_request(token, endpoint_path, request, request_type, raise_for_status=raise_for_status)
 
 
 if __name__ == "__main__":
