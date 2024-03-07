@@ -9,20 +9,67 @@
         {% if profile_picture %}
         <img src="{{ profile_picture }}" alt="Profile Picture" class="img-fluid rounded-circle" style="width: 150px; height: 150px;">
         {% endif %}
-        {% if user_info.bio %}
-            <p class="lead mt-3">{{ user_info.bio }}</p>
-        {% endif %}
-        {% if user_info.user_type == 'venue' %}
-            <p class="lead">Venue Name: {{ user_info.venue_name }}</p>
-        {% endif %}
-        {% if user_info.user_type == 'artist' %}
-            <p class="lead">Artist Name: {{ user_info.artist_name }}</p>
-            <p class="lead">Genres: {{ user_info.genres }}</p>
-            <p class="lead">Spotify Artist ID: {{ user_info.spotify_artist_id }}</p>
-        {% endif %}
-        {% if user_info.user_type == 'attendee' %}
-            <p class="lead">First Name: {{ user_info.user_name }}</p>
-            <p class="lead">Last Name: {{ user_info.last_name }}</p>
-        {% endif %}
+        <table class="table mt-3">
+            {% if user_info['bio'] %}
+            <tr>
+                <th>Bio</th>
+                <td>{{ user_info['bio'] }}</td>
+            </tr>
+            {% endif %}
+            {% if account_type == 'venue' %}
+            <h2>Profile for venue: {{ user_info['venue_name'] }}</h2>
+            <tr>
+                <th>Venue Name</th>
+                <td>{{ user_info['venue_name'] }}</td>
+            </tr>
+            <tr>
+                <th>Street Address</th>
+                <td>{{ user_info['street_address'] }}</td>
+            </tr>
+            <tr>
+                <th>Postcode</th>
+                <td>{{ user_info['postcode'] }}</td>
+            </tr>
+            <tr>
+                <th>City</th>
+                <td>{{ user_info['city'] }}</td>
+            </tr>
+            {% endif %}
+            {% if account_type == 'artist' %}
+            <h2>Profile for artist: {{ user_info['venue_name'] }}</h2>
+            <tr>
+                <th>Artist Name</th>
+                <td>{{ user_info['artist_name'] }}</td>
+            </tr>
+            <tr>
+                <th>Genres</th>
+                <td>{{ user_info['genres'] }}</td>
+            </tr>
+            <tr>
+                <th>Spotify Artist ID</th>
+                <td>{{ user_info['spotify_artist_id'] }}</td>
+            </tr>
+            {% endif %}
+            {% if account_type == 'attendee' %}
+            <h2>Profile for attendee: {{ user_info['user_name'] }} {{user_info['last_name'] }}</h2>
+            <tr>
+                <th>First Name</th>
+                <td>{{ user_info['user_name'] }}</td>
+            </tr>
+            <tr>
+                <th>Last Name</th>
+                <td>{{ user_info['last_name'] }}</td>
+            </tr>
+            {% endif %}
+            {% if user_info['bio'] %}
+            <tr>
+                <th>Bio</th>
+                <td>{{ user_info['bio'] }}</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
 </div>
+
+        </div>
 {% endblock %}

@@ -76,6 +76,7 @@ def home():
     return render_template("index.html", authorized=authorized)
 
 
+@one_user_type_allowed("attendee")
 @app.route("/search", methods=["GET", "POST"])
 def search():
     if request.method == "POST":
@@ -207,6 +208,8 @@ def after_login():
         status_code, resp_content = make_authorized_request(
             "/check_email_in_use", request=headers
         )
+        if resp_content.get("Status") == "Inactive":
+            return redirect(url_for("deactivated"))
         if status_code == 200:
             if resp_content.get("message") == "Account does not exist.":
                 # Save minimal info and redirect to location capture page
@@ -233,6 +236,10 @@ def after_login():
             return redirect(url_for("home"))
     return "Failed to fetch user info"
 
+
+@app.route("/deactivated")
+def deactivated():
+    return render_template("deactivated.html")
 
 @app.route("/profile/<user_id>")
 @login_required
@@ -324,13 +331,11 @@ def set_profile(function="create"):
             "/create_account", create_request
         )
         if status_code == 400:
-            error = json.loads(resp_content)
-            print(error)
-            make_authorized_request("/delete_account", {"identifier": identifier})
-            flash("Failed to create account", "error")
             session.clear()
-            return redirect(url_for("login"))
-            return redirect(url_for("set_profile"))
+            error_data = resp_content
+            if "duplicate key value violates unique constraint" in error_data:
+                flash("Email already in use", "error")
+            return redirect(url_for("home"))
         if status_code == 200:
             session.update(create_request["attributes"])
             session["user_id"] = identifier
