@@ -8,6 +8,7 @@ from .countries import countries_list as countries
 from datetime import datetime
 import bleach
 import json
+from pytz import timezone
 
 # FLASK SETUP #
 app = Flask(__name__)
@@ -514,6 +515,7 @@ def create_event():
         event_date = bleach.clean(request.form.get("event_date"))
         event_time = bleach.clean(request.form.get("event_time"))
         date_and_time = f"{event_date} {event_time}:00"
+        print(date_and_time)
         event_name = bleach.clean(request.form.get("event_name"))
         event_price = bleach.clean(request.form.get("event_price"))
         event_capacity = bleach.clean(request.form.get("event_capacity"))
