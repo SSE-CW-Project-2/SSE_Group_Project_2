@@ -11,9 +11,9 @@ Search Events
             <div class="text-center mb-4">
                 <h1>Select a Country</h1>
             </div>
-            <form action="/search" method="post" id="countryForm">
-                <div class="form-group">
-                    <select name="country" class="form-control" required onchange="document.getElementById('countryForm').submit();">
+            <form id="countryForm" action="/search" method="post" style="display: flex; flex-direction: column; align-items: center;">
+                <div class="form-group" style="width: 100%; max-width: 500px; margin: 10 auto;"> <!-- Adjust the max-width as per your design requirements -->
+                    <select name="country" class="form-control" required id="countrySelect">
                         <option value="" disabled selected>Choose a country...</option>
                         {% for country in countries %}
                         <option value="{{ country }}" {% if country == selected_country %}selected{% endif %}>
@@ -22,7 +22,15 @@ Search Events
                         {% endfor %}
                     </select>
                 </div>
+                <div style="width: 100%; max-width: 500px; margin: 10 auto;"> <!-- Ensures button container matches the select box's width -->
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Search</button>
+                </div>
             </form>
+            <script>
+                document.getElementById('countrySelect').addEventListener('change', function() {
+                    this.form.submit();
+                });
+            </script>
         </div>
     </div>
     {% if cities %}
@@ -31,8 +39,8 @@ Search Events
             <div class="text-center mb-4">
                 <h1>Select a City</h1>
             </div>
-            <form action="/search" method="post" id="cityForm">
-                <div class="form-group">
+            <form action="/search" method="post" id="cityForm" style="display: flex; flex-direction: column; align-items: center;">
+                <div class="form-group" style="width: 100%; max-width: 500px; margin: 10 auto;">
                     <select name="city" class="form-control" required>
                         <option value="" disabled selected>Choose a city...</option>
                         {% for city in cities %}
@@ -42,7 +50,7 @@ Search Events
                         {% endfor %}
                     </select>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Search Events</button>
+                <button type="submit" style="width: 100%; max-width: 500px; margin: 10 auto;" class="btn btn-primary btn-block">Search Events</button>
             </form>
         </div>
     </div>
