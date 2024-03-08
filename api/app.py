@@ -146,7 +146,12 @@ def events():
     }
     if user_type == "venue":
         status_code, event_data = make_authorized_request("/get_events_for_venue", req)
-        session["user_events"] = event_data.get("message").get("data")
+        if status_code != 200:
+            flash("Failed to fetch events", "error")
+            print(event_data)
+            return redirect(url_for("home"))
+        user_events = event_data.get("message").get("data")
+        session["user_events"] = [event for event in user_events if event.get("status") != "Cancelled"]
     elif user_type == "artist":
         status_code, event_data = make_authorized_request("/get_events_for_artist", req)
     elif user_type == "attendee":
@@ -156,9 +161,12 @@ def events():
             status_code, resp_content = make_authorized_request(
                 "/get_events_in_city", req
             )
+            print(resp_content)
             if status_code != 200:
                 return "Failed to fetch events"
             events = resp_content.get("message").get("data")
+            print(events)
+            events = [event for event in events if event.get("status") != "Cancelled"]
             events.sort(key=lambda event: datetime.fromisoformat(event["date_time"]))
             for event in events:
                 timestamp = event["date_time"]
@@ -177,6 +185,7 @@ def events():
         print(status_code, event_data)
         return "Failed to fetch events"
     data = event_data.get("message").get("data")
+    data = session.get("user_events") if user_type == "venue" else data
     for event in data:
         timestamp = event["date_time"]
         dt_object = datetime.fromisoformat(timestamp)
@@ -541,7 +550,7 @@ def delete_event(event_id):
         "function": "delete",
         "object_type": "event",
         "attributes": {},
-    },
+    }
     print(req)
     status_code, resp_content = make_authorized_request(
         "/delete_event", req
@@ -551,6 +560,7 @@ def delete_event(event_id):
         print(resp_content)
         return redirect(url_for("events"))
     else:
+        session["user_events"].remove(this_event)
         flash("Event deleted", "success")
         return redirect(url_for("events"))
 
@@ -565,7 +575,6 @@ def create_event():
         date_and_time = datetime.strptime(f"{event_date} {event_time}", "%Y-%m-%d %H:%M").isoformat()
         event_name = bleach.clean(request.form.get("event_name"))
         event_price = bleach.clean(request.form.get("event_price"))
-        event_price = event_price + ' ' + request.form.get("currency")
         event_capacity = bleach.clean(request.form.get("event_capacity"))
         create_request = {
             "function": "create",

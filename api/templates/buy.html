@@ -17,7 +17,6 @@
                     <th>Date</th>
                     <th>Location</th>
                     <th>Capacity</th>
-                    <th>Price</th>
                 </tr>
             </thead>
             <tbody>
@@ -27,7 +26,6 @@
                     <td>{{ session['event_info']['event_date'] | default('Event Date', true) }}</td>
                     <td>Online</td>
                     <td>{{ session['event_info']['event_total_tickets'] | default('Event Capacity', true) }}</td>
-                    <td>$50</td>
                 </tr>
             </tbody>
         </table>

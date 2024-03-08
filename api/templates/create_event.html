@@ -7,7 +7,7 @@
    <input type="text" id="event_name" name="event_name" placeholder="Enter event name here" required><br>
    
    <label for="artist_name">Artist(s):</label><br>
-   <input type="text" id="artist" name="artist" min="0" value="0" required><br>
+   <input type="text" id="artist" name="artist" required><br>
 
    <label for="event_date">Event Date:</label><br>
    <input type="date" id="event_date" name="event_date" required><br>
@@ -19,27 +19,8 @@
    <input type="number" id="event_capacity" name="event_capacity" min="1" max="1000" value="1" required><br>
 
    <label for="event_price">Event Price:</label><br>
-   <input type="number" id="event_price" name="event_price" min="0" value="0" required><br>
+   <input type="number" id="event_price" name="event_price" step="0.01" min="0" value="0"><br>
 
-   <label for="currency">Currency:</label><br>
-   <select id="currency" name="currency" placeholder="Select a currency" required>
-      <option value="AUD">AUD</option>
-      <option value="USD">USD</option>
-      <option value="GBP">GBP</option>
-      <option value="EUR">EUR</option>
-      <option value="JPY">JPY</option>
-      <option value="CNY">CNY</option>
-      <option value="CAD">CAD</option>
-      <option value="CHF">CHF</option>
-      <option value="HKD">HKD</option>
-      <option value="INR">INR</option>
-      <option value="KRW">KRW</option>
-      <option value="MXN">MXN</option>
-      <option value="NZD">NZD</option>
-      <option value="SEK">SEK</option>
-      <option value="SGD">SGD</option>
-      <option value="ZAR">ZAR</option>
-   </select><br>
    <input type="submit" value="Create Event">
 </form>
 {% endblock %}
