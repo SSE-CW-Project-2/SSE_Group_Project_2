@@ -13,18 +13,20 @@
             <thead class="thead-light">
                 <tr>
                     <th>Name</th>
-                    <th>Description</th>
-                    <th>Date</th>
-                    <th>Location</th>
+                    <th>Time</th>
+                    <th>Venue Name</th>
+                    <th>Street Address</th>
+                    <th>Postcode</th>
                     <th>Capacity</th>
                 </tr>
             </thead>
             <tbody>
                 <tr>
                     <td>{{ session['event_info']['event_event_name'] | default('Event Name', true) }}</td>
-                    <td>Join us for a memorable experience!</td>
                     <td>{{ session['event_info']['event_date'] | default('Event Date', true) }}</td>
-                    <td>Online</td>
+                    <td>{{ session['event_info']['event_venue_name'] | default('Event Venue Name', true) }}</td>
+                    <td>{{ session['event_info']['event_venue_street_address'] | default('Event Street Address', true) }}</td>
+                    <td>{{ session['event_info']['event_venue_postcode'] | default('Event Postcode', true) }}</td>
                     <td>{{ session['event_info']['event_total_tickets'] | default('Event Capacity', true) }}</td>
                 </tr>
             </tbody>

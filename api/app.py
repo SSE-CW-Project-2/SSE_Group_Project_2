@@ -428,6 +428,7 @@ def buy_event(event_id):
     sanitised_attrs = {key: bleach.clean(value) for key, value in update_attrs.items()}
     event_data.update(sanitised_attrs)
     session["event_info"] = event_data
+    print(event_data)
     return render_template("buy.html", event=event_data, event_id=event_id)
 
 
@@ -503,7 +504,6 @@ def manage_event(event_id):
     if this_event is None:
         flash("You are not authorized to manage this event", "error")
         return redirect(url_for("events"))
-    print(this_event)
     session["event_info"] = this_event
     return render_template("manage.html", event=this_event)
 
