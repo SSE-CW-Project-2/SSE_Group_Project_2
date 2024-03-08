@@ -56,7 +56,7 @@
         </div>
         <div class="form-group">
             <label for="quantity">Quantity:</label>
-            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter the quantity" required min="1" max="{{ (session['event_info']['event_total_tickets'] | default(10, true)) | int - (session['event_info']['event_sold_tickets'] | default(0, true)) | int }}">
+            <input type="number" class="form-control" id="quantity" name="quantity" placeholder="Enter the quantity" required min="1" max="{{ (session['event_info']['event_total_tickets'] | default(10, true)) | int - (session['event_info']['event_sold_tickets'] | default(1, true)) | int }}" oninput="validity.valid||(value='');">
             <div class="invalid-feedback">
                 Please enter a valid quantity.
             </div>
