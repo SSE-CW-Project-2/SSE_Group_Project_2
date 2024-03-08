@@ -162,16 +162,16 @@ def events():
             if status_code != 200:
                 return "Failed to fetch events"
             events = resp_content.get("message").get("data")
-            events = [event for event in events if event.get("status") != "Cancelled"]
-            events.sort(key=lambda event: datetime.fromisoformat(event["date_time"]))
-            for event in events:
+            available_events = [event for event in events if event.get("status") != "Cancelled"]
+            available_events.sort(key=lambda event: datetime.fromisoformat(event["date_time"]))
+            for event in available_events:
                 timestamp = event["date_time"]
                 dt_object = datetime.fromisoformat(timestamp)
                 date = dt_object.date()
                 time = dt_object.strftime("%H:%M")
                 event["date"] = date
                 event["time"] = time
-            return render_template("events.html", events=events)
+            return render_template("events.html", events=available_events)
         return redirect(url_for("search"))
     else:
         session.clear()
@@ -182,6 +182,7 @@ def events():
         return redirect(url_for("home"))
     data = event_data.get("message").get("data")
     data = session.get("user_events") if user_type == "venue" else data
+    data = [event for event in data if event.get("status") != "Cancelled"]
     for event in data:
         timestamp = event["date_time"]
         dt_object = datetime.fromisoformat(timestamp)
@@ -428,7 +429,6 @@ def buy_event(event_id):
     sanitised_attrs = {key: bleach.clean(value) for key, value in update_attrs.items()}
     event_data.update(sanitised_attrs)
     session["event_info"] = event_data
-    print(event_data)
     return render_template("buy.html", event=event_data, event_id=event_id)
 
 

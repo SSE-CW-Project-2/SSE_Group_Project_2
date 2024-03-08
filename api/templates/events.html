@@ -37,6 +37,7 @@
                 {% set start_index = (current_page - 1) * items_per_page %}
                 {% set end_index = start_index + items_per_page %}
                 {% for event in events[start_index:end_index] %}
+                    {% if event.get('status') != "Cancelled" %}
                     <tr>
                         <td>{{ event['event_name'] }}</td>
                         <td><a href="/profile/{{ event['venue_id'] }}" class="btn btn-outline-primary btn-sm">View Venue</a></td>
@@ -70,6 +71,7 @@
                             {% endif %}
                         </td>
                     </tr>
+                    {% endif %}
                 {% endfor %}
             </tbody>
         </table>
