@@ -503,6 +503,7 @@ def manage_event(event_id):
     if this_event is None:
         flash("You are not authorized to manage this event", "error")
         return redirect(url_for("events"))
+    print(this_event)
     session["event_info"] = this_event
     return render_template("manage.html", event=this_event)
 
