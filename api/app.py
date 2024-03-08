@@ -505,7 +505,10 @@ def manage_event(event_id):
         flash("You are not authorized to manage this event", "error")
         return redirect(url_for("events"))
     session["event_info"] = this_event
-    return render_template("manage.html", event=this_event)
+    date_format = '%a, %d %b %Y %H:%M:%S %Z'
+    parsed_date = datetime.strptime(this_event.get('date'), date_format)
+    date = parsed_date.date()
+    return render_template("manage.html", event=this_event, date=date)
 
 
 @one_user_type_allowed("venue")
