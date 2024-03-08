@@ -38,7 +38,6 @@ app.register_blueprint(google_blueprint, url_prefix="/login")
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        print(session.items())
         if session.get("status") == "Inactive":
             return redirect(url_for("deactivated"))
         if not google.authorized:
@@ -100,6 +99,7 @@ def search():
             events = resp_content.get("message").get("data")
 
             # Convert timestamps to date and time
+            events.sort(key=lambda event: datetime.fromisoformat(event["date_time"]))
             for event in events:
                 dt_object = datetime.fromisoformat(event["date_time"])
                 event["date"] = dt_object.date()
@@ -159,6 +159,7 @@ def events():
             if status_code != 200:
                 return "Failed to fetch events"
             events = resp_content.get("message").get("data")
+            events.sort(key=lambda event: datetime.fromisoformat(event["date_time"]))
             for event in events:
                 timestamp = event["date_time"]
                 dt_object = datetime.fromisoformat(timestamp)
@@ -564,6 +565,7 @@ def create_event():
         date_and_time = datetime.strptime(f"{event_date} {event_time}", "%Y-%m-%d %H:%M").isoformat()
         event_name = bleach.clean(request.form.get("event_name"))
         event_price = bleach.clean(request.form.get("event_price"))
+        event_price = event_price + ' ' + request.form.get("currency")
         event_capacity = bleach.clean(request.form.get("event_capacity"))
         create_request = {
             "function": "create",
