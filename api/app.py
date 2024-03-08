@@ -93,7 +93,6 @@ def search():
             status_code, resp_content = make_authorized_request(
                 "/get_events_in_city", req
             )
-            print("CITY: ", resp_content, "CITY")
             if status_code != 200:
                 return "Failed to fetch events", status_code
             events = resp_content.get("message").get("data")
@@ -148,7 +147,6 @@ def events():
         status_code, event_data = make_authorized_request("/get_events_for_venue", req)
         if status_code != 200:
             flash("Failed to fetch events", "error")
-            print(event_data)
             return redirect(url_for("home"))
         user_events = event_data.get("message").get("data")
         session["user_events"] = [event for event in user_events if event.get("status") != "Cancelled"]
@@ -161,11 +159,9 @@ def events():
             status_code, resp_content = make_authorized_request(
                 "/get_events_in_city", req
             )
-            print(resp_content)
             if status_code != 200:
                 return "Failed to fetch events"
             events = resp_content.get("message").get("data")
-            print(events)
             events = [event for event in events if event.get("status") != "Cancelled"]
             events.sort(key=lambda event: datetime.fromisoformat(event["date_time"]))
             for event in events:
@@ -182,8 +178,8 @@ def events():
         flash("You are not logged in", "error")
         return redirect(url_for("home"))
     if status_code != 200:
-        print(status_code, event_data)
-        return "Failed to fetch events"
+        flash("Failed to fetch events", "error")
+        return redirect(url_for("home"))
     data = event_data.get("message").get("data")
     data = session.get("user_events") if user_type == "venue" else data
     for event in data:
@@ -220,7 +216,6 @@ def after_login():
         status_code, resp_content = make_authorized_request(
             "/check_email_in_use", request=headers
         )
-        print(resp_content)
         if resp_content.get("status") == "Inactive":
             session["status"] = "Inactive"
             return redirect(url_for("deactivated"))
@@ -238,13 +233,10 @@ def after_login():
                 session["name"] = resp_content["artist_name"]
             elif user_type == "attendee":
                 session["name"] = resp_content["first_name"]
-            else:
-                print("User type not recognized")
             # User exists, proceed to save or update session data and redirect home
             save_user_session_data(resp_content)
             return redirect(url_for("home"))
         else:
-            print(resp_content)
             flash("Failed to create account. Please try again later.", "error")
             return redirect(url_for("home"))
     return "Failed to fetch user info"
@@ -293,10 +285,7 @@ def profile(user_id, account_type="venue"):
             "attributes": attributes,
         }
         status_code, resp_content = make_authorized_request("/get_account_info", req)
-        print(resp_content['data']['venue_name'])
-        print(account_type)
         if status_code != 200:
-            print(status_code, resp_content)
             flash("Failed to fetch user info")
             return redirect(url_for("events"))
         else:
@@ -346,7 +335,6 @@ def set_profile(function="create"):
                 "bio": bleach.clean(request.form.get("bio")),
             },
         }
-
         if user_type == "venue":
             create_request["attributes"]["venue_name"] = bleach.clean(
                 request.form.get("venue_name")
@@ -384,7 +372,6 @@ def set_profile(function="create"):
             return redirect(url_for("home"))
         else:
             flash("Failed to create account", "error")
-            print(status_code, resp_content)
             return redirect(url_for("set_profile"))
     return render_template("set_profile.html", countries=countries)
 
@@ -398,7 +385,6 @@ def delete_account():
             "object_type": session.get("user_type"),
             "identifier": session.get("user_id"),
         }
-        print(delete_request)
         status_code, resp_content = make_authorized_request(
             "/delete_account", delete_request
         )
@@ -409,7 +395,6 @@ def delete_account():
             return redirect(url_for("home"))
         else:
             flash("Failed to delete account", "error")
-            print(status_code, resp_content)
             return redirect(url_for("delete_account"))
     return render_template("delete_account.html")
 
@@ -443,7 +428,6 @@ def buy_event(event_id):
     sanitised_attrs = {key: bleach.clean(value) for key, value in update_attrs.items()}
     event_data.update(sanitised_attrs)
     session["event_info"] = event_data
-    print(session.get("event_info"))
     return render_template("buy.html", event=event_data, event_id=event_id)
 
 
@@ -460,18 +444,13 @@ def checkout(event_id):
         "identifier": event_id,
         "n_tickets": request.form.get("quantity"),
     }
-    print(reserve_request)
     status_code, resp_content = make_authorized_request(
         "/reserve_tickets", reserve_request
     )
     if status_code == 400:
-        print("#############################################")
-        print(status_code, resp_content)
         flash("Tickets are sold out", "error")
-        print("#############################################")
         return redirect(url_for("events", id=event_id))
     elif status_code != 200:
-        print(resp_content)
         flash("Failed to reserve tickets", "error")
         return redirect(url_for("events", id=event_id))
     ticket_ids = resp_content["data"]
@@ -489,14 +468,12 @@ def purchase_ticket(event_id):
     ):
         flash("You are not authorized to purchase tickets for this event", "error")
         return redirect(url_for("events"))
-    print(session["user_id"])
     ticket_request = {
         "function": "create",
         "object_type": "ticket",
         "identifier": session["user_id"],
         "ticket_ids": session.get("ticket_ids"),
     }
-    print(ticket_request)
     status_code, resp_content = make_authorized_request(
         "/purchase_tickets", ticket_request
     )
@@ -509,10 +486,7 @@ def purchase_ticket(event_id):
         return redirect(url_for("events"))
     else:
         flash("Failed to purchase ticket", "error")
-        print(resp_content)
         return redirect(url_for("events"))
-    event = session.get("event_info")
-    print(event)
     return redirect(url_for("events"))
 
 
@@ -551,13 +525,11 @@ def delete_event(event_id):
         "object_type": "event",
         "attributes": {},
     }
-    print(req)
     status_code, resp_content = make_authorized_request(
         "/delete_event", req
     )
     if status_code != 200:
         flash("Failed to delete event", "error")
-        print(resp_content)
         return redirect(url_for("events"))
     else:
         session["user_events"].remove(this_event)
@@ -605,12 +577,10 @@ def create_event():
                 flash("Event created", "success")
                 return redirect(url_for("events"))
             else:
-                print(response)
                 flash("Failed to create tickets", "error")
                 return redirect(url_for("create_event"))
         else:
             flash("Failed to create event", "error")
-            print(response)
             return redirect(url_for("create_event"))
     return render_template("create_event.html")
 
@@ -638,7 +608,6 @@ def update_event(event_id):
         )
         if status_code != 200:
             flash("Failed to update event", "error")
-            print(resp_content)
             return redirect(url_for("manage_event", event_id=this_event["event_id"]))
         flash("Event updated", "success")
         return redirect(url_for("manage_event", event_id=this_event["event_id"]))

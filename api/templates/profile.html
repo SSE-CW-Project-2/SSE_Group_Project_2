@@ -11,7 +11,7 @@
         {% endif %}
         
         <!-- Display the user's name if available, otherwise use a placeholder -->
-        <h2 class="display-4">Welcome to the Profile Page, {{ session['name'] }}!</h2>
+        <h2 class="display-4">Welcome to the Profile Page!</h2>
         
         <hr class="my-4">
         
@@ -46,7 +46,7 @@
         {% if user_type == 'venue' %}
         <tr id="venueNameRow">
             <td>Venue Name</td>
-            <td id="venueNameValue">{{ session['name'] }}</td>
+            <td id="venueNameValue">{{ session['venue_name'] }}</td>
         </tr>
         <!-- Artist Name -->
         {% elif user_type == 'artist' %}

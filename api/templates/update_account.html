@@ -11,13 +11,13 @@
         {% if user_type == 'venue' %}
         <div class="form-group" id="venueNameGroup">
             <label for="venueName">Venue Name:</label>
-            <input type="text" class="form-control" id="venueName" name="venue_name" value="{{ session.get('name', '') }}" required>
+            <input type="text" class="form-control" id="venueName" name="venue_name" value="{{ session.get('venue_name', '') }}" required>
         </div>
         <!-- Fields for Artist -->
         {% elif user_type == 'artist' %}
         <div class="form-group" id="artistNameGroup">
             <label for="artistName">Artist Name:</label>
-            <input type="text" class="form-control" id="artistName" name="artist_name" value="{{ session.get('name', '') }}" required>
+            <input type="text" class="form-control" id="artistName" name="artist_name" value="{{ session.get('artist_name', '') }}" required>
             <!-- Additional artist fields as required -->
         </div>
         <!-- Fields for attendee -->
